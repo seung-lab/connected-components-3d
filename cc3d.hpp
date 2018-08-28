@@ -142,6 +142,14 @@ inline void fill(T *arr, const int value, const size_t size) {
   }
 }
 
+void print(int *input, int sx) {
+  int i = 0;
+  for (int x = 0; x < sx; x++, i++) {
+    printf("%d, ", input[i]);
+  }
+  printf("\n");
+}
+
 inline void compute_neighborhood(
   int *neighborhood, 
   const int x, const int y, const int z,
@@ -164,19 +172,20 @@ inline void compute_neighborhood(
   }
 
   // xy diagonals
-  neighborhood[3] = (neighborhood[0] + neighborhood[1]) * (neighborhood[1] != 0); // up-left
+  neighborhood[3] = (neighborhood[0] + neighborhood[1]) * (neighborhood[0] && neighborhood[1]); // up-left
 
   // yz diagonals
-  neighborhood[4] = (neighborhood[1] + neighborhood[2]) * (neighborhood[2] != 0); // up-left
+  neighborhood[4] = (neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]); // up-left
   
   // xz diagonals
-  neighborhood[5] = (neighborhood[0] + neighborhood[2]) * (neighborhood[2] != 0); // up-left
-
-  neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
+  neighborhood[5] = (neighborhood[0] + neighborhood[2]) * (neighborhood[0] && neighborhood[2]); // up-left
+  neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[0] && neighborhood[1] && neighborhood[2]);
 
   // Two forward
-  neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
-  neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
+  if (x < sx - 1) {
+    neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
+    neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
+  }
 }
 
 template <typename T>
@@ -219,7 +228,7 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
     }
 
     compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
-
+    print(neighborhood, CC3D_NHOOD);
     int min_neighbor = voxels; // impossibly high value
     int delta;
     for (int i = 0; i < CC3D_NHOOD; i++) {
@@ -257,11 +266,11 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
   }
 
   // Raster Scan 2: Write final labels based on equivalences
-  for (int loc = 0; loc < voxels; loc++) {
-    if (out_labels[loc]) {
-      out_labels[loc] = equivalences.root(out_labels[loc]);
-    }
-  }
+  // for (int loc = 0; loc < voxels; loc++) {
+  //   if (out_labels[loc]) {
+  //     out_labels[loc] = equivalences.root(out_labels[loc]);
+  //   }
+  // }
 
   return out_labels;
 }
