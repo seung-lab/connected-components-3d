@@ -196,7 +196,6 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
   
   short int num_neighbor_values = 0;
 
-  short int neighboridx;
   uint16_t next_label = 0;
 
   int x, y, z;
