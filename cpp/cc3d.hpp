@@ -42,7 +42,7 @@
 #ifndef CC3D_HPP
 #define CC3D_HPP 
 
-#define CC3D_NHOOD 11
+#define CC3D_NHOOD 9
 
 namespace cc3d {
 
@@ -83,7 +83,7 @@ public:
   T root (T n) {
     T i = ids[n];
     while (i != ids[i]) {
-      id[i] = id[id[i]]; // path compression
+      ids[i] = ids[ids[i]]; // path compression
       i = ids[i];
     }
 
@@ -99,24 +99,24 @@ public:
     T j = root(q);
 
     if (size[i] < size[j]) {
-      id[i] = j;
+      ids[i] = j;
       size[j] += size[i];
     }
     else {
-      id[j] = i;
+      ids[j] = i;
       size[i] += size[j];
     }
   }
 
   // would be easy to write remove. 
   // Will be O(n).
-}
+};
 
-inline int* fill(int *arr, const int value, const size_t size) {
+template <typename T>
+inline void fill(T *arr, const int value, const size_t size) {
   for (size_t i = 0; i < size; i++) {
     arr[i] = value;
   }
-  return arr;
 }
 
 inline void compute_neighborhood(
@@ -126,7 +126,7 @@ inline void compute_neighborhood(
 
   const int sxy = sx * sy;
 
-  fill(neighborhood, 0, CC3D_NHOOD);
+  fill<int>(neighborhood, 0, CC3D_NHOOD);
 
   // 6-hood
 
@@ -149,11 +149,15 @@ inline void compute_neighborhood(
   // xz diagonals
   neighborhood[5] = (neighborhood[0] + neighborhood[2]) * (neighborhood[2] != 0); // up-left
 
-  // Now the eight corners of the cube
   neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
+
+  // Two forward
+  neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
+  neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
 }
 
-int* connected_components3d(int* in_labels, const int sx, const int sy, const int sz) {
+template <typename T>
+uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const int sz) {
 
 	const int sxy = sx * sy;
 	const int voxels = sx * sy * sz;
@@ -161,16 +165,18 @@ int* connected_components3d(int* in_labels, const int sx, const int sy, const in
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
 
-  DisjointSet<int> equivalences(voxels);
+  DisjointSet<uint16_t> equivalences;
 
-  int* out_labels = new int[voxels]();
+  uint16_t* out_labels = new uint16_t[voxels]();
   int neighborhood[CC3D_NHOOD];
-  int neighbor_values[CC3D_NHOOD];
+  short int neighbor_values[CC3D_NHOOD];
   
-  int num_neighbor_values = 0;
+  short int num_neighbor_values = 0;
 
-  int neighboridx;
-  int next_label = 0;
+  short int neighboridx;
+  uint16_t next_label = 0;
+
+  int x, y, z;
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
@@ -207,7 +213,7 @@ int* connected_components3d(int* in_labels, const int sx, const int sy, const in
         continue;
       }
 
-      min_neighbor = std::min(min_neighbor, out_labels[delta]);
+      min_neighbor = std::min(min_neighbor, (int)out_labels[delta]);
       neighbor_values[num_neighbor_values] = out_labels[delta];
       num_neighbor_values++;
     }
@@ -215,21 +221,21 @@ int* connected_components3d(int* in_labels, const int sx, const int sy, const in
     // no labeled neighbors
     if (min_neighbor == voxels) {
       next_label++;
-      out_labels[loc] = next_label;
+      out_labels[loc] = (uint16_t)next_label;
     }
     else {
-      out_labels[loc] = min_neighbor;
+      out_labels[loc] = (uint16_t)min_neighbor;
     }
     
     for (int i = 0; i < num_neighbor_values; i++) {
       equivalences.unify(out_labels[loc], neighbor_values[i]);
     }
-    fill(neighbor_values, 0, num_neighbor_values);
+    fill<short int>(neighbor_values, 0, num_neighbor_values);
     num_neighbor_values = 0;
   }
 
   // Raster Scan 2: Write final labels based on equivalences
-  for (int loc = 0; i < voxels; i++) {
+  for (int loc = 0; loc < voxels; loc++) {
     if (out_labels[loc]) {
       out_labels[loc] = equivalences.root(out_labels[loc]);
     }
