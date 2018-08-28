@@ -228,7 +228,7 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
     }
 
     compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
-    print(neighborhood, CC3D_NHOOD);
+    
     int min_neighbor = voxels; // impossibly high value
     int delta;
     for (int i = 0; i < CC3D_NHOOD; i++) {
@@ -266,11 +266,11 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
   }
 
   // Raster Scan 2: Write final labels based on equivalences
-  // for (int loc = 0; loc < voxels; loc++) {
-  //   if (out_labels[loc]) {
-  //     out_labels[loc] = equivalences.root(out_labels[loc]);
-  //   }
-  // }
+  for (int loc = 0; loc < voxels; loc++) {
+    if (out_labels[loc]) {
+      out_labels[loc] = equivalences.root(out_labels[loc]);
+    }
+  }
 
   return out_labels;
 }
