@@ -98,6 +98,18 @@ public:
     T i = root(p);
     T j = root(q);
 
+    if (i == 0) {
+      ids[p] = p;
+      size[p] = 1;
+      i = p;
+    }
+
+    if (j == 0) {
+      ids[q] = q;
+      size[q] = 1; 
+      j = q;
+    }
+
     if (size[i] < size[j]) {
       ids[i] = j;
       size[j] += size[i];
@@ -106,6 +118,17 @@ public:
       ids[j] = i;
       size[i] += size[j];
     }
+  }
+
+  void print() {
+    for (int i = 0; i < 15; i++) {
+      printf("%d, ", ids[i]);
+    }
+    printf("\n");
+    for (int i = 0; i < 15; i++) {
+      printf("%d, ", size[i]);
+    }
+    printf("\n");
   }
 
   // would be easy to write remove. 
@@ -235,11 +258,11 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
   }
 
   // Raster Scan 2: Write final labels based on equivalences
-  // for (int loc = 0; loc < voxels; loc++) {
-  //   if (out_labels[loc]) {
-  //     out_labels[loc] = equivalences.root(out_labels[loc]);
-  //   }
-  // }
+  for (int loc = 0; loc < voxels; loc++) {
+    if (out_labels[loc]) {
+      out_labels[loc] = equivalences.root(out_labels[loc]);
+    }
+  }
 
   return out_labels;
 }
