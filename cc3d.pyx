@@ -81,7 +81,7 @@ def connected_components(data):
       rows, cols, depth
     )
   elif dtype in (np.uint8, np.bool):
-    arr_memview8u = data
+    arr_memview8u = data.astype(np.uint8)
     labels = connected_components3d[uint8_t](
       &arr_memview8u[0,0,0],
       rows, cols, depth
