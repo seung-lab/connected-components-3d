@@ -1,0 +1,254 @@
+/*
+ * Connected Components for 3D images. 
+ * Implments a 3D variant of the two pass algorithim by
+ * Rosenfeld and Pflatz augmented with Union-Find.
+ * 
+ * Modern connected components algorithms appear to 
+ * do better by 2x-5x depending on the data, but there is
+ * no superlinear improvement. I picked this algorithm mainly
+ * because it is easy to understand and implement.
+ *
+ * Essentially, you raster scan, and every time you first encounter 
+ * a foreground pixel, mark it with a new label if the pixels to its
+ * top and left are background. If there is a preexisting label in its
+ * neighborhood, use that label instead. Whenever you see that two labels
+ * are adjacent, record that we should unify them in the next pass. This
+ * equivalency table can be constructed in several ways, but some popular
+ * approaches are Union-Find with path compression and Selkow's algorithm
+ * (which can avoid pipeline stalls). However, Selkow's algorithm is designed
+ * for two trees of depth two, appropriate for binary images. We would like to 
+ * process multiple labels at the same time, making union-find mandatory.
+ *
+ * In the next pass, the pixels are relabeled using the equivalency table.
+ * Union-Find (disjoint sets) establishes one label as the root label of a 
+ * tree, and so the root is considered the representative label. Each pixel
+ * is labeled with the representative label.
+ *  
+ * There appear to be some modern competing approaches involving decision trees,
+ * and an approach called "Light Speed Labeling".
+ *
+ * Author: William Silversmith
+ * Affiliation: Seung Lab, Princeton University
+ * Date: August 2018
+ */
+
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdint>
+#include <queue>
+#include <vector>
+
+#ifndef CC3D_HPP
+#define CC3D_HPP 
+
+#define CC3D_NHOOD 11
+
+namespace cc3d {
+
+template <typename T>
+class DisjointSet {
+public:
+  T *ids;
+  int *size;
+  int length;
+  DisjointSet () {
+    length = 65536;
+    ids = new T[length]();
+    size = new int[length]();
+  }
+
+  DisjointSet (int len) {
+    length = len;
+    ids = new T[length]();
+    size = new int[length]();
+  }
+
+  DisjointSet (const DisjointSet &cpy) {
+    length = cpy.length;
+    ids = new T[length]();
+    size = new int[length]();
+
+    for (int i = 0; i < length; i++) {
+      ids[i] = cpy.ids[i];
+      size[i] = cpy.size[i];
+    }
+  }
+
+  ~DisjointSet () {
+    delete []ids;
+    delete []size;
+  }
+
+  T root (T n) {
+    T i = ids[n];
+    while (i != ids[i]) {
+      id[i] = id[id[i]]; // path compression
+      i = ids[i];
+    }
+
+    return i;
+  }
+
+  bool find (T p, T q) {
+    return root(p) == root(q);
+  }
+
+  void unify (T p, T q) {
+    T i = root(p);
+    T j = root(q);
+
+    if (size[i] < size[j]) {
+      id[i] = j;
+      size[j] += size[i];
+    }
+    else {
+      id[j] = i;
+      size[i] += size[j];
+    }
+  }
+
+  // would be easy to write remove. 
+  // Will be O(n).
+}
+
+inline int* fill(int *arr, const int value, const size_t size) {
+  for (size_t i = 0; i < size; i++) {
+    arr[i] = value;
+  }
+  return arr;
+}
+
+inline void compute_neighborhood(
+  int *neighborhood, 
+  const int x, const int y, const int z,
+  const size_t sx, const size_t sy, const size_t sz) {
+
+  const int sxy = sx * sy;
+
+  fill(neighborhood, 0, CC3D_NHOOD);
+
+  // 6-hood
+
+  if (x > 0) {
+    neighborhood[0] = -1;
+  }
+  if (y > 0) {
+    neighborhood[1] = -(int)sx;
+  }
+  if (z > 0) {
+    neighborhood[2] = -sxy;
+  }
+
+  // xy diagonals
+  neighborhood[3] = (neighborhood[0] + neighborhood[1]) * (neighborhood[1] != 0); // up-left
+
+  // yz diagonals
+  neighborhood[4] = (neighborhood[1] + neighborhood[2]) * (neighborhood[2] != 0); // up-left
+  
+  // xz diagonals
+  neighborhood[5] = (neighborhood[0] + neighborhood[2]) * (neighborhood[2] != 0); // up-left
+
+  // Now the eight corners of the cube
+  neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
+}
+
+int* connected_components3d(int* in_labels, const int sx, const int sy, const int sz) {
+
+	const int sxy = sx * sy;
+	const int voxels = sx * sy * sz;
+  const bool power_of_two = !((sx & (sx - 1)) || (sy & (sy - 1))); 
+  const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
+  const int yshift = std::log2(sy);
+
+  DisjointSet<int> equivalences(voxels);
+
+  int* out_labels = new int[voxels]();
+  int neighborhood[CC3D_NHOOD];
+  int neighbor_values[CC3D_NHOOD];
+  
+  int num_neighbor_values = 0;
+
+  int neighboridx;
+  int next_label = 0;
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int loc = 0; loc < voxels; loc++) {
+    if (in_labels[loc] == 0) {
+      continue;
+    }
+
+    if (power_of_two) {
+      z = loc >> (xshift + yshift);
+      y = (loc - (z << (xshift + yshift))) >> xshift;
+      x = loc - ((y + (z << yshift)) << xshift);
+    }
+    else {
+      z = loc / sxy;
+      y = (loc - (z * sxy)) / sx;
+      x = loc - sx * (y + z * sy);
+    }
+
+    compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
+
+    int min_neighbor = voxels; // impossibly high value
+    int delta;
+    for (int i = 0; i < CC3D_NHOOD; i++) {
+      if (neighborhood[i] == 0) {
+        continue;
+      }
+
+      delta = loc + neighborhood[i];
+      if (in_labels[loc] != in_labels[delta]) {
+        continue;
+      }
+      else if (out_labels[delta] == 0) {
+        continue;
+      }
+
+      min_neighbor = std::min(min_neighbor, out_labels[delta]);
+      neighbor_values[num_neighbor_values] = out_labels[delta];
+      num_neighbor_values++;
+    }
+
+    // no labeled neighbors
+    if (min_neighbor == voxels) {
+      next_label++;
+      out_labels[loc] = next_label;
+    }
+    else {
+      out_labels[loc] = min_neighbor;
+    }
+    
+    for (int i = 0; i < num_neighbor_values; i++) {
+      equivalences.unify(out_labels[loc], neighbor_values[i]);
+    }
+    fill(neighbor_values, 0, num_neighbor_values);
+    num_neighbor_values = 0;
+  }
+
+  // Raster Scan 2: Write final labels based on equivalences
+  for (int loc = 0; i < voxels; i++) {
+    if (out_labels[loc]) {
+      out_labels[loc] = equivalences.root(out_labels[loc]);
+    }
+  }
+
+  return out_labels;
+}
+
+};
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
