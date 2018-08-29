@@ -32,12 +32,9 @@
  * Date: August 2018
  */
 
-#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
-#include <queue>
-#include <vector>
 
 #ifndef CC3D_HPP
 #define CC3D_HPP 
@@ -182,7 +179,7 @@ inline void compute_neighborhood(
   neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[0] && neighborhood[1] && neighborhood[2]);
 
   // Two forward
-  if (x < sx - 1) {
+  if (x < (int)sx - 1) {
     neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
     neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
   }
