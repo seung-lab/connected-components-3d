@@ -47,24 +47,24 @@ template <typename T>
 class DisjointSet {
 public:
   T *ids;
-  int *size;
-  int length;
+  size_t *size;
+  size_t length;
   DisjointSet () {
     length = 65536;
     ids = new T[length]();
-    size = new int[length]();
+    size = new size_t[length]();
   }
 
-  DisjointSet (int len) {
+  DisjointSet (size_t len) {
     length = len;
     ids = new T[length]();
-    size = new int[length]();
+    size = new size_t[length]();
   }
 
   DisjointSet (const DisjointSet &cpy) {
     length = cpy.length;
     ids = new T[length]();
-    size = new int[length]();
+    size = new size_t[length]();
 
     for (int i = 0; i < length; i++) {
       ids[i] = cpy.ids[i];
@@ -92,6 +92,11 @@ public:
   }
 
   void add(T p) {
+    if (p >= length) {
+      printf("Connected Components Error: Label %d cannot be mapped to union-find array of length %d.\n", p, length);
+      throw "maximum length exception";
+    }
+
     if (ids[p] == 0) {
       ids[p] = p;
       size[p] = 1;
@@ -103,14 +108,12 @@ public:
     T j = root(q);
 
     if (i == 0) {
-      ids[p] = p;
-      size[p] = 1;
+      add(p);
       i = p;
     }
 
     if (j == 0) {
-      ids[q] = q;
-      size[q] = 1; 
+      add(q);
       j = q;
     }
 
@@ -193,7 +196,7 @@ template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
     const int sx, const int sy, const int sz,
-    const int max_labels
+    int max_labels
   ) {
 
 	const int sxy = sx * sy;
@@ -202,7 +205,7 @@ uint32_t* connected_components3d(
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
 
-  max_labels = std::max(std::min(max_labels, voxels) 0);
+  max_labels = std::max(std::min(max_labels, voxels), 0);
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
@@ -235,6 +238,7 @@ uint32_t* connected_components3d(
     }
 
     compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
+    
     int min_neighbor = voxels; // impossibly high value
     int delta;
     for (int i = 0; i < CC3D_NHOOD; i++) {
