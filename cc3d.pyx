@@ -30,11 +30,14 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
 
 def connected_components(data):
   """
+  Connected components applied to 3D images
+  with 26-connectivity and handling for multiple labels.
+
   Parameters:
    Data: Input weights in a 2D or 3D numpy array. 
   
-  Returns: 1D numpy array containing indices of the path from
-    source to target including source and target.
+  Returns: 2D or 3D numpy array remapped to reflect
+    the connected components.
   """
   dims = len(data.shape)
   assert dims in (2, 3)
