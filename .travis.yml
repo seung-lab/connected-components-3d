@@ -1,0 +1,21 @@
+language: python
+python:
+- '2.7'
+- '3.4'
+- '3.5'
+- '3.6'
+before_install:
+- PYTHON_MAJOR_VERSION=`echo $TRAVIS_PYTHON_VERSION | head -c 1`
+- if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then sudo apt-get install python3-pip; fi
+install:
+- if [[ $PYTHON_MAJOR_VERSION == 2 ]]; then virtualenv venv; fi
+- if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then virtualenv -p python3 venv; fi
+- source venv/bin/activate
+- if [[ $PYTHON_MAJOR_VERSION == 2 ]]; then pip install numpy; fi
+- if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then pip3 install numpy; fi
+- if [[ $PYTHON_MAJOR_VERSION == 2 ]]; then pip install -e .; fi
+- if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then pip3 install -e .; fi
+script:
+- if [[ $PYTHON_MAJOR_VERSION == 2 ]]; then py.test -v -x automated_test.py; fi 
+- if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then python3 -m pytest -v -x automated_test.py; fi
+ 
