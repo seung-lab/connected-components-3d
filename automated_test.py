@@ -1,7 +1,5 @@
 import pytest
 
-from cloudvolume.lib import save_images
-
 import cc3d
 import numpy as np
 
