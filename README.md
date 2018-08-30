@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/seung-lab/connected-components-3d.svg?branch=master)](https://travis-ci.org/seung-lab/connected-components-3d)
+
 Connected Components 3D
 =======================
 
