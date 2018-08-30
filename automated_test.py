@@ -48,7 +48,7 @@ def test_2d_cross():
     assert np.all(output_labels == ground_truth)
 
 def test_2d_cross_with_intruder():
-  input_labels = np.zeros( (5,5,1), dtype=np.uint8 )
+  input_labels = np.zeros( (5,5,1), dtype=np.uint8, )
   input_labels[:] = 1
   input_labels[:,2,:] = 0
   input_labels[2,:,:] = 0
@@ -75,9 +75,77 @@ def test_3d_all_different():
   output_labels = cc3d.connected_components(input_labels)
 
   assert np.unique(output_labels).shape[0] == 100 ** 3
-  
 
 
+def test_3d_cross():
+  for dtype in TEST_TYPES:
+    print(dtype)
+    input_labels = np.zeros( (7,7,7), dtype=dtype )
+    input_labels[:] = 1
+    input_labels[:,3,:] = 0
+    input_labels[:,:,3] = 0
 
-# save_images(input_labels, directory='./save_images/input')
-# save_images(output_labels * 25, directory='./save_images/output')
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+
+    ground_truth = np.array([
+     [[1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4]]], dtype=dtype)
+
+    assert np.all(output_labels == ground_truth)
+
+    input_labels[:,4:,4:] = 2
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    assert np.all(output_labels == ground_truth)
