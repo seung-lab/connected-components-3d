@@ -91,6 +91,13 @@ public:
     return root(p) == root(q);
   }
 
+  void add(T p) {
+    if (ids[p] == 0) {
+      ids[p] = p;
+      size[p] = 1;
+    }
+  }
+
   void unify (T p, T q) {
     T i = root(p);
     T j = root(q);
@@ -255,6 +262,8 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
       out_labels[loc] = (uint16_t)min_neighbor;
     }
     
+    equivalences.add(out_labels[loc]);
+
     for (int i = 0; i < num_neighbor_values; i++) {
       equivalences.unify(out_labels[loc], neighbor_values[i]);
     }

@@ -61,8 +61,6 @@ def test_2d_cross_with_intruder():
     [3, 3, 0, 5, 5],
   ], dtype=np.uint8)
 
-  print(output_labels[:,:])
-
   assert np.all(output_labels == ground_truth)
 
 
