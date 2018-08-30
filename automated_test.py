@@ -10,6 +10,38 @@ TEST_TYPES = [
   np.uint8, np.uint16, np.uint32, np.uint64,
 ]
 
+def test_2d_square():
+  for dtype in TEST_TYPES:
+    input_labels = np.zeros( (16,16,1), dtype=dtype )
+    input_labels[:8,:8,:] = 8
+    input_labels[8:,:8,:] = 9
+    input_labels[:8,8:,:] = 10
+    input_labels[8:,8:,:] = 11
+
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    output_labels = output_labels[:,:,0]
+
+    ground_truth = np.array([
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+      [3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4],
+    ], dtype=dtype)
+
+    assert np.all(output_labels == ground_truth)
+
 def test_2d_cross():
   for dtype in TEST_TYPES:
     input_labels = np.zeros( (17,17,1), dtype=dtype )
