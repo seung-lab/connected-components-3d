@@ -205,7 +205,7 @@ uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const
 
   uint32_t* out_labels = new uint32_t[voxels]();
   int neighborhood[CC3D_NHOOD];
-  short int neighbor_values[CC3D_NHOOD];
+  uint32_t neighbor_values[CC3D_NHOOD];
   
   short int num_neighbor_values = 0;
 
@@ -232,7 +232,6 @@ uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const
     }
 
     compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
-    
     int min_neighbor = voxels; // impossibly high value
     int delta;
     for (int i = 0; i < CC3D_NHOOD; i++) {
@@ -263,11 +262,10 @@ uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const
     }
     
     equivalences.add(out_labels[loc]);
-
     for (int i = 0; i < num_neighbor_values; i++) {
       equivalences.unify(out_labels[loc], neighbor_values[i]);
     }
-    fill<short int>(neighbor_values, 0, num_neighbor_values);
+    fill<uint32_t>(neighbor_values, 0, num_neighbor_values);
     num_neighbor_values = 0;
   }
 
