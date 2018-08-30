@@ -47,3 +47,8 @@ import numpy as np
 labels_in = np.ones((512, 512, 512), dtype=np.int32)
 labels_out = connected_components(labels_in)
 ```
+
+## Tips for Memory Pressure Management
+
+If the allocations are too much, you have options if you know something about the data. If you know that there will be fewer than 2<sup>16</sup> labels, you can try using a uint16_t output instead of a uint32_t output. If you know the minimum component size, you can try allocating a smaller union-find data structure.
+
