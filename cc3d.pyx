@@ -23,7 +23,7 @@ import numpy as np
 __VERSION__ = '1.0.0'
 
 cdef extern from "cc3d.hpp" namespace "cc3d":
-  cdef uint16_t* connected_components3d[T](
+  cdef uint32_t* connected_components3d[T](
     T* in_labels, 
     int sx, int sy, int sz
   )
@@ -58,7 +58,7 @@ def connected_components(data):
   cdef int32_t[:,:,:] arr_memview32
   cdef int64_t[:,:,:] arr_memview64
 
-  cdef uint16_t* labels 
+  cdef uint32_t* labels 
 
   dtype = data.dtype
   
@@ -114,11 +114,11 @@ def connected_components(data):
     raise TypeError("Type {} not currently supported.".format(dtype))
 
   cdef int voxels = cols * rows * depth
-  cdef uint16_t[:] labels_view = <uint16_t[:voxels]>labels
+  cdef uint32_t[:] labels_view = <uint32_t[:voxels]>labels
 
   # This construct is required by python 2.
   # Python 3 can just do np.frombuffer(vec_view, ...)
   buf = bytearray(labels_view[:])
   free(labels)
   order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
-  return np.frombuffer(buf, dtype=np.uint16).reshape( (cols, rows, depth), order=order)
+  return np.frombuffer(buf, dtype=np.uint32).reshape( (cols, rows, depth), order=order)

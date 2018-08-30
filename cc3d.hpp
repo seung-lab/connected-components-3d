@@ -193,7 +193,7 @@ inline void compute_neighborhood(
 }
 
 template <typename T>
-uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const int sz) {
+uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const int sz) {
 
 	const int sxy = sx * sy;
 	const int voxels = sx * sy * sz;
@@ -201,15 +201,15 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
 
-  DisjointSet<uint16_t> equivalences;
+  DisjointSet<uint32_t> equivalences(voxels);
 
-  uint16_t* out_labels = new uint16_t[voxels]();
+  uint32_t* out_labels = new uint32_t[voxels]();
   int neighborhood[CC3D_NHOOD];
   short int neighbor_values[CC3D_NHOOD];
   
   short int num_neighbor_values = 0;
 
-  uint16_t next_label = 0;
+  uint32_t next_label = 0;
 
   int x, y, z;
 
@@ -256,10 +256,10 @@ uint16_t* connected_components3d(T* in_labels, const int sx, const int sy, const
     // no labeled neighbors
     if (min_neighbor == voxels) {
       next_label++;
-      out_labels[loc] = (uint16_t)next_label;
+      out_labels[loc] = (uint32_t)next_label;
     }
     else {
-      out_labels[loc] = (uint16_t)min_neighbor;
+      out_labels[loc] = (uint32_t)min_neighbor;
     }
     
     equivalences.add(out_labels[loc]);
