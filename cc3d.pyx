@@ -25,16 +25,21 @@ __VERSION__ = '1.0.0'
 cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef uint32_t* connected_components3d[T](
     T* in_labels, 
-    int sx, int sy, int sz
+    int sx, int sy, int sz,
+    int max_labels
   )
 
-def connected_components(data):
+def connected_components(data, int max_labels=-1):
   """
   Connected components applied to 3D images
   with 26-connectivity and handling for multiple labels.
 
-  Parameters:
-   Data: Input weights in a 2D or 3D numpy array. 
+  Required:
+    data: Input weights in a 2D or 3D numpy array. 
+  Optional:
+    max_labels (int): save memory by predicting the maximum
+      number of possible labels that might be output.
+      Defaults to number of voxels.
   
   Returns: 2D or 3D numpy array remapped to reflect
     the connected components.
@@ -62,6 +67,10 @@ def connected_components(data):
   cdef int64_t[:,:,:] arr_memview64
 
   cdef uint32_t* labels 
+  cdef int voxels = cols * rows * depth
+
+  if max_labels < 0:
+    max_labels = voxels
 
   dtype = data.dtype
   
@@ -69,54 +78,53 @@ def connected_components(data):
     arr_memview64u = data
     labels = connected_components3d[uint64_t](
       &arr_memview64u[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   elif dtype == np.uint32:
     arr_memview32u = data
     labels = connected_components3d[uint32_t](
       &arr_memview32u[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   elif dtype == np.uint16:
     arr_memview16u = data
     labels = connected_components3d[uint16_t](
       &arr_memview16u[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   elif dtype in (np.uint8, np.bool):
     arr_memview8u = data.astype(np.uint8)
     labels = connected_components3d[uint8_t](
       &arr_memview8u[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   elif dtype == np.int64:
     arr_memview64 = data
     labels = connected_components3d[int64_t](
       &arr_memview64[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   elif dtype == np.int32:
     arr_memview32 = data
     labels = connected_components3d[int32_t](
       &arr_memview32[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   elif dtype == np.int16:
     arr_memview16 = data
     labels = connected_components3d[int16_t](
       &arr_memview16[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   elif dtype == np.int8:
     arr_memview8 = data
     labels = connected_components3d[int8_t](
       &arr_memview8[0,0,0],
-      rows, cols, depth
+      rows, cols, depth, max_labels
     )
   else:
     raise TypeError("Type {} not currently supported.".format(dtype))
 
-  cdef int voxels = cols * rows * depth
   cdef uint32_t[:] labels_view = <uint32_t[:voxels]>labels
 
   # This construct is required by python 2.

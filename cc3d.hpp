@@ -186,6 +186,15 @@ inline void compute_neighborhood(
 
 template <typename T>
 uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const int sz) {
+  return connected_components3d<T>(in_labels, sx, sy, sz, sx * sy * sz);
+}
+
+template <typename T>
+uint32_t* connected_components3d(
+    T* in_labels, 
+    const int sx, const int sy, const int sz,
+    const int max_labels
+  ) {
 
 	const int sxy = sx * sy;
 	const int voxels = sx * sy * sz;
@@ -193,7 +202,9 @@ uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
 
-  DisjointSet<uint32_t> equivalences(voxels);
+  max_labels = std::max(std::min(max_labels, voxels) 0);
+
+  DisjointSet<uint32_t> equivalences(max_labels);
 
   uint32_t* out_labels = new uint32_t[voxels]();
   int neighborhood[CC3D_NHOOD];
