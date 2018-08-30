@@ -146,14 +146,6 @@ inline void fill(T *arr, const int value, const size_t size) {
   }
 }
 
-void print(int *input, int sx) {
-  int i = 0;
-  for (int x = 0; x < sx; x++, i++) {
-    printf("%d, ", input[i]);
-  }
-  printf("\n");
-}
-
 inline void compute_neighborhood(
   int *neighborhood, 
   const int x, const int y, const int z,
