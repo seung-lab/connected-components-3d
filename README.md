@@ -52,3 +52,7 @@ labels_out = connected_components(labels_in)
 
 If the allocations are too much, you have options if you know something about the data. If you know that there will be fewer than 2<sup>16</sup> labels, you can try using a uint16_t output instead of a uint32_t output. If you know the minimum component size, you can try allocating a smaller union-find data structure.
 
+## References
+
+1. A. Rosenfeld and J. Pfaltz. "Sequential Operations in Digital Picture Processing". Journal of the ACM. Vol. 13, Issue 4, Oct. 1966, Pg. 471-494. doi: 10.1145/321356.321357 ([link](https://dl.acm.org/citation.cfm?id=321357))
+2. R. E. Tarjan. "Efficiency of a good but not linear set union algorithm". Journal of the ACM, 22:215-225, 1975. ([link](https://dl.acm.org/citation.cfm?id=321884))
