@@ -48,6 +48,12 @@ labels_in = np.ones((512, 512, 512), dtype=np.int32)
 labels_out = connected_components(labels_in)
 ```
 
+If you know approximately how many labels you are going to generate, you can save substantial memory by specifying a number a bit above that range. The max label ID in your input labels must be less than `max_labels`.
+
+```python
+labels_out = connected_components(labels_in, max_labels=20000)
+```
+
 ## Tips for Memory Pressure Management
 
 If the allocations are too much, you have options if you know something about the data. If you know that there will be fewer than 2<sup>16</sup> labels, you can try using a uint16_t output instead of a uint32_t output. If you know the minimum component size, you can try allocating a smaller union-find data structure.
