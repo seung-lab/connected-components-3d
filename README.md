@@ -4,7 +4,7 @@ Connected Components 3D
 =======================
 
 Implementation of connected components in three dimensions using a 26-connected neighborhood.  
-Uses a 3D variant of the two pass algorithm by Rosenfeld and Pflatz augmented with Union-Find.
+Uses a 3D variant of the two pass algorithm by Rosenfeld and Pflatz augmented with Union-Find. This implementation is compatible with images containing many different labels, not just binary images.
 
 Modern connected components algorithms appear to  do better by 2x-5x depending on the data, but there is
 no superlinear improvement. I picked this algorithm mainly because it is easy to understand and implement. In order to make a reasonably fast implementation, I conservatively used a large array for the union-find data structure instead of a map. This makes the memory usage larger than it would otherwise be, but possibly still small enough for our purposes.
