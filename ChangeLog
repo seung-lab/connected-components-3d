@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+1.0.0
+-----
+
+* docs: AUTHORS and ChangeLog
+* feat: Dockerfile builds for manylinux cc3d binaries
+* docs: better algorithm description + pip install for upcoming release
 * docs: added line about multi-label compatibility
 * docs: info on max\_labels
 * docs: added references to papers

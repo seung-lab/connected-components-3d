@@ -12,14 +12,14 @@ I wrote this package because I was working on densely labeled 3D biomedical imag
 If binaries are available for your platform:
 
 ```bash
-pip install cc3d
+pip install connected-components-3d
 ```
 
 Otherwise:  
 
 ```bash
 pip install numpy
-pip install cc3d
+pip install connected-components-3d
 ```
 
 ## Python Manual Installation
