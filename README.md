@@ -17,6 +17,8 @@ pip install connected-components-3d
 
 Otherwise:  
 
+*Requires a C++ compiler.*  
+
 ```bash
 pip install numpy
 pip install connected-components-3d
