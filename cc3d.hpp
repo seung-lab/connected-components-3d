@@ -32,6 +32,7 @@
  * Date: August 2018
  */
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
