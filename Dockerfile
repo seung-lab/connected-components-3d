@@ -15,7 +15,7 @@ RUN /opt/python/cp27-cp27m/bin/python2.7 setup.py develop
 RUN /opt/python/cp27-cp27m/bin/python2.7 -m pytest -v -x automated_test.py
 
 RUN /opt/python/cp34-cp34m/bin/pip3.4 install pip --upgrade
-RUN /opt/python/cp34-cp34m/bin/pip3.4 install numpy pytest
+RUN /opt/python/cp34-cp34m/bin/pip3.4 install numpy==1.15.4 pytest
 RUN /opt/python/cp34-cp34m/bin/python3.4 setup.py develop
 RUN /opt/python/cp34-cp34m/bin/python3.4 -m pytest -v -x automated_test.py
 
