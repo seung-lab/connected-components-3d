@@ -21,7 +21,7 @@ Otherwise:
 
 ```bash
 pip install numpy
-pip install connected-components-3d
+pip install connected-components-3d --no-binary :all:
 ```
 
 ## Python Manual Installation
