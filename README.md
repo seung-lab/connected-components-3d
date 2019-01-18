@@ -41,6 +41,10 @@ import numpy as np
 
 labels_in = np.ones((512, 512, 512), dtype=np.int32)
 labels_out = connected_components(labels_in)
+
+# You can extract individual components like so:
+segids = [ x for x in np.unique(labels_out) if x != 0 ]
+extracted_image = labels_out * (labels_out == segid[0])
 ```
 
 If you know approximately how many labels you are going to generate, you can save substantial memory by specifying a number a bit above that range. The max label ID in your input labels must be less than `max_labels`.
@@ -57,7 +61,7 @@ labels_out = connected_components(labels_in, max_labels=20000)
 // 3d array represented as 1d array
 int* labels = new int[512*512*512](); 
 
-path = cc3d::connected_components3d<int>(
+cc_labels = cc3d::connected_components3d<int>(
   labels, /*sx=*/512, /*sy=*/512, /*sz=*/512
 );
 ```
