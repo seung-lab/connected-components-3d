@@ -61,7 +61,7 @@ labels_out = connected_components(labels_in, max_labels=20000)
 // 3d array represented as 1d array
 int* labels = new int[512*512*512](); 
 
-cc_labels = cc3d::connected_components3d<int>(
+int* cc_labels = cc3d::connected_components3d<int>(
   labels, /*sx=*/512, /*sy=*/512, /*sz=*/512
 );
 ```
