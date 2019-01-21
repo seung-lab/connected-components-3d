@@ -244,13 +244,87 @@ def test_3d_cross():
       [3, 3, 3, 0, 4, 4, 4]]], dtype=np.uint32)
 
   test('C', ground_truth)
+  test('F', gt_c2f(ground_truth))
 
-  f_gt = np.copy(ground_truth)
-  f_gt[ f_gt == 2 ] = 5
-  f_gt[ f_gt == 3 ] = 2
-  f_gt[ f_gt == 5 ] = 3
+def test_3d_cross_asymmetrical():
+  def test(order, ground_truth):
+    print(order)
+    for dtype in TEST_TYPES:
+      print(dtype)
+      input_labels = np.zeros( (7,7,8), dtype=dtype, order=order )
+      input_labels[:] = 1
+      input_labels[:,3,:] = 0
+      input_labels[:,:,3] = 0
 
-  test('F', f_gt)
+      output_labels = cc3d.connected_components(input_labels).astype(dtype)
+      print(output_labels)
+      assert np.all(output_labels == ground_truth)
+
+      input_labels[:,4:,4:] = 2
+      output_labels = cc3d.connected_components(input_labels).astype(dtype)
+      assert np.all(output_labels == ground_truth)
+
+  ground_truth = np.array([
+     [[1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4]],
+
+     [[1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [1, 1, 1, 0, 2, 2, 2, 2],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4],
+      [3, 3, 3, 0, 4, 4, 4, 4]],
+
+    ], dtype=np.uint32)
+
+  test('C', ground_truth)
+  test('F', gt_c2f(ground_truth))
 
 def test_512_cube_no_segfault_no_jitsu():
   input_labels = np.arange(0, 512 ** 3).astype(np.uint64).reshape((512,512,512))
