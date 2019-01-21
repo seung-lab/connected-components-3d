@@ -45,17 +45,36 @@ def connected_components(data, int max_labels=-1):
     the connected components.
   """
   dims = len(data.shape)
-  assert dims in (2, 3)
+  assert dims in (1, 2, 3)
 
   if data.size == 0:
     return np.zeros(shape=(0,), dtype=np.uint32)
 
-  if dims == 2:
-    data = data[:, :, np.newaxis]
+  order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
 
-  cdef int cols = data.shape[0]
-  cdef int rows = data.shape[1]
-  cdef int depth = data.shape[2]
+  while len(data.shape) < 3:
+    if order == 'C':
+      data = data[np.newaxis, ...]
+    else: # F
+      data = data[..., np.newaxis ]
+
+  if not data.flags['C_CONTIGUOUS'] and not data.flags['F_CONTIGUOUS']:
+    data = np.copy(data, order=order)
+
+  shape = list(data.shape)
+
+  # The default C order of 4D numpy arrays is (channel, depth, row, col)
+  # col is the fastest changing index in the underlying buffer. 
+  # fpzip expects an XYZC orientation in the array, namely nx changes most rapidly. 
+  # Since in this case, col is the most rapidly changing index, 
+  # the inputs to fpzip should be X=col, Y=row, Z=depth, F=channel
+  # If the order is F, the default array shape is fine.
+  if order == 'C':
+    shape.reverse()
+
+  cdef int sx = shape[0]
+  cdef int sy = shape[1]
+  cdef int sz = shape[2]
 
   cdef uint8_t[:,:,:] arr_memview8u
   cdef uint16_t[:,:,:] arr_memview16u
@@ -67,7 +86,7 @@ def connected_components(data, int max_labels=-1):
   cdef int64_t[:,:,:] arr_memview64
 
   cdef uint32_t* labels 
-  cdef int voxels = cols * rows * depth
+  cdef int voxels = sx * sy * sz
 
   if max_labels < 0:
     max_labels = voxels
@@ -78,49 +97,49 @@ def connected_components(data, int max_labels=-1):
     arr_memview64u = data
     labels = connected_components3d[uint64_t](
       &arr_memview64u[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   elif dtype == np.uint32:
     arr_memview32u = data
     labels = connected_components3d[uint32_t](
       &arr_memview32u[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   elif dtype == np.uint16:
     arr_memview16u = data
     labels = connected_components3d[uint16_t](
       &arr_memview16u[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   elif dtype in (np.uint8, np.bool):
     arr_memview8u = data.astype(np.uint8)
     labels = connected_components3d[uint8_t](
       &arr_memview8u[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   elif dtype == np.int64:
     arr_memview64 = data
     labels = connected_components3d[int64_t](
       &arr_memview64[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   elif dtype == np.int32:
     arr_memview32 = data
     labels = connected_components3d[int32_t](
       &arr_memview32[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   elif dtype == np.int16:
     arr_memview16 = data
     labels = connected_components3d[int16_t](
       &arr_memview16[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   elif dtype == np.int8:
     arr_memview8 = data
     labels = connected_components3d[int8_t](
       &arr_memview8[0,0,0],
-      rows, cols, depth, max_labels
+      sx, sy, sz, max_labels
     )
   else:
     raise TypeError("Type {} not currently supported.".format(dtype))
@@ -131,5 +150,18 @@ def connected_components(data, int max_labels=-1):
   # Python 3 can just do np.frombuffer(vec_view, ...)
   buf = bytearray(labels_view[:])
   free(labels)
-  order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
-  return np.frombuffer(buf, dtype=np.uint32).reshape( (cols, rows, depth), order=order)
+
+  output = np.frombuffer(buf, dtype=np.uint32)
+
+  if dims == 3:
+    if order == 'C':
+      return output.reshape( (sz, sy, sx), order=order)
+    else:
+      return output.reshape( (sx, sy, sz), order=order)
+  elif dims == 2:
+    if order == 'C':
+      return output.reshape( (sy, sx), order=order)
+    else:
+      return output.reshape( (sx, sy), order=order)
+  else:
+    return output.reshape( (sx), order=order)
