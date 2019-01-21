@@ -1,0 +1,37 @@
+CHANGES
+=======
+
+1.0.0
+-----
+
+* docs: AUTHORS and ChangeLog
+* feat: Dockerfile builds for manylinux cc3d binaries
+* docs: better algorithm description + pip install for upcoming release
+* docs: added line about multi-label compatibility
+* docs: info on max\_labels
+* docs: added references to papers
+* fix: added error messages for unmappable values
+* feat: added support for bounding union-find memory
+* docs: added some tips for memory pressure
+* docs: added help and installation instructions
+* chore: remove debug code
+* test: ensure a production sized cube doesn't segfault
+* fix: support larger volumes with uint32
+* docs: added travis button
+* chore: added requirements.txt
+* test: added adjacency test
+* test: added travis
+* test: added 3d cross test
+* fix: handle if all voxels are different
+* fix: certain labels without upper left neighbors were not added to equiv table
+* test: starting to do more elaborate testing
+* fix: add back the equivalence raster pass
+* test: manual testing script
+* fix: neighbor calculation was off, more testing required
+* feat: basic test has output, but bugs
+* feat: added untested version of cython wrapper
+* fix: create new labels on unification
+* test: printing a basic test result
+* fix: compiles
+* init: skeleton of two pass algorithm based on a modernization of Rosenfeld & Pflatz
+* Initial commit
