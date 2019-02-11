@@ -37,6 +37,8 @@
 #include <cstdio>
 #include <cstdint>
 
+#include "libdivide.h"
+
 #ifndef CC3D_HPP
 #define CC3D_HPP 
 
@@ -202,6 +204,10 @@ uint32_t* connected_components3d(
 
 	const int sxy = sx * sy;
 	const int voxels = sx * sy * sz;
+
+  const libdivide::divider<int> fast_sx(sx); 
+  const libdivide::divider<int> fast_sxy(sxy); 
+
   const bool power_of_two = !((sx & (sx - 1)) || (sy & (sy - 1))); 
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
@@ -233,8 +239,8 @@ uint32_t* connected_components3d(
       x = loc - ((y + (z << yshift)) << xshift);
     }
     else {
-      z = loc / sxy;
-      y = (loc - (z * sxy)) / sx;
+      z = loc / fast_sxy;
+      y = (loc - (z * sxy)) / fast_sx;
       x = loc - sx * (y + z * sy);
     }
 

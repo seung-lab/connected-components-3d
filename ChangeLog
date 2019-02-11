@@ -1,6 +1,23 @@
 CHANGES
 =======
 
+1.0.3
+-----
+
+* chore: bump \_\_VERSION\_\_ to 1.0.3
+* test: added 3d asymmetrical test
+* feat: better compatibility with F and C array orders
+* Update README.md
+* Update README.md
+* fix: numpy 1.16.0 stopped building binaries for Python 3.4 so use 1.15.4 instead
+* chore: bump version to 1.0.2
+* chore: bump version to 1.0.1
+* Update README.md
+* fix: Windows wheel creation
+* Update README.md
+* docs: add PyPI badge
+* docs: corrected cc3d to connected-components-3d for pip
+
 1.0.0
 -----
 
