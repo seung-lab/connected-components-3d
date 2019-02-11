@@ -53,6 +53,8 @@ If you know approximately how many labels you are going to generate, you can sav
 labels_out = connected_components(labels_in, max_labels=20000)
 ```
 
+*Note: C and Fortran order arrays will be processed in row major and column major order respectively, so the numbering of labels will be "transposed". The scare quotes are there because the dimensions of the array will not change.*
+
 ## C++ Use 
 
 ```cpp
