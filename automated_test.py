@@ -338,3 +338,7 @@ def test_max_labels_nonsensical():
 
   assert np.all(real_labels == zero_labels)
   assert np.all(real_labels == negative_labels)
+
+# def test_sixty_four_bit():
+#   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
+#   cc3d.connected_components(input_labels, max_labels=0)  
