@@ -153,13 +153,13 @@ inline void fill(T *arr, const int value, const size_t size) {
 }
 
 inline void compute_neighborhood(
-  int *neighborhood, 
+  int64_t *neighborhood, 
   const int x, const int y, const int z,
   const size_t sx, const size_t sy, const size_t sz) {
 
-  const int sxy = sx * sy;
+  const int64_t sxy = (int64_t)sx * (int64_t)sy;
 
-  fill<int>(neighborhood, 0, CC3D_NHOOD);
+  fill<int64_t>(neighborhood, 0, CC3D_NHOOD);
 
   // 6-hood
 
@@ -167,7 +167,7 @@ inline void compute_neighborhood(
     neighborhood[0] = -1;
   }
   if (y > 0) {
-    neighborhood[1] = -(int)sx;
+    neighborhood[1] = -(int64_t)sx;
   }
   if (z > 0) {
     neighborhood[2] = -sxy;
@@ -184,7 +184,7 @@ inline void compute_neighborhood(
   neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[0] && neighborhood[1] && neighborhood[2]);
 
   // Two forward
-  if (x < (int)sx - 1) {
+  if (x < (int64_t)sx - 1) {
     neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
     neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
   }
@@ -192,32 +192,33 @@ inline void compute_neighborhood(
 
 template <typename T>
 uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const int sz) {
-  return connected_components3d<T>(in_labels, sx, sy, sz, sx * sy * sz);
+  const int64_t voxels = (int64_t)sx * (int64_t)sy * (int64_t)sz;
+  return connected_components3d<T>(in_labels, sx, sy, sz, voxels);
 }
 
 template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
     const int sx, const int sy, const int sz,
-    int max_labels
+    int64_t max_labels
   ) {
 
 	const int sxy = sx * sy;
-	const int voxels = sx * sy * sz;
+	const int64_t voxels = (int64_t)sx * (int64_t)sy * (int64_t)sz;
 
-  const libdivide::divider<int> fast_sx(sx); 
-  const libdivide::divider<int> fast_sxy(sxy); 
+  const libdivide::divider<int64_t> fast_sx(sx); 
+  const libdivide::divider<int64_t> fast_sxy(sxy); 
 
   const bool power_of_two = !((sx & (sx - 1)) || (sy & (sy - 1))); 
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
 
-  max_labels = std::max(std::min(max_labels, voxels), 0);
+  max_labels = std::max(std::min(max_labels, voxels), 1L); // can't allocate 0 arrays
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
   uint32_t* out_labels = new uint32_t[voxels]();
-  int neighborhood[CC3D_NHOOD];
+  int64_t neighborhood[CC3D_NHOOD];
   uint32_t neighbor_values[CC3D_NHOOD];
   
   short int num_neighbor_values = 0;
@@ -228,7 +229,7 @@ uint32_t* connected_components3d(
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
-  for (int loc = 0; loc < voxels; loc++) {
+  for (int64_t loc = 0; loc < voxels; loc++) {
     if (in_labels[loc] == 0) {
       continue;
     }
@@ -246,8 +247,8 @@ uint32_t* connected_components3d(
 
     compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
     
-    int min_neighbor = voxels; // impossibly high value
-    int delta;
+    int64_t min_neighbor = voxels; // impossibly high value
+    int64_t delta;
     for (int i = 0; i < CC3D_NHOOD; i++) {
       if (neighborhood[i] == 0) {
         continue;
@@ -261,7 +262,7 @@ uint32_t* connected_components3d(
         continue;
       }
 
-      min_neighbor = std::min(min_neighbor, (int)out_labels[delta]);
+      min_neighbor = std::min(min_neighbor, (int64_t)out_labels[delta]);
       neighbor_values[num_neighbor_values] = out_labels[delta];
       num_neighbor_values++;
     }
@@ -284,7 +285,7 @@ uint32_t* connected_components3d(
   }
 
   // Raster Scan 2: Write final labels based on equivalences
-  for (int loc = 0; loc < voxels; loc++) {
+  for (int64_t loc = 0; loc < voxels; loc++) {
     if (out_labels[loc]) {
       out_labels[loc] = equivalences.root(out_labels[loc]);
     }
