@@ -213,7 +213,7 @@ uint32_t* connected_components3d(
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
 
-  max_labels = std::max(std::min(max_labels, voxels), 0L);
+  max_labels = std::max(std::min(max_labels, voxels), 1L); // can't allocate 0 arrays
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
