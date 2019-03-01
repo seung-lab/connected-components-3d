@@ -203,7 +203,7 @@ uint32_t* connected_components3d(
   ) {
 
 	const int sxy = sx * sy;
-	const int64_t voxels = sx * sy * sz;
+	const int64_t voxels = (int64_t)sx * (int64_t)sy * (int64_t)sz;
 
   const libdivide::divider<int64_t> fast_sx(sx); 
   const libdivide::divider<int64_t> fast_sxy(sxy); 

@@ -3286,14 +3286,14 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   /* "cc3d.pyx":89
  * 
  *   cdef uint32_t* labels
- *   cdef uint64_t voxels = sx * sy * sz             # <<<<<<<<<<<<<<
+ *   cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz             # <<<<<<<<<<<<<<
  * 
  *   if max_labels < 0:
  */
-  __pyx_v_voxels = ((__pyx_v_sx * __pyx_v_sy) * __pyx_v_sz);
+  __pyx_v_voxels = ((((uint64_t)__pyx_v_sx) * ((uint64_t)__pyx_v_sy)) * ((uint64_t)__pyx_v_sz));
 
   /* "cc3d.pyx":91
- *   cdef uint64_t voxels = sx * sy * sz
+ *   cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
  * 
  *   if max_labels < 0:             # <<<<<<<<<<<<<<
  *     max_labels = voxels
@@ -3312,7 +3312,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
     __pyx_v_max_labels = __pyx_v_voxels;
 
     /* "cc3d.pyx":91
- *   cdef uint64_t voxels = sx * sy * sz
+ *   cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
  * 
  *   if max_labels < 0:             # <<<<<<<<<<<<<<
  *     max_labels = voxels

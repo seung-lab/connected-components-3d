@@ -86,7 +86,7 @@ def connected_components(data, int64_t max_labels=-1):
   cdef int64_t[:,:,:] arr_memview64
 
   cdef uint32_t* labels 
-  cdef uint64_t voxels = sx * sy * sz
+  cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
 
   if max_labels < 0:
     max_labels = voxels
