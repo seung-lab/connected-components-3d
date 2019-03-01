@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+1.0.4
+-----
+
+* chore: version 1.0.4
+* perf: use libdivide for non-power-of two coord calculations
+* Update README.md
+
 1.0.3
 -----
 

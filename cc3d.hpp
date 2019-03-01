@@ -199,20 +199,20 @@ template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
     const int sx, const int sy, const int sz,
-    int max_labels
+    int64_t max_labels
   ) {
 
 	const int sxy = sx * sy;
-	const int voxels = sx * sy * sz;
+	const int64_t voxels = sx * sy * sz;
 
-  const libdivide::divider<int> fast_sx(sx); 
-  const libdivide::divider<int> fast_sxy(sxy); 
+  const libdivide::divider<int64_t> fast_sx(sx); 
+  const libdivide::divider<int64_t> fast_sxy(sxy); 
 
   const bool power_of_two = !((sx & (sx - 1)) || (sy & (sy - 1))); 
   const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
   const int yshift = std::log2(sy);
 
-  max_labels = std::max(std::min(max_labels, voxels), 0);
+  max_labels = std::max(std::min(max_labels, voxels), 0L);
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
@@ -228,7 +228,7 @@ uint32_t* connected_components3d(
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
-  for (int loc = 0; loc < voxels; loc++) {
+  for (int64_t loc = 0; loc < voxels; loc++) {
     if (in_labels[loc] == 0) {
       continue;
     }
@@ -284,7 +284,7 @@ uint32_t* connected_components3d(
   }
 
   // Raster Scan 2: Write final labels based on equivalences
-  for (int loc = 0; loc < voxels; loc++) {
+  for (int64_t loc = 0; loc < voxels; loc++) {
     if (out_labels[loc]) {
       out_labels[loc] = equivalences.root(out_labels[loc]);
     }
