@@ -329,3 +329,16 @@ def test_3d_cross_asymmetrical():
 def test_512_cube_no_segfault_no_jitsu():
   input_labels = np.arange(0, 512 ** 3).astype(np.uint64).reshape((512,512,512))
   output_labels = cc3d.connected_components(input_labels)
+
+def test_max_labels_nonsensical():
+  input_labels = np.arange(0, 64 ** 3).astype(np.uint64).reshape((64,64,64))
+  real_labels = cc3d.connected_components(input_labels, max_labels=64*64*64)
+  zero_labels = cc3d.connected_components(input_labels, max_labels=0)
+  negative_labels = cc3d.connected_components(input_labels, max_labels=-50)
+
+  assert np.all(real_labels == zero_labels)
+  assert np.all(real_labels == negative_labels)
+
+# def test_sixty_four_bit():
+#   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
+#   cc3d.connected_components(input_labels, max_labels=0)  

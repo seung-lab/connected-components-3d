@@ -26,10 +26,10 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef uint32_t* connected_components3d[T](
     T* in_labels, 
     int sx, int sy, int sz,
-    int max_labels
+    int64_t max_labels
   )
 
-def connected_components(data, int max_labels=-1):
+def connected_components(data, int64_t max_labels=-1):
   """
   Connected components applied to 3D images
   with 26-connectivity and handling for multiple labels.
@@ -86,9 +86,9 @@ def connected_components(data, int max_labels=-1):
   cdef int64_t[:,:,:] arr_memview64
 
   cdef uint32_t* labels 
-  cdef int voxels = sx * sy * sz
+  cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
 
-  if max_labels < 0:
+  if max_labels <= 0:
     max_labels = voxels
 
   dtype = data.dtype
