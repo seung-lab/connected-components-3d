@@ -96,7 +96,7 @@ public:
 
   void add(T p) {
     if (p >= length) {
-      printf("Connected Components Error: Label %d cannot be mapped to union-find array of length %d.\n", p, length);
+      printf("Connected Components Error: Label %d cannot be mapped to union-find array of length %lu.\n", p, length);
       throw "maximum length exception";
     }
 
