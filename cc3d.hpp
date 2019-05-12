@@ -157,7 +157,7 @@ inline void compute_neighborhood(
   const int x, const int y, const int z,
   const size_t sx, const size_t sy, const size_t sz) {
 
-  const int64_t sxy = (int64_t)sx * (int64_t)sy;
+  const int64_t sxy = static_cast<int64_t>(sx) * static_cast<int64_t>(sy);
 
   fill<int64_t>(neighborhood, 0, CC3D_NHOOD);
 
@@ -167,7 +167,7 @@ inline void compute_neighborhood(
     neighborhood[0] = -1;
   }
   if (y > 0) {
-    neighborhood[1] = -(int64_t)sx;
+    neighborhood[1] = -static_cast<int64_t>(sx);
   }
   if (z > 0) {
     neighborhood[2] = -sxy;
@@ -184,7 +184,7 @@ inline void compute_neighborhood(
   neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[0] && neighborhood[1] && neighborhood[2]);
 
   // Two forward
-  if (x < (int64_t)sx - 1) {
+  if (x < static_cast<int64_t>(sx) - 1) {
     neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
     neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
   }
@@ -262,7 +262,7 @@ uint32_t* connected_components3d(
         continue;
       }
 
-      min_neighbor = std::min(min_neighbor, (int64_t)out_labels[delta]);
+      min_neighbor = std::min(min_neighbor, static_cast<int64_t>(out_labels[delta]));
       neighbor_values[num_neighbor_values] = out_labels[delta];
       num_neighbor_values++;
     }
@@ -270,10 +270,10 @@ uint32_t* connected_components3d(
     // no labeled neighbors
     if (min_neighbor == voxels) {
       next_label++;
-      out_labels[loc] = (uint32_t)next_label;
+      out_labels[loc] = static_cast<uint32_t>(next_label);
     }
     else {
-      out_labels[loc] = (uint32_t)min_neighbor;
+      out_labels[loc] = static_cast<uint32_t>(min_neighbor);
     }
     
     equivalences.add(out_labels[loc]);
