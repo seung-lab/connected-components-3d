@@ -107,6 +107,10 @@ public:
   }
 
   void unify (T p, T q) {
+    if (p == q) {
+      return;
+    }
+
     T i = root(p);
     T j = root(q);
 
