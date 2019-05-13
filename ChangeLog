@@ -1,6 +1,29 @@
 CHANGES
 =======
 
+1.0.6
+-----
+
+* release: 1.0.6
+* perf: skip unifying equal labels
+* refactor: use C++ style casts rather than C style
+* chore: add GPLv3+ classifier
+* fix: compiler warning about printf statement
+
+
+1.0.5
+-----
+
+* chore: bump version to 1.0.5
+* fix: 64-bit array length support (#5)
+* docs: add 64-bit test commented out
+* fix: floor of 1 rather than 0 for max\_labels
+* fix: zero is a nonsensical value for max\_labels, so set to voxels
+* test: drop py34 add py37
+* fix: additional places that a 64-bit value could hide
+* fix: ensure voxels is computed without an overflow
+* fix: handling max\_labels > int32
+
 1.0.4
 -----
 
