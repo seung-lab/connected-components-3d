@@ -150,65 +150,20 @@ public:
 };
 
 template <typename T>
-inline void fill(T *arr, const int value, const size_t size) {
-  for (size_t i = 0; i < size; i++) {
-    arr[i] = value;
-  }
-}
-
-inline void compute_neighborhood(
-  int64_t *neighborhood, 
-  const int x, const int y, const int z,
-  const size_t sx, const size_t sy, const size_t sz) {
-
-  const int64_t sxy = static_cast<int64_t>(sx) * static_cast<int64_t>(sy);
-
-  fill<int64_t>(neighborhood, 0, CC3D_NHOOD);
-
-  // 6-hood
-
-  if (x > 0) {
-    neighborhood[0] = -1;
-  }
-  if (y > 0) {
-    neighborhood[1] = -static_cast<int64_t>(sx);
-  }
-  if (z > 0) {
-    neighborhood[2] = -sxy;
-  }
-
-  // xy diagonals
-  neighborhood[3] = (neighborhood[0] + neighborhood[1]) * (neighborhood[0] && neighborhood[1]); // up-left
-
-  // yz diagonals
-  neighborhood[4] = (neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]); // up-left
-  
-  // xz diagonals
-  neighborhood[5] = (neighborhood[0] + neighborhood[2]) * (neighborhood[0] && neighborhood[2]); // up-left
-  neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[0] && neighborhood[1] && neighborhood[2]);
-
-  // Two forward
-  if (x < static_cast<int64_t>(sx) - 1) {
-    neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
-    neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
-  }
-}
-
-template <typename T>
-uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const int sz) {
-  const int64_t voxels = (int64_t)sx * (int64_t)sy * (int64_t)sz;
+uint32_t* connected_components3d(T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz) {
+  const int64_t voxels = sx * sy * sz;
   return connected_components3d<T>(in_labels, sx, sy, sz, voxels);
 }
 
 template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
-    const int sx, const int sy, const int sz,
+    const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels
   ) {
 
-	const int sxy = sx * sy;
-	const int64_t voxels = (int64_t)sx * (int64_t)sy * (int64_t)sz;
+	const int64_t sxy = sx * sy;
+	const int64_t voxels = sxy * sz;
 
   const libdivide::divider<int64_t> fast_sx(sx); 
   const libdivide::divider<int64_t> fast_sxy(sxy); 
@@ -222,19 +177,15 @@ uint32_t* connected_components3d(
   DisjointSet<uint32_t> equivalences(max_labels);
 
   uint32_t* out_labels = new uint32_t[voxels]();
-  int64_t neighborhood[CC3D_NHOOD];
-  uint32_t neighbor_values[CC3D_NHOOD];
-  
-  short int num_neighbor_values = 0;
-
   uint32_t next_label = 0;
-
-  int x, y, z;
+  int64_t x, y, z;
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
   for (int64_t loc = 0; loc < voxels; loc++) {
-    if (in_labels[loc] == 0) {
+    const T cur = in_labels[loc];
+    
+    if (cur == 0) {
       continue;
     }
 
@@ -249,43 +200,96 @@ uint32_t* connected_components3d(
       x = loc - sx * (y + z * sy);
     }
 
-    compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
-    
-    int64_t min_neighbor = voxels; // impossibly high value
-    int64_t delta;
-    for (int i = 0; i < CC3D_NHOOD; i++) {
-      if (neighborhood[i] == 0) {
-        continue;
-      }
+    /*
+      Layout of forward pass mask (which faces backwards). 
+      J is the current location.
 
-      delta = loc + neighborhood[i];
-      if (in_labels[loc] != in_labels[delta]) {
-        continue;
-      }
-      else if (out_labels[delta] == 0) {
-        continue;
-      }
+      z = -1     z = 0
+      A B C      G H     y = -1 
+      D E F      I J     y =  0
+x    -1 0 +1    -1 0 
+    */
 
-      min_neighbor = std::min(min_neighbor, static_cast<int64_t>(out_labels[delta]));
-      neighbor_values[num_neighbor_values] = out_labels[delta];
-      num_neighbor_values++;
+    // This is an elaboration of Wu et al's 2005 decision tree algorithm
+    // into 3D. Wu worked with a mask of five pixels for an 8 connected
+    // 2D image, but we must work with a mask of size ten. 
+
+    // H, E, and B are special in that they are connected to all 
+    // other voxels, so check them first. Similar to Fig. 1B in 
+    // Wu et al 2005. Check H,B,E in that order to take advantage
+    // of the L1 cache. H is sx away, B and E are probably outside 
+    // of L1.
+
+    if (y > 0 && cur == in_labels[loc - sx]) { // H
+      out_labels[loc] = out_labels[loc - sx];
     }
-
-    // no labeled neighbors
-    if (min_neighbor == voxels) {
+    else if (z > 0 && cur == in_labels[loc - sxy]) { // B
+      out_labels[loc] = out_labels[loc - sxy]; 
+    }
+    else if (y > 0 && z > 0 && cur == in_labels[loc - sx - sxy]) { // E
+      out_labels[loc] = out_labels[loc - sx - sxy];
+    }
+    // Now we move into the next phase of the tree where the two
+    // sides of A,D,G,I are potentially connected via J to C,F
+    // The test for I is key to advancing new labels at the beginning
+    // of the run.
+    else if (x > 0 && cur == in_labels[loc - 1]) { // I
+      out_labels[loc] = out_labels[loc - 1];
+      if (x < sx - 1 && z > 0) { // right edge guard
+        if (cur == in_labels[loc + 1 - sxy]) { // I,F
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
+        }
+        else if (y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // I,C
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
+        }
+      }
+    }
+    else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) { // G
+      out_labels[loc] = out_labels[loc - 1 - sx];
+      if (x < sx - 1) { // right edge guard
+        if (cur == in_labels[loc + 1 - sxy]) { // G,F
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
+        }
+        else if (cur == in_labels[loc + 1 - sx - sxy]) { // G,C
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
+        }
+      }
+    }
+    else if (x > 0 && z > 0 && cur == in_labels[loc - 1 - sxy]) { // D
+      out_labels[loc] = out_labels[loc - 1 - sxy];
+      if (x < sx - 1) { // right edge guard
+        if (cur == in_labels[loc + 1 - sxy]) { // D,F
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
+        }
+        else if (y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // D,C
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
+        }
+      }
+    }
+    else if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc - 1 - sx - sxy]) { // A
+      out_labels[loc] = out_labels[loc - 1 - sx - sxy];
+      if (x < sx - 1) { // right edge guard
+        if (cur == in_labels[loc + 1 - sxy]) { // A,F
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
+        }
+        else if (cur == in_labels[loc + 1 - sx - sxy]) { // A,C
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
+        }
+      }
+    }
+    // At this point, everything is non-matching except possibly the advance
+    // two pixels in the +x direction.
+    else if (x < sx - 1 && z > 0 && cur == in_labels[loc + 1 - sxy]) { // F
+      out_labels[loc] = out_labels[loc + 1 - sxy];
+    }
+    else if (x < sx - 1 && z > 0 && y > 0) { // C
+      out_labels[loc] = out_labels[loc + 1 - sx - sxy];
+    }
+    else { // New Label (no connected neighbors)
       next_label++;
-      out_labels[loc] = static_cast<uint32_t>(next_label);
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
     }
-    else {
-      out_labels[loc] = static_cast<uint32_t>(min_neighbor);
-    }
-    
-    equivalences.add(out_labels[loc]);
-    for (int i = 0; i < num_neighbor_values; i++) {
-      equivalences.unify(out_labels[loc], neighbor_values[i]);
-    }
-    fill<uint32_t>(neighbor_values, 0, num_neighbor_values);
-    num_neighbor_values = 0;
   }
 
   // Raster Scan 2: Write final labels based on equivalences
