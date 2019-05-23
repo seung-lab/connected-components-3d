@@ -158,17 +158,12 @@ inline void unify_cfi(
 
   const int64_t sxy = sx * sy;
 
-  if (x < sx - 1) { // right edge guard
-    if (cur == in_labels[loc + 1 - sx]) { // J,I
+  if (x < sx - 1 && y > 0) { // right edge guard
+    if (cur == in_labels[loc + 1 - sx]) { // J,H
       equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]);
     }
-    else if (z > 0) {
-      if (cur == in_labels[loc + 1 - sxy]) { // J,F
-        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
-      }
-      else if (y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // J,C
-        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
-      }
+    else if (z > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // J,C
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
     }
   }
 }
