@@ -148,7 +148,7 @@ public:
 };
 
 template <typename T>
-inline void unify_cfi(
+inline void unify_ch(
   const int64_t loc, const T cur,
   const int64_t x, const int64_t y, const int64_t z,
   const int64_t sx, const int64_t sy, const int64_t sz,
@@ -310,7 +310,7 @@ uint32_t* connected_components3d(
     // of the run.
     else if (x > 0 && cur == in_labels[loc - 1]) { // I
       out_labels[loc] = out_labels[loc - 1];
-      unify_cfi<T>(
+      unify_ch<T>(
         loc, cur, 
         x, y, z, 
         sx, sy, sz, 
@@ -320,7 +320,7 @@ uint32_t* connected_components3d(
     }
     else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) { // F
       out_labels[loc] = out_labels[loc - 1 - sx];
-      unify_cfi<T>(
+      unify_ch<T>(
         loc, cur, 
         x, y, z, 
         sx, sy, sz, 
@@ -330,7 +330,7 @@ uint32_t* connected_components3d(
     }
     else if (x > 0 && z > 0 && cur == in_labels[loc - 1 - sxy]) { // D
       out_labels[loc] = out_labels[loc - 1 - sxy];
-      unify_cfi<T>(
+      unify_ch<T>(
         loc, cur, 
         x, y, z, 
         sx, sy, sz, 
@@ -340,7 +340,7 @@ uint32_t* connected_components3d(
     }
     else if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc - 1 - sx - sxy]) { // A
       out_labels[loc] = out_labels[loc - 1 - sx - sxy];
-      unify_cfi<T>(
+      unify_ch<T>(
         loc, cur, 
         x, y, z, 
         sx, sy, sz, 
