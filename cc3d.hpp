@@ -42,8 +42,6 @@
 #ifndef CC3D_HPP
 #define CC3D_HPP 
 
-#define CC3D_NHOOD 9
-
 namespace cc3d {
 
 template <typename T>
