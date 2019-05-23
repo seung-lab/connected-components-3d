@@ -245,15 +245,78 @@ x    -1 0 +1    -1 0
     // Wu et al 2005. Check H,B,E in that order to take advantage
     // of the L1 cache. H is sx away, B and E are probably outside 
     // of L1.
+    if (y > 0 && z > 0 && cur == in_labels[loc - sx - sxy]) { // E
+      out_labels[loc] = out_labels[loc - sx - sxy];
 
-    if (y > 0 && cur == in_labels[loc - sx]) { // H
-      out_labels[loc] = out_labels[loc - sx];
+      if (y > 0 && cur == in_labels[loc - sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc - sx]);
+
+        if (x > 0 && cur == in_labels[loc - 1]) {
+          equivalences.unify(out_labels[loc], out_labels[loc - 1]);
+        }
+      }
+      else if (x > 0 && cur == in_labels[loc - 1]) {
+        equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+        }
+      }
+      else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]); 
+
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+        }
+      }
+      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+      }
     }
     else if (z > 0 && cur == in_labels[loc - sxy]) { // B
-      out_labels[loc] = out_labels[loc - sxy]; 
+      out_labels[loc] = out_labels[loc - sxy];
+
+      if (y > 0 && cur == in_labels[loc - sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc - sx]);
+
+        if (x > 0 && cur == in_labels[loc - 1]) {
+          equivalences.unify(out_labels[loc], out_labels[loc - 1]);
+        }
+      }
+      else if (x > 0 && cur == in_labels[loc - 1]) {
+        equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+        }
+      }
+      else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]); 
+
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+        }
+      }
+      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+      }
     }
-    else if (y > 0 && z > 0 && cur == in_labels[loc - sx - sxy]) { // E
-      out_labels[loc] = out_labels[loc - sx - sxy];
+    else if (y > 0 && cur == in_labels[loc - sx]) { // H
+      out_labels[loc] = out_labels[loc - sx];
+
+      if (z > 0 && cur == in_labels[loc - sxy]) { // H,E
+        equivalences.unify(out_labels[loc], out_labels[loc - sxy]);
+      }
+      
+      if (x > 0 && cur == in_labels[loc - 1]) { // H,J
+        equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+      }
+      else if (z > 0 && x > 0 && cur == in_labels[loc - 1 - sxy]) { // H,D
+        equivalences.unify(out_labels[loc], out_labels[loc - 1 - sxy]);  
+      }
+      else if (x < sx - 1 && z > 0 && cur == in_labels[loc + 1 - sxy]) { // H,F
+        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);   
+      }
     }
     // Now we move into the next phase of the tree where the two
     // sides of A,D,G,J are potentially connected via K to C,F
