@@ -150,6 +150,32 @@ public:
 };
 
 template <typename T>
+inline void unify_cfi(
+  const int64_t loc, const T cur,
+  const int64_t x, const int64_t y, const int64_t z,
+  const int64_t sx, const int64_t sy, const int64_t sz,
+  const T* in_labels, const uint32_t *out_labels,
+  DisjointSet<uint32_t> &equivalences
+  ) {
+
+  const int64_t sxy = sx * sy;
+
+  if (x < sx - 1) { // right edge guard
+    if (cur == in_labels[loc + 1 - sx]) { // J,I
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]);
+    }
+    else if (z > 0) {
+      if (cur == in_labels[loc + 1 - sxy]) { // J,F
+        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
+      }
+      else if (y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // J,C
+        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
+      }
+    }
+  }
+}
+
+template <typename T>
 uint32_t* connected_components3d(T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz) {
   const int64_t voxels = sx * sy * sz;
   return connected_components3d<T>(in_labels, sx, sy, sz, voxels);

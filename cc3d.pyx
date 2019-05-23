@@ -25,7 +25,7 @@ __VERSION__ = '1.0.7'
 cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef uint32_t* connected_components3d[T](
     T* in_labels, 
-    int sx, int sy, int sz,
+    int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels
   )
 
