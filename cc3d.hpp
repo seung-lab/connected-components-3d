@@ -233,36 +233,31 @@ uint32_t* connected_components3d(
     // into 3D. Wu worked with a mask of five pixels for an 8 connected
     // 2D image, but we must work with a mask of size ten. 
 
-    // H, E, and B are special in that they are connected to all 
-    // other voxels, so check them first. Similar to Fig. 1B in 
-    // Wu et al 2005. Check H,B,E in that order to take advantage
-    // of the L1 cache. H is sx away, B and E are probably outside 
-    // of L1.
     if (y > 0 && z > 0 && cur == in_labels[loc - sx - sxy]) { // E
       out_labels[loc] = out_labels[loc - sx - sxy];
 
-      if (y > 0 && cur == in_labels[loc - sx]) {
+      if (y > 0 && cur == in_labels[loc - sx]) { // E,F
         equivalences.unify(out_labels[loc], out_labels[loc - sx]);
 
-        if (x > 0 && cur == in_labels[loc - 1]) {
+        if (x > 0 && cur == in_labels[loc - 1]) { // E,F,I
           equivalences.unify(out_labels[loc], out_labels[loc - 1]);
         }
       }
-      else if (x > 0 && cur == in_labels[loc - 1]) {
+      else if (x > 0 && cur == in_labels[loc - 1]) { // E,I
         equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
 
-        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // E,I,H
           equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
         }
       }
-      else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
+      else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) { // E,F
         equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]); 
 
-        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // E,F,H
           equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
         }
       }
-      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // E,H
         equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
       }
     }
