@@ -228,11 +228,11 @@ uint32_t* connected_components3d(
 
     /*
       Layout of forward pass mask (which faces backwards). 
-      J is the current location.
+      K is the current location.
 
       z = -1     z = 0
-      A B C      G H     y = -1 
-      D E F      I J     y =  0
+      A B C      G H I   y = -1 
+      D E F      J K     y =  0
 x    -1 0 +1    -1 0 
     */
 
@@ -256,59 +256,58 @@ x    -1 0 +1    -1 0
       out_labels[loc] = out_labels[loc - sx - sxy];
     }
     // Now we move into the next phase of the tree where the two
-    // sides of A,D,G,I are potentially connected via J to C,F
-    // The test for I is key to advancing new labels at the beginning
+    // sides of A,D,G,J are potentially connected via K to C,F
+    // The test for J is key to advancing new labels at the beginning
     // of the run.
-    else if (x > 0 && cur == in_labels[loc - 1]) { // I
+    else if (x > 0 && cur == in_labels[loc - 1]) { // J
       out_labels[loc] = out_labels[loc - 1];
-      if (x < sx - 1 && z > 0) { // right edge guard
-        if (cur == in_labels[loc + 1 - sxy]) { // I,F
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
-        }
-        else if (y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // I,C
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
-        }
-      }
+      unify_cfi<T>(
+        loc, cur, 
+        x, y, z, 
+        sx, sy, sz, 
+        in_labels, out_labels, 
+        equivalences
+      );
     }
     else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) { // G
       out_labels[loc] = out_labels[loc - 1 - sx];
-      if (x < sx - 1) { // right edge guard
-        if (cur == in_labels[loc + 1 - sxy]) { // G,F
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
-        }
-        else if (cur == in_labels[loc + 1 - sx - sxy]) { // G,C
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
-        }
-      }
+      unify_cfi<T>(
+        loc, cur, 
+        x, y, z, 
+        sx, sy, sz, 
+        in_labels, out_labels, 
+        equivalences
+      );
     }
     else if (x > 0 && z > 0 && cur == in_labels[loc - 1 - sxy]) { // D
       out_labels[loc] = out_labels[loc - 1 - sxy];
-      if (x < sx - 1) { // right edge guard
-        if (cur == in_labels[loc + 1 - sxy]) { // D,F
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
-        }
-        else if (y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // D,C
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
-        }
-      }
+      unify_cfi<T>(
+        loc, cur, 
+        x, y, z, 
+        sx, sy, sz, 
+        in_labels, out_labels, 
+        equivalences
+      );
     }
     else if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc - 1 - sx - sxy]) { // A
       out_labels[loc] = out_labels[loc - 1 - sx - sxy];
-      if (x < sx - 1) { // right edge guard
-        if (cur == in_labels[loc + 1 - sxy]) { // A,F
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);
-        }
-        else if (cur == in_labels[loc + 1 - sx - sxy]) { // A,C
-          equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
-        }
-      }
+      unify_cfi<T>(
+        loc, cur, 
+        x, y, z, 
+        sx, sy, sz, 
+        in_labels, out_labels, 
+        equivalences
+      );
+    }
+    else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // I
+      out_labels[loc] = out_labels[loc + 1 - sx];
     }
     // At this point, everything is non-matching except possibly the advance
     // two pixels in the +x direction.
     else if (x < sx - 1 && z > 0 && cur == in_labels[loc + 1 - sxy]) { // F
       out_labels[loc] = out_labels[loc + 1 - sxy];
     }
-    else if (x < sx - 1 && z > 0 && y > 0) { // C
+    else if (x < sx - 1 && z > 0 && y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // C
       out_labels[loc] = out_labels[loc + 1 - sx - sxy];
     }
     else { // New Label (no connected neighbors)
