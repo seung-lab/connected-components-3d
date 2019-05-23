@@ -226,11 +226,11 @@ uint32_t* connected_components3d(
 
     /*
       Layout of forward pass mask (which faces backwards). 
-      K is the current location.
+      J is the current location.
 
       z = -1     z = 0
-      A B C      G H I   y = -1 
-      D E F      J K     y =  0
+      A B C      F G H   y = -1 
+      D E        I J     y =  0
      -1 0 +1    -1 0   <-- x axis
     */
 
@@ -274,50 +274,46 @@ uint32_t* connected_components3d(
     else if (z > 0 && cur == in_labels[loc - sxy]) { // B
       out_labels[loc] = out_labels[loc - sxy];
 
-      if (y > 0 && cur == in_labels[loc - sx]) {
+      if (y > 0 && cur == in_labels[loc - sx]) { // B,G
         equivalences.unify(out_labels[loc], out_labels[loc - sx]);
 
-        if (x > 0 && cur == in_labels[loc - 1]) {
+        if (x > 0 && cur == in_labels[loc - 1]) { // B,G,I
           equivalences.unify(out_labels[loc], out_labels[loc - 1]);
         }
       }
-      else if (x > 0 && cur == in_labels[loc - 1]) {
+      else if (x > 0 && cur == in_labels[loc - 1]) { // B,I
         equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
 
-        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // B,I,H
           equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
         }
       }
-      else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
+      else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) { // B,F
         equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]); 
 
-        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // B,F,H
           equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
         }
       }
-      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // B,H
         equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
       }
     }
-    else if (y > 0 && cur == in_labels[loc - sx]) { // H
+    else if (y > 0 && cur == in_labels[loc - sx]) { // G
       out_labels[loc] = out_labels[loc - sx];
       
-      if (x > 0 && cur == in_labels[loc - 1]) { // H,J
+      if (x > 0 && cur == in_labels[loc - 1]) { // G,J
         equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
       }
-      else if (z > 0 && x > 0 && cur == in_labels[loc - 1 - sxy]) { // H,D
+      else if (z > 0 && x > 0 && cur == in_labels[loc - 1 - sxy]) { // G,D
         equivalences.unify(out_labels[loc], out_labels[loc - 1 - sxy]);  
-      }
-      
-      if (x < sx - 1 && z > 0 && cur == in_labels[loc + 1 - sxy]) { // H,F
-        equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);   
       }
     }
     // Now we move into the next phase of the tree where the two
     // sides of A,D,G,J are potentially connected via K to C,F
     // The test for J is key to advancing new labels at the beginning
     // of the run.
-    else if (x > 0 && cur == in_labels[loc - 1]) { // J
+    else if (x > 0 && cur == in_labels[loc - 1]) { // I
       out_labels[loc] = out_labels[loc - 1];
       unify_cfi<T>(
         loc, cur, 
@@ -327,7 +323,7 @@ uint32_t* connected_components3d(
         equivalences
       );
     }
-    else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) { // G
+    else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) { // F
       out_labels[loc] = out_labels[loc - 1 - sx];
       unify_cfi<T>(
         loc, cur, 
@@ -357,13 +353,8 @@ uint32_t* connected_components3d(
         equivalences
       );
     }
-    else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // I
+    else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) { // H
       out_labels[loc] = out_labels[loc + 1 - sx];
-    }
-    // At this point, everything is non-matching except possibly the advance
-    // two pixels in the +x direction.
-    else if (x < sx - 1 && z > 0 && cur == in_labels[loc + 1 - sxy]) { // F
-      out_labels[loc] = out_labels[loc + 1 - sxy];
     }
     else if (x < sx - 1 && z > 0 && y > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // C
       out_labels[loc] = out_labels[loc + 1 - sx - sxy];
