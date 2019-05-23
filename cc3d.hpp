@@ -210,7 +210,7 @@ uint32_t* connected_components3d(
   // record equivalences in a disjoint set.
   for (int64_t loc = 0; loc < voxels; loc++) {
     const T cur = in_labels[loc];
-    
+
     if (cur == 0) {
       continue;
     }
@@ -233,7 +233,7 @@ uint32_t* connected_components3d(
       z = -1     z = 0
       A B C      G H I   y = -1 
       D E F      J K     y =  0
-x    -1 0 +1    -1 0 
+     -1 0 +1    -1 0   <-- x axis
     */
 
     // This is an elaboration of Wu et al's 2005 decision tree algorithm
@@ -303,10 +303,6 @@ x    -1 0 +1    -1 0
     }
     else if (y > 0 && cur == in_labels[loc - sx]) { // H
       out_labels[loc] = out_labels[loc - sx];
-
-      if (z > 0 && cur == in_labels[loc - sxy]) { // H,E
-        equivalences.unify(out_labels[loc], out_labels[loc - sxy]);
-      }
       
       if (x > 0 && cur == in_labels[loc - 1]) { // H,J
         equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
@@ -314,7 +310,8 @@ x    -1 0 +1    -1 0
       else if (z > 0 && x > 0 && cur == in_labels[loc - 1 - sxy]) { // H,D
         equivalences.unify(out_labels[loc], out_labels[loc - 1 - sxy]);  
       }
-      else if (x < sx - 1 && z > 0 && cur == in_labels[loc + 1 - sxy]) { // H,F
+      
+      if (x < sx - 1 && z > 0 && cur == in_labels[loc + 1 - sxy]) { // H,F
         equivalences.unify(out_labels[loc], out_labels[loc + 1 - sxy]);   
       }
     }
