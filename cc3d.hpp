@@ -147,27 +147,6 @@ public:
   // Will be O(n).
 };
 
-template <typename T>
-inline void unify_ch(
-  const int64_t loc, const T cur,
-  const int64_t x, const int64_t y, const int64_t z,
-  const int64_t sx, const int64_t sy, const int64_t sz,
-  const T* in_labels, const uint32_t *out_labels,
-  DisjointSet<uint32_t> &equivalences
-  ) {
-
-  const int64_t sxy = sx * sy;
-
-  if (x < sx - 1 && y > 0) { // right edge guard
-    if (cur == in_labels[loc + 1 - sx]) { // J,H
-      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]);
-    }
-    else if (z > 0 && cur == in_labels[loc + 1 - sx - sxy]) { // J,C
-      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx - sxy]);
-    }
-  }
-}
-
 // This is the original Wu et al decision tree but without
 // any copy operations, only union find. We can decompose the problem
 // into the z - 1 problem unified with the original 2D algorithm.
