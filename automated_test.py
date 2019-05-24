@@ -135,6 +135,31 @@ def test_2d_cross():
   test('F', gt_c2f(ground_truth))
 
 
+def test_2d_diagonals():
+  input_labels = np.array([
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
+  ground_truth = np.array([
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [3, 0, 0, 1, 0, 0, 4, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0],
+    [0, 3, 0, 0, 1, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0],
+    [3, 0, 3, 0, 0, 0, 6, 6, 0, 0, 6, 6, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 6, 6, 0, 0, 0, 0, 0],
+    [0, 0, 7, 0, 8, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0],
+    [0, 7, 0, 0, 0, 8, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
+  output_labels = cc3d.connected_components(input_labels)
+  print(output_labels)
+  assert np.all(output_labels == ground_truth)
+
 def test_2d_cross_with_intruder():
   def test(order, ground_truth):
     input_labels = np.zeros( (5,5), dtype=np.uint8, order=order)
