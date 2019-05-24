@@ -263,29 +263,29 @@ uint32_t* connected_components3d(
       x = loc - sx * (y + z * sy);
     }
 
-    if (z > 0 && cur == in_labels[loc + E]) { 
+    if (z > 0 && cur == in_labels[loc + E]) {
       out_labels[loc] = out_labels[loc + E];
       unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
     }
-    else if (z > 0 && y > 0 && cur == in_labels[loc + B]) { 
+    else if (z > 0 && y > 0 && cur == in_labels[loc + B]) {
       out_labels[loc] = out_labels[loc + B];
       unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
-      if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) { 
+      if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
         equivalences.unify(out_labels[loc], out_labels[loc + H]);
       }
-      else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) { 
+      else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
         equivalences.unify(out_labels[loc], out_labels[loc + G]);
         
-        if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) { 
+        if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
           equivalences.unify(out_labels[loc], out_labels[loc + I]);
         }
       }
-      else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) { 
+      else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
         equivalences.unify(out_labels[loc], out_labels[loc + I]);
       }
     }
-    else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) { 
+    else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
       out_labels[loc] = out_labels[loc + H];
       unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
@@ -308,7 +308,7 @@ uint32_t* connected_components3d(
 
         if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
           equivalences.unify(out_labels[loc], out_labels[loc + I]);
-        } 
+        }
       }
       else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
         equivalences.unify(out_labels[loc], out_labels[loc + I]);
@@ -345,7 +345,7 @@ uint32_t* connected_components3d(
 
       if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
         equivalences.unify(out_labels[loc], out_labels[loc + G]);
-      }      
+      }
       if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
         equivalences.unify(out_labels[loc], out_labels[loc + I]);
       }
@@ -386,7 +386,7 @@ uint32_t* connected_components3d(
     else {
       next_label++;
       out_labels[loc] = next_label;
-      equivalences.add(out_labels[loc]);  
+      equivalences.add(out_labels[loc]);
     }
   }
 
