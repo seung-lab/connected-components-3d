@@ -42,8 +42,6 @@
 #ifndef CC3D_HPP
 #define CC3D_HPP 
 
-#define CC3D_NHOOD 9
-
 namespace cc3d {
 
 template <typename T>
@@ -149,66 +147,57 @@ public:
   // Will be O(n).
 };
 
+// This is the original Wu et al decision tree but without
+// any copy operations, only union find. We can decompose the problem
+// into the z - 1 problem unified with the original 2D algorithm.
+// If literally none of the Z - 1 are filled, we can use a faster version
+// of this that uses copies.
 template <typename T>
-inline void fill(T *arr, const int value, const size_t size) {
-  for (size_t i = 0; i < size; i++) {
-    arr[i] = value;
+inline void unify2d(
+    const int64_t loc, const T cur,
+    const int64_t x, const int64_t y, 
+    const int64_t sx, const int64_t sy, 
+    const T* in_labels, const uint32_t *out_labels,
+    DisjointSet<uint32_t> &equivalences  
+  ) {
+
+  if (y > 0 && cur == in_labels[loc - sx]) {
+    equivalences.unify(out_labels[loc], out_labels[loc - sx]);
   }
-}
+  else if (x > 0 && cur == in_labels[loc - 1]) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
 
-inline void compute_neighborhood(
-  int64_t *neighborhood, 
-  const int x, const int y, const int z,
-  const size_t sx, const size_t sy, const size_t sz) {
-
-  const int64_t sxy = static_cast<int64_t>(sx) * static_cast<int64_t>(sy);
-
-  fill<int64_t>(neighborhood, 0, CC3D_NHOOD);
-
-  // 6-hood
-
-  if (x > 0) {
-    neighborhood[0] = -1;
+    if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+    }
   }
-  if (y > 0) {
-    neighborhood[1] = -static_cast<int64_t>(sx);
+  else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]); 
+
+    if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+    }
   }
-  if (z > 0) {
-    neighborhood[2] = -sxy;
-  }
-
-  // xy diagonals
-  neighborhood[3] = (neighborhood[0] + neighborhood[1]) * (neighborhood[0] && neighborhood[1]); // up-left
-
-  // yz diagonals
-  neighborhood[4] = (neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]); // up-left
-  
-  // xz diagonals
-  neighborhood[5] = (neighborhood[0] + neighborhood[2]) * (neighborhood[0] && neighborhood[2]); // up-left
-  neighborhood[6] = (neighborhood[0] + neighborhood[1] + neighborhood[2]) * (neighborhood[0] && neighborhood[1] && neighborhood[2]);
-
-  // Two forward
-  if (x < static_cast<int64_t>(sx) - 1) {
-    neighborhood[7] = (1 + neighborhood[1]) * (neighborhood[1] != 0); 
-    neighborhood[8] = (1 + neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]);
+  else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+    equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]);
   }
 }
 
 template <typename T>
-uint32_t* connected_components3d(T* in_labels, const int sx, const int sy, const int sz) {
-  const int64_t voxels = (int64_t)sx * (int64_t)sy * (int64_t)sz;
+uint32_t* connected_components3d(T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz) {
+  const int64_t voxels = sx * sy * sz;
   return connected_components3d<T>(in_labels, sx, sy, sz, voxels);
 }
 
 template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
-    const int sx, const int sy, const int sz,
+    const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels
   ) {
 
-	const int sxy = sx * sy;
-	const int64_t voxels = (int64_t)sx * (int64_t)sy * (int64_t)sz;
+	const int64_t sxy = sx * sy;
+	const int64_t voxels = sxy * sz;
 
   const libdivide::divider<int64_t> fast_sx(sx); 
   const libdivide::divider<int64_t> fast_sxy(sxy); 
@@ -222,19 +211,44 @@ uint32_t* connected_components3d(
   DisjointSet<uint32_t> equivalences(max_labels);
 
   uint32_t* out_labels = new uint32_t[voxels]();
-  int64_t neighborhood[CC3D_NHOOD];
-  uint32_t neighbor_values[CC3D_NHOOD];
-  
-  short int num_neighbor_values = 0;
-
   uint32_t next_label = 0;
+  int64_t x, y, z;
+    
+  /*
+    Layout of forward pass mask (which faces backwards). 
+    N is the current location.
 
-  int x, y, z;
+    z = -1     z = 0
+    A B C      J K L   y = -1 
+    D E F      M N     y =  0
+    G H I              y = +1
+   -1 0 +1    -1 0   <-- x axis
+  */
+
+  // Z - 1
+  const int64_t A = -1 - sx - sxy;
+  const int64_t B = -sx - sxy;
+  const int64_t C = +1 - sx - sxy;
+  const int64_t D = -1 - sxy;
+  const int64_t E = -sxy;
+  const int64_t F = +1 - sxy;
+  const int64_t G = -1 + sx - sxy;
+  const int64_t H = +sx - sxy;
+  const int64_t I = +1 + sx - sxy;
+
+  // Current Z
+  const int64_t J = -1 - sx;
+  const int64_t K = -sx;
+  const int64_t L = +1 - sx; 
+  const int64_t M = -1;
+  // N = 0;
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
   for (int64_t loc = 0; loc < voxels; loc++) {
-    if (in_labels[loc] == 0) {
+    const T cur = in_labels[loc];
+
+    if (cur == 0) {
       continue;
     }
 
@@ -249,43 +263,131 @@ uint32_t* connected_components3d(
       x = loc - sx * (y + z * sy);
     }
 
-    compute_neighborhood(neighborhood, x, y, z, sx, sy, sz);
-    
-    int64_t min_neighbor = voxels; // impossibly high value
-    int64_t delta;
-    for (int i = 0; i < CC3D_NHOOD; i++) {
-      if (neighborhood[i] == 0) {
-        continue;
-      }
-
-      delta = loc + neighborhood[i];
-      if (in_labels[loc] != in_labels[delta]) {
-        continue;
-      }
-      else if (out_labels[delta] == 0) {
-        continue;
-      }
-
-      min_neighbor = std::min(min_neighbor, static_cast<int64_t>(out_labels[delta]));
-      neighbor_values[num_neighbor_values] = out_labels[delta];
-      num_neighbor_values++;
+    if (z > 0 && cur == in_labels[loc + E]) {
+      out_labels[loc] = out_labels[loc + E];
+      // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
     }
+    else if (z > 0 && y > 0 && cur == in_labels[loc + B]) {
+      out_labels[loc] = out_labels[loc + B];
+      // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
-    // no labeled neighbors
-    if (min_neighbor == voxels) {
-      next_label++;
-      out_labels[loc] = static_cast<uint32_t>(next_label);
+      if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + H]);
+      }
+      else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + G]);
+        
+        if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + I]);
+        }
+      }
+      else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + I]);
+      }
+    }
+    else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
+      out_labels[loc] = out_labels[loc + H];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+      if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + A]);
+      }
+      if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+      }
+    }
+    else if (x > 0 && z > 0 && cur == in_labels[loc + D]) {
+      out_labels[loc] = out_labels[loc + D];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+      if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + F]);
+      }
+      else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+
+        if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + I]);
+        }
+      }
+      else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + I]);
+      }
+    }
+    else if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
+      out_labels[loc] = out_labels[loc + F];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+      if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + A]);
+      }
+      if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + G]);
+      }
+    }
+    else if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
+      out_labels[loc] = out_labels[loc + A];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+      if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+      }
+      if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + G]);
+      }      
+      if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + I]);
+      }
+    }
+    else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+      out_labels[loc] = out_labels[loc + C];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+      if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + G]);
+      }
+      if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + I]);
+      }
+    }
+    else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+      out_labels[loc] = out_labels[loc + G];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+      if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + I]);
+      }
+    }
+    else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+      out_labels[loc] = out_labels[loc + I];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+    }
+    // It's the original 2D problem now
+    else if (y > 0 && cur == in_labels[loc + K]) {
+      out_labels[loc] = out_labels[loc + K];
+    }
+    else if (x > 0 && cur == in_labels[loc + M]) {
+      out_labels[loc] = out_labels[loc + M];
+
+      if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+      }
+    }
+    else if (x > 0 && y > 0 && cur == in_labels[loc + J]) {
+      out_labels[loc] = out_labels[loc + J];
+
+      if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+      }
+    }
+    else if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+      out_labels[loc] = out_labels[loc + L];
     }
     else {
-      out_labels[loc] = static_cast<uint32_t>(min_neighbor);
+      next_label++;
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
     }
-    
-    equivalences.add(out_labels[loc]);
-    for (int i = 0; i < num_neighbor_values; i++) {
-      equivalences.unify(out_labels[loc], neighbor_values[i]);
-    }
-    fill<uint32_t>(neighbor_values, 0, num_neighbor_values);
-    num_neighbor_values = 0;
   }
 
   // Raster Scan 2: Write final labels based on equivalences
@@ -301,14 +403,3 @@ uint32_t* connected_components3d(
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-

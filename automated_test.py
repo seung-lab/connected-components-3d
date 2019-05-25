@@ -135,6 +135,31 @@ def test_2d_cross():
   test('F', gt_c2f(ground_truth))
 
 
+def test_2d_diagonals():
+  input_labels = np.array([
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
+  ground_truth = np.array([
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [3, 0, 0, 1, 0, 0, 4, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0],
+    [0, 3, 0, 0, 1, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0],
+    [3, 0, 3, 0, 0, 0, 6, 6, 0, 0, 6, 6, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 6, 6, 0, 0, 0, 0, 0],
+    [0, 0, 7, 0, 8, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0],
+    [0, 7, 0, 0, 0, 8, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
+  output_labels = cc3d.connected_components(input_labels)
+  print(output_labels)
+  assert np.all(output_labels == ground_truth)
+
 def test_2d_cross_with_intruder():
   def test(order, ground_truth):
     input_labels = np.zeros( (5,5), dtype=np.uint8, order=order)
@@ -338,6 +363,29 @@ def test_max_labels_nonsensical():
 
   assert np.all(real_labels == zero_labels)
   assert np.all(real_labels == negative_labels)
+
+def test_compare_scipy():
+  import scipy.ndimage.measurements
+  import fastremap
+
+  sx, sy, sz = 256, 256, 256
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+
+  structure = [
+    [[1,1,1], [1,1,1], [1,1,1]],
+    [[1,1,1], [1,1,1], [1,1,1]],
+    [[1,1,1], [1,1,1], [1,1,1]]
+  ]
+
+  cc3d_labels = cc3d.connected_components(labels)
+  cc3d_labels, wow = fastremap.renumber(cc3d_labels)
+  scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
+
+  print(cc3d_labels)
+  print(scipy_labels)
+
+  assert np.all(cc3d_labels == scipy_labels)
+
 
 # def test_sixty_four_bit():
 #   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
