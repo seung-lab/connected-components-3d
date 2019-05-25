@@ -120,9 +120,12 @@ The decision tree is then constructed such that each of these coverings will be 
 
 In order to make a reasonably fast implementation, I implemented union-find with union by rank and path compression. I conservatively used two arrays (a uint64 rank array, and the IDs as the image data type) equal to the size of the image for the union-find data structure instead of a sparse map. The union-find data structure plus the output labels means the memory consumption will be input + output + rank + equivalences. If your input labels are 32-bit, the memory usage will be 4x the input size. This becomes more problematic when 64-bit labels are used, but if you know something about your data, you can decrease the size of the union-find data structure.  
 
+For more information on the history of connected components algorithms, and an even faster approach for 2D 8-connected components, consult Grana et al's paper on Block Based Decision Trees. [5]
+
 ## References
 
 1. A. Rosenfeld and J. Pfaltz. "Sequential Operations in Digital Picture Processing". Journal of the ACM. Vol. 13, Issue 4, Oct. 1966, Pg. 471-494. doi: 10.1145/321356.321357 ([link](https://dl.acm.org/citation.cfm?id=321357))
 2. R. E. Tarjan. "Efficiency of a good but not linear set union algorithm". Journal of the ACM, 22:215-225, 1975. ([link](https://dl.acm.org/citation.cfm?id=321884))
 3. K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". Lawrence Berkely National Laboratory. LBNL-29102, 2005. ([link](https://crd-legacy.lbl.gov/~kewu/ps/LBNL-59102.html))
 4. S. Selkow. "The Tree-to-Tree Editing Problem". Information Processing Letters. Vol. 6, No. 6. June 1977. doi: 10.1016/0020-0190(77)90064-3 ([link](http://www.grantjenks.com/wiki/_media/ideas:tree-to-tree_editing_problem.pdf))
+5. C. Grana, D. Borghesani, R. Cucchiara. "Optimized Block-based Connected Components Labeling with Decision Trees". IEEE Transactions on Image Porcessing. Vol. 19, Iss. 6. June 2010. doi: 10.1109/TIP.2010.2044963 ([link](http://imagelab.ing.unimore.it/imagelab/pubblicazioni/2009TIPlabeling.pdf))
