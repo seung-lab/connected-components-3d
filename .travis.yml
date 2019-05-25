@@ -15,6 +15,8 @@ install:
 - if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then pip3 install numpy; fi
 - if [[ $PYTHON_MAJOR_VERSION == 2 ]]; then pip install -e .; fi
 - if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then pip3 install -e .; fi
+- if [[ $PYTHON_MAJOR_VERSION == 2 ]]; then pip install -r requirements_dev.txt; fi
+- if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then pip3 install -r requirements_dev.txt; fi
 script:
 - if [[ $PYTHON_MAJOR_VERSION == 2 ]]; then py.test -v -x automated_test.py; fi 
 - if [[ $PYTHON_MAJOR_VERSION == 3 ]]; then python3 -m pytest -v -x automated_test.py; fi
