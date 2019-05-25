@@ -90,8 +90,8 @@ Fig. 1: Mask for an 8-connected plane. If J,K,L, and M are all eliminated, only 
 
 | j | k | l |
 |---|---|---|
-| m | n |   |
-|   |   |   |
+| m | n | . |
+| . | . | . |
 
 The very first Z plane (Z=0) the algorithm runs against is special: the edge effect omits the bottom plane of the mask. Therefore, as the remaining mask is only comprosed of the 8-connected 2D mask, after this pass, the bottom of the image is 8-connected. At Z=1, the 9-connected part of the mask kicks in, forming connections to Z=0, making the current plane now (8 + 9) 17-connected. At Z=2, the 9-connected bottom mask now forms connections from Z=1 to Z=2 on the top, making Z=1 (17 + 9) 26-connected. By induction, when this process proceeds to completion it results in a 26-connected labeling of the volume.   
 
