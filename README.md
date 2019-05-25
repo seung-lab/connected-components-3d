@@ -126,10 +126,3 @@ In order to make a reasonably fast implementation, I implemented union-find with
 2. R. E. Tarjan. "Efficiency of a good but not linear set union algorithm". Journal of the ACM, 22:215-225, 1975. ([link](https://dl.acm.org/citation.cfm?id=321884))
 3. K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". Lawrence Berkely National Laboratory. LBNL-29102, 2005. ([link](https://crd-legacy.lbl.gov/~kewu/ps/LBNL-59102.html))
 4. S. Selkow. "The Tree-to-Tree Editing Problem". Information Processing Letters. Vol. 6, No. 6. June 1977. doi: 10.1016/0020-0190(77)90064-3 ([link](http://www.grantjenks.com/wiki/_media/ideas:tree-to-tree_editing_problem.pdf))
-
-
-
-
-
-
-
