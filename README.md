@@ -118,7 +118,7 @@ As `e` is connected to all other voxels, if present, it can simply be copied. If
 10. `g`, `i`
 11. `i`
 
-The decision tree is then constructed such that each of these coverings will be evaluated using the fewest unifications possible. It's possible to further optimize this by noting that `e` and `b` are both fully connected to the upper 2D mask. Therefore, if either of them are present, we can skip the 8-connected unification step.
+The decision tree is then constructed such that each of these coverings will be evaluated using the fewest unifications possible. It's possible to further optimize this by noting that `e` and `b` are both fully connected to the upper 2D mask. Therefore, if either of them are present, we can skip the 8-connected unification step. It's also possible to try the DF covering first if B is background, which would save one unification versus HAC given even statistics, but it seems to be slightly slower on the dataset I attempted. To move from binary data to multilabel data, I simply replaced tests for foreground and background with tests for matching labels.
 
 In order to make a reasonably fast implementation, I implemented union-find with union by rank and path compression. I conservatively used two arrays (a uint64 rank array, and the IDs as the image data type) equal to the size of the image for the union-find data structure instead of a sparse map. The union-find data structure plus the output labels means the memory consumption will be input + output + rank + equivalences. If your input labels are 32-bit, the memory usage will be 4x the input size. This becomes more problematic when 64-bit labels are used, but if you know something about your data, you can decrease the size of the union-find data structure.  
 
