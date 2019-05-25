@@ -265,11 +265,11 @@ uint32_t* connected_components3d(
 
     if (z > 0 && cur == in_labels[loc + E]) {
       out_labels[loc] = out_labels[loc + E];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
     }
     else if (z > 0 && y > 0 && cur == in_labels[loc + B]) {
       out_labels[loc] = out_labels[loc + B];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
       if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
         equivalences.unify(out_labels[loc], out_labels[loc + H]);
