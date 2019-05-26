@@ -335,6 +335,17 @@ uint32_t* connected_components3d(
         equivalences.unify(out_labels[loc], out_labels[loc + I]);
       }
     }
+    else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
+      out_labels[loc] = out_labels[loc + H];
+      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+      if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + A]);
+      }
+      if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+      }
+    }
     else if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
       out_labels[loc] = out_labels[loc + F];
       unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
