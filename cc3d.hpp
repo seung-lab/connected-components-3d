@@ -184,6 +184,38 @@ inline void unify2d(
 }
 
 template <typename T>
+inline void unify2d_rt(
+    const int64_t loc, const T cur,
+    const int64_t x, const int64_t y, 
+    const int64_t sx, const int64_t sy, 
+    const T* in_labels, const uint32_t *out_labels,
+    DisjointSet<uint32_t> &equivalences  
+  ) {
+
+  if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
+    equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]);
+  }
+}
+
+template <typename T>
+inline void unify2d_lt(
+    const int64_t loc, const T cur,
+    const int64_t x, const int64_t y, 
+    const int64_t sx, const int64_t sy, 
+    const T* in_labels, const uint32_t *out_labels,
+    DisjointSet<uint32_t> &equivalences  
+  ) {
+
+  if (x > 0 && cur == in_labels[loc - 1]) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1]);
+  }
+  else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]);
+  }
+}
+
+
+template <typename T>
 uint32_t* connected_components3d(T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz) {
   const int64_t voxels = sx * sy * sz;
   return connected_components3d<T>(in_labels, sx, sy, sz, voxels);
@@ -285,20 +317,9 @@ uint32_t* connected_components3d(
         equivalences.unify(out_labels[loc], out_labels[loc + I]);
       }
     }
-    else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
-      out_labels[loc] = out_labels[loc + H];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-
-      if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + A]);
-      }
-      if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + C]);
-      }
-    }
     else if (x > 0 && z > 0 && cur == in_labels[loc + D]) {
       out_labels[loc] = out_labels[loc + D];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
       if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
         equivalences.unify(out_labels[loc], out_labels[loc + F]);
@@ -316,7 +337,7 @@ uint32_t* connected_components3d(
     }
     else if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
       out_labels[loc] = out_labels[loc + F];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
       if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
         equivalences.unify(out_labels[loc], out_labels[loc + A]);
@@ -327,7 +348,7 @@ uint32_t* connected_components3d(
     }
     else if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
       out_labels[loc] = out_labels[loc + A];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
       if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
         equivalences.unify(out_labels[loc], out_labels[loc + C]);
@@ -341,7 +362,7 @@ uint32_t* connected_components3d(
     }
     else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
       out_labels[loc] = out_labels[loc + C];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
       if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
         equivalences.unify(out_labels[loc], out_labels[loc + G]);
