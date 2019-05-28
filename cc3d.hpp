@@ -36,6 +36,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
+#include <unordered_map>
 
 #include "libdivide.h"
 
@@ -47,35 +48,13 @@ namespace cc3d {
 template <typename T>
 class DisjointSet {
 public:
-  T *ids;
-  size_t *size;
-  size_t length;
-  DisjointSet () {
-    length = 65536;
-    ids = new T[length]();
-    size = new size_t[length]();
-  }
-
-  DisjointSet (size_t len) {
-    length = len;
-    ids = new T[length]();
-    size = new size_t[length]();
-  }
+  std::unordered_map<T,T> ids;
+  std::unordered_map<T,size_t> size;
+  DisjointSet () {}
 
   DisjointSet (const DisjointSet &cpy) {
-    length = cpy.length;
-    ids = new T[length]();
-    size = new size_t[length]();
-
-    for (int i = 0; i < length; i++) {
-      ids[i] = cpy.ids[i];
-      size[i] = cpy.size[i];
-    }
-  }
-
-  ~DisjointSet () {
-    delete []ids;
-    delete []size;
+    ids = cpy.ids;
+    size = cpy.size;
   }
 
   T root (T n) {
@@ -93,11 +72,6 @@ public:
   }
 
   void add(T p) {
-    if (p >= length) {
-      printf("Connected Components Error: Label %d cannot be mapped to union-find array of length %lu.\n", p, length);
-      throw "maximum length exception";
-    }
-
     if (ids[p] == 0) {
       ids[p] = p;
       size[p] = 1;
@@ -240,7 +214,7 @@ uint32_t* connected_components3d(
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  DisjointSet<uint32_t> equivalences;
 
   uint32_t* out_labels = new uint32_t[voxels]();
   uint32_t next_label = 0;
