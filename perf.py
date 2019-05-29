@@ -3,24 +3,31 @@ from tqdm import tqdm
 import scipy.ndimage.measurements
 import numpy as np
 
-labels = np.random.randint(0,100, (512,512,512), dtype=np.uint8)
-uniques = np.unique(labels)[1:]
+import fastremap
 
-def cc3d_test():
+def cc3d_test(labels):
+  labels, remap = fastremap.renumber(labels)
   res = cc3d.connected_components(labels)
+  uniques = np.unique(res)[1:]
   for segid in tqdm(uniques):
-    extracted = res[labels == segid]
+    extracted = (res == segid)
 
-def ndimage_test():
+def ndimage_test(labels):
   s = [
     [[1,1,1], [1,1,1], [1,1,1]],
     [[1,1,1], [1,1,1], [1,1,1]],
     [[1,1,1], [1,1,1], [1,1,1]]
   ]
 
+  uniques = np.unique(labels)[1:]
   for segid in tqdm(uniques):
     extracted = (labels == segid)
-    res = scipy.ndimage.measurements.label(labels, structure=s)
+    res, N = scipy.ndimage.measurements.label(extracted, structure=s)
+    for ccid in tqdm(range(1,N+1)):
+      extracted = (res == ccid)
 
-# ndimage_test()
-# cc3d_test()
+
+labels = np.random.randint(0,100, (512,512,512), dtype=np.uint8)
+
+ndimage_test(labels)
+# cc3d_test(labels)
