@@ -7,7 +7,7 @@ I compared the time and memory performance of both libraries on a 512x512x512 vo
 # Multi-Label Comparison
 
 <p style="font-style: italics;" align="center">
-<img height=256 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_multilabel.png" alt="Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.2.1 (blue) 100% of cc3d 1.1.1" /><br>
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_multilabel.png" alt="Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.2.1 (blue) 100% of cc3d 1.1.1" /><br>
 Fig. 1: Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.2.1 (blue) 100% of cc3d 1.1.1
 </p>
 
@@ -47,7 +47,7 @@ In this test, `cc3d_test` was run to completion in 385 seconds after loading the
 # 10x Head to Head Comparison  
 
 <p style="font-style: italics;" align="center">
-<img height=256 src="https://github.com/seung-lab/connected-components-3d/blob/master/benchmarks/cc3d_vs_scipy_single_label_10x.png" alt="Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (blue) SciPy 1.2.1 (black) cc3d 1.1.1" /><br>
+<img height=384 src="https://github.com/seung-lab/connected-components-3d/blob/master/benchmarks/cc3d_vs_scipy_single_label_10x.png" alt="Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (blue) SciPy 1.2.1 (black) cc3d 1.1.1" /><br>
 Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (blue) SciPy 1.2.1 (black) cc3d 1.1.1
 </p> 
 
