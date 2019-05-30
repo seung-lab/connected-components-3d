@@ -73,4 +73,4 @@ for i in tqdm(range(10)):
   scipy.ndimage.measurements.label(labels, structure=s)
 ```
 
-This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. Here, we see again the difference in memory usage in SciPy's favor. However, `cc3d` performs each iteration in 1.2 seconds while SciPy takes about 6.2 seconds. In previous experiments (not shown) on dense labels, `cc3d` takes about 1.7 to 1.8 seconds per an iteration, so it becomes faster when the volume is less dense.
+This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. Here, we see again the difference in memory usage in SciPy's favor. However, `cc3d` performs each iteration in 1.2 seconds while SciPy takes about 6.2 seconds. In previous experiments (not shown) on dense labels, `cc3d` takes about 1.7 to 1.9 seconds per an iteration, so it becomes faster when the volume is less dense.
