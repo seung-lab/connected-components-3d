@@ -37,8 +37,6 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "libdivide.h"
-
 #ifndef CC3D_HPP
 #define CC3D_HPP 
 
@@ -214,48 +212,29 @@ inline void unify2d_lt(
   }
 }
 
-
+/* This is the core decision tree that is run on each voxel.
+ *
+ * The idea is to perform as few unify calls as possible
+ * and to substitute fast copy operations instead.
+ *
+ * Layout of forward pass mask (which faces backwards). 
+ *  N is the current location.
+ *
+ *  z = -1     z = 0
+ *  A B C      J K L   y = -1 
+ *  D E F      M N     y =  0
+ *  G H I              y = +1
+ * -1 0 +1    -1 0   <-- x axis
+ */
 template <typename T>
-uint32_t* connected_components3d(T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz) {
-  const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T>(in_labels, sx, sy, sz, voxels);
-}
-
-template <typename T>
-uint32_t* connected_components3d(
-    T* in_labels, 
+inline void connect_voxel(
+    const int64_t x, const int64_t y, const int64_t z,
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels
+    const T* in_labels, uint32_t *out_labels,
+    DisjointSet<uint32_t> &equivalences, uint32_t &next_label      
   ) {
 
-	const int64_t sxy = sx * sy;
-	const int64_t voxels = sxy * sz;
-
-  const libdivide::divider<int64_t> fast_sx(sx); 
-  const libdivide::divider<int64_t> fast_sxy(sxy); 
-
-  const bool power_of_two = !((sx & (sx - 1)) || (sy & (sy - 1))); 
-  const int xshift = std::log2(sx); // must use log2 here, not lg/lg2 to avoid fp errors
-  const int yshift = std::log2(sy);
-
-  max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
-
-  DisjointSet<uint32_t> equivalences(max_labels);
-
-  uint32_t* out_labels = new uint32_t[voxels]();
-  uint32_t next_label = 0;
-  int64_t x, y, z;
-    
-  /*
-    Layout of forward pass mask (which faces backwards). 
-    N is the current location.
-
-    z = -1     z = 0
-    A B C      J K L   y = -1 
-    D E F      M N     y =  0
-    G H I              y = +1
-   -1 0 +1    -1 0   <-- x axis
-  */
+  const int64_t sxy = sx * sy;
 
   // Z - 1
   const int64_t A = -1 - sx - sxy;
@@ -275,150 +254,174 @@ uint32_t* connected_components3d(
   const int64_t M = -1;
   // N = 0;
 
-  // Raster Scan 1: Set temporary labels and 
-  // record equivalences in a disjoint set.
-  for (int64_t loc = 0; loc < voxels; loc++) {
-    const T cur = in_labels[loc];
+  const int64_t loc = x + sx * y + sxy * z;
+  const T cur = in_labels[loc];
 
-    if (cur == 0) {
-      continue;
-    }
+  if (cur == 0) {
+    return;
+  }
 
-    if (power_of_two) {
-      z = loc >> (xshift + yshift);
-      y = (loc - (z << (xshift + yshift))) >> xshift;
-      x = loc - ((y + (z << yshift)) << xshift);
-    }
-    else {
-      z = loc / fast_sxy;
-      y = (loc - (z * sxy)) / fast_sx;
-      x = loc - sx * (y + z * sy);
-    }
+  if (z > 0 && cur == in_labels[loc + E]) {
+    out_labels[loc] = out_labels[loc + E];
+    // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+  }
+  else if (z > 0 && y > 0 && cur == in_labels[loc + B]) {
+    out_labels[loc] = out_labels[loc + B];
+    // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
-    if (z > 0 && cur == in_labels[loc + E]) {
-      out_labels[loc] = out_labels[loc + E];
-      // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-    }
-    else if (z > 0 && y > 0 && cur == in_labels[loc + B]) {
-      out_labels[loc] = out_labels[loc + B];
-      // unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-
-      if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + H]);
-      }
-      else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + G]);
-        
-        if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
-          equivalences.unify(out_labels[loc], out_labels[loc + I]);
-        }
-      }
-      else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + I]);
-      }
-    }
-    else if (x > 0 && z > 0 && cur == in_labels[loc + D]) {
-      out_labels[loc] = out_labels[loc + D];
-      unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-
-      if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + F]);
-      }
-      else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + C]);
-
-        if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
-          equivalences.unify(out_labels[loc], out_labels[loc + I]);
-        }
-      }
-      else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + I]);
-      }
-    }
-    else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
-      out_labels[loc] = out_labels[loc + H];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-
-      if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + A]);
-      }
-      if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + C]);
-      }
-    }
-    else if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
-      out_labels[loc] = out_labels[loc + F];
-      unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-
-      if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + A]);
-      }
-      if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + G]);
-      }
-    }
-    else if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
-      out_labels[loc] = out_labels[loc + A];
-      unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-
-      if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + C]);
-      }
-      if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + G]);
-      }      
-      if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + I]);
-      }
-    }
-    else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
-      out_labels[loc] = out_labels[loc + C];
-      unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
-
-      if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + G]);
-      }
-      if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + I]);
-      }
+    if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + H]);
     }
     else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
-      out_labels[loc] = out_labels[loc + G];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      equivalences.unify(out_labels[loc], out_labels[loc + G]);
+      
+      if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + I]);
+      }
+    }
+    else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + I]);
+    }
+  }
+  else if (x > 0 && z > 0 && cur == in_labels[loc + D]) {
+    out_labels[loc] = out_labels[loc + D];
+    unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+    if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + F]);
+    }
+    else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + C]);
 
       if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
         equivalences.unify(out_labels[loc], out_labels[loc + I]);
       }
     }
     else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
-      out_labels[loc] = out_labels[loc + I];
-      unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+      equivalences.unify(out_labels[loc], out_labels[loc + I]);
     }
-    // It's the original 2D problem now
-    else if (y > 0 && cur == in_labels[loc + K]) {
-      out_labels[loc] = out_labels[loc + K];
-    }
-    else if (x > 0 && cur == in_labels[loc + M]) {
-      out_labels[loc] = out_labels[loc + M];
+  }
+  else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
+    out_labels[loc] = out_labels[loc + H];
+    unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
-      if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + L]); 
-      }
+    if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + A]);
     }
-    else if (x > 0 && y > 0 && cur == in_labels[loc + J]) {
-      out_labels[loc] = out_labels[loc + J];
+    if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + C]);
+    }
+  }
+  else if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
+    out_labels[loc] = out_labels[loc + F];
+    unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
 
-      if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+    if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + A]);
+    }
+    if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + G]);
+    }
+  }
+  else if (x > 0 && y > 0 && z > 0 && cur == in_labels[loc + A]) {
+    out_labels[loc] = out_labels[loc + A];
+    unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+    if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + C]);
+    }
+    if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + G]);
+    }      
+    if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + I]);
+    }
+  }
+  else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+    out_labels[loc] = out_labels[loc + C];
+    unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+    if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + G]);
+    }
+    if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + I]);
+    }
+  }
+  else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
+    out_labels[loc] = out_labels[loc + G];
+    unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+
+    if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + I]);
+    }
+  }
+  else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+    out_labels[loc] = out_labels[loc + I];
+    unify2d<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+  }
+  // It's the original 2D problem now
+  else if (y > 0 && cur == in_labels[loc + K]) {
+    out_labels[loc] = out_labels[loc + K];
+  }
+  else if (x > 0 && cur == in_labels[loc + M]) {
+    out_labels[loc] = out_labels[loc + M];
+
+    if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+    }
+  }
+  else if (x > 0 && y > 0 && cur == in_labels[loc + J]) {
+    out_labels[loc] = out_labels[loc + J];
+
+    if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+    }
+  }
+  else if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+    out_labels[loc] = out_labels[loc + L];
+  }
+  else {
+    next_label++;
+    out_labels[loc] = next_label;
+    equivalences.add(out_labels[loc]);
+  }
+}
+
+template <typename T>
+uint32_t* connected_components3d(T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz) {
+  const int64_t voxels = sx * sy * sz;
+  return connected_components3d<T>(in_labels, sx, sy, sz, voxels);
+}
+
+template <typename T>
+uint32_t* connected_components3d(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy, const int64_t sz,
+    int64_t max_labels
+  ) {
+
+	const int64_t voxels = sx * sy * sz;
+
+  max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
+  uint32_t* out_labels = new uint32_t[voxels]();
+  uint32_t next_label = 0;
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int64_t z = 0; z < sz; z++) {
+    for (int64_t y = 0; y < sy; y++) {
+      for (int64_t x = 0; x < sx; x++) {
+        connect_voxel<T>(
+          x, y, z,
+          sx, sy, sz,
+          in_labels, out_labels,
+          equivalences, next_label
+        );
       }
-    }
-    else if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-      out_labels[loc] = out_labels[loc + L];
-    }
-    else {
-      next_label++;
-      out_labels[loc] = next_label;
-      equivalences.add(out_labels[loc]);
     }
   }
 
