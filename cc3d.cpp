@@ -2201,10 +2201,10 @@ static struct __pyx_typeinfo_string __Pyx_TypeInfoToFormat(__Pyx_TypeInfo *type)
 static CYTHON_INLINE int64_t __Pyx_PyInt_As_int64_t(PyObject *);
 
 /* CIntFromPy.proto */
-static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *);
+static CYTHON_INLINE uint32_t __Pyx_PyInt_As_uint32_t(PyObject *);
 
 /* CIntFromPy.proto */
-static CYTHON_INLINE uint32_t __Pyx_PyInt_As_uint32_t(PyObject *);
+static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *);
 
 /* CIntFromPy.proto */
 static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *);
@@ -2533,6 +2533,7 @@ static const char __pyx_k_Ellipsis[] = "Ellipsis";
 static const char __pyx_k_cc3d_pyx[] = "cc3d.pyx";
 static const char __pyx_k_getstate[] = "__getstate__";
 static const char __pyx_k_itemsize[] = "itemsize";
+static const char __pyx_k_parallel[] = "parallel";
 static const char __pyx_k_pyx_type[] = "__pyx_type";
 static const char __pyx_k_setstate[] = "__setstate__";
 static const char __pyx_k_TypeError[] = "TypeError";
@@ -2717,6 +2718,7 @@ static PyObject *__pyx_n_s_obj;
 static PyObject *__pyx_n_s_order;
 static PyObject *__pyx_n_s_output;
 static PyObject *__pyx_n_s_pack;
+static PyObject *__pyx_n_s_parallel;
 static PyObject *__pyx_n_s_pickle;
 static PyObject *__pyx_n_s_pyx_PickleError;
 static PyObject *__pyx_n_s_pyx_checksum;
@@ -2760,7 +2762,7 @@ static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_n_s_update;
 static PyObject *__pyx_n_s_voxels;
 static PyObject *__pyx_n_s_zeros;
-static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_data, int64_t __pyx_v_max_labels); /* proto */
+static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_data, int64_t __pyx_v_max_labels, uint32_t __pyx_v_parallel); /* proto */
 static int __pyx_pf_7cpython_5array_5array___getbuffer__(arrayobject *__pyx_v_self, Py_buffer *__pyx_v_info, CYTHON_UNUSED int __pyx_v_flags); /* proto */
 static void __pyx_pf_7cpython_5array_5array_2__releasebuffer__(CYTHON_UNUSED arrayobject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
@@ -2855,7 +2857,7 @@ static PyObject *__pyx_codeobj__40;
 /* "cc3d.pyx":32
  *   )
  * 
- * def connected_components(data, int64_t max_labels=-1):             # <<<<<<<<<<<<<<
+ * def connected_components(data, int64_t max_labels=-1, uint32_t parallel=1):             # <<<<<<<<<<<<<<
  *   """
  *   Connected components applied to 3D images
  */
@@ -2867,16 +2869,19 @@ static PyMethodDef __pyx_mdef_4cc3d_1connected_components = {"connected_componen
 static PyObject *__pyx_pw_4cc3d_1connected_components(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_data = 0;
   int64_t __pyx_v_max_labels;
+  uint32_t __pyx_v_parallel;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("connected_components (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_data,&__pyx_n_s_max_labels,0};
-    PyObject* values[2] = {0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_data,&__pyx_n_s_max_labels,&__pyx_n_s_parallel,0};
+    PyObject* values[3] = {0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
         CYTHON_FALLTHROUGH;
         case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -2895,12 +2900,20 @@ static PyObject *__pyx_pw_4cc3d_1connected_components(PyObject *__pyx_self, PyOb
           PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_max_labels);
           if (value) { values[1] = value; kw_args--; }
         }
+        CYTHON_FALLTHROUGH;
+        case  2:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_parallel);
+          if (value) { values[2] = value; kw_args--; }
+        }
       }
       if (unlikely(kw_args > 0)) {
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "connected_components") < 0)) __PYX_ERR(0, 32, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
         CYTHON_FALLTHROUGH;
         case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -2914,23 +2927,28 @@ static PyObject *__pyx_pw_4cc3d_1connected_components(PyObject *__pyx_self, PyOb
     } else {
       __pyx_v_max_labels = ((int64_t)-1L);
     }
+    if (values[2]) {
+      __pyx_v_parallel = __Pyx_PyInt_As_uint32_t(values[2]); if (unlikely((__pyx_v_parallel == ((uint32_t)-1)) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L3_error)
+    } else {
+      __pyx_v_parallel = ((uint32_t)1);
+    }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("connected_components", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 32, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("connected_components", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 32, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("cc3d.connected_components", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_4cc3d_connected_components(__pyx_self, __pyx_v_data, __pyx_v_max_labels);
+  __pyx_r = __pyx_pf_4cc3d_connected_components(__pyx_self, __pyx_v_data, __pyx_v_max_labels, __pyx_v_parallel);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_data, int64_t __pyx_v_max_labels) {
+static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_data, int64_t __pyx_v_max_labels, uint32_t __pyx_v_parallel) {
   Py_ssize_t __pyx_v_dims;
   PyObject *__pyx_v_order = NULL;
   PyObject *__pyx_v_shape = NULL;
@@ -3447,7 +3465,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview64u = data
  *     labels = connected_components3d[uint64_t](
  *       &arr_memview64u[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_12 = 0;
@@ -3476,9 +3494,9 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview64u = data
  *     labels = connected_components3d[uint64_t](             # <<<<<<<<<<<<<<
  *       &arr_memview64u[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<uint64_t>((&(*((uint64_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview64u.data + __pyx_t_12 * __pyx_v_arr_memview64u.strides[0]) ) + __pyx_t_13 * __pyx_v_arr_memview64u.strides[1]) ) + __pyx_t_14 * __pyx_v_arr_memview64u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<uint64_t>((&(*((uint64_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview64u.data + __pyx_t_12 * __pyx_v_arr_memview64u.strides[0]) ) + __pyx_t_13 * __pyx_v_arr_memview64u.strides[1]) ) + __pyx_t_14 * __pyx_v_arr_memview64u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":96
  *   dtype = data.dtype
@@ -3491,7 +3509,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   }
 
   /* "cc3d.pyx":102
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.uint32:             # <<<<<<<<<<<<<<
  *     arr_memview32u = data
@@ -3524,7 +3542,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview32u = data
  *     labels = connected_components3d[uint32_t](
  *       &arr_memview32u[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_16 = 0;
@@ -3553,12 +3571,12 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview32u = data
  *     labels = connected_components3d[uint32_t](             # <<<<<<<<<<<<<<
  *       &arr_memview32u[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<uint32_t>((&(*((uint32_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview32u.data + __pyx_t_16 * __pyx_v_arr_memview32u.strides[0]) ) + __pyx_t_17 * __pyx_v_arr_memview32u.strides[1]) ) + __pyx_t_18 * __pyx_v_arr_memview32u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<uint32_t>((&(*((uint32_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview32u.data + __pyx_t_16 * __pyx_v_arr_memview32u.strides[0]) ) + __pyx_t_17 * __pyx_v_arr_memview32u.strides[1]) ) + __pyx_t_18 * __pyx_v_arr_memview32u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":102
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.uint32:             # <<<<<<<<<<<<<<
  *     arr_memview32u = data
@@ -3568,7 +3586,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   }
 
   /* "cc3d.pyx":108
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.uint16:             # <<<<<<<<<<<<<<
  *     arr_memview16u = data
@@ -3601,7 +3619,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview16u = data
  *     labels = connected_components3d[uint16_t](
  *       &arr_memview16u[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_20 = 0;
@@ -3630,12 +3648,12 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview16u = data
  *     labels = connected_components3d[uint16_t](             # <<<<<<<<<<<<<<
  *       &arr_memview16u[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<uint16_t>((&(*((uint16_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview16u.data + __pyx_t_20 * __pyx_v_arr_memview16u.strides[0]) ) + __pyx_t_21 * __pyx_v_arr_memview16u.strides[1]) ) + __pyx_t_22 * __pyx_v_arr_memview16u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<uint16_t>((&(*((uint16_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview16u.data + __pyx_t_20 * __pyx_v_arr_memview16u.strides[0]) ) + __pyx_t_21 * __pyx_v_arr_memview16u.strides[1]) ) + __pyx_t_22 * __pyx_v_arr_memview16u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":108
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.uint16:             # <<<<<<<<<<<<<<
  *     arr_memview16u = data
@@ -3645,7 +3663,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   }
 
   /* "cc3d.pyx":114
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype in (np.uint8, np.bool):             # <<<<<<<<<<<<<<
  *     arr_memview8u = data.astype(np.uint8)
@@ -3722,7 +3740,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview8u = data.astype(np.uint8)
  *     labels = connected_components3d[uint8_t](
  *       &arr_memview8u[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_24 = 0;
@@ -3751,12 +3769,12 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview8u = data.astype(np.uint8)
  *     labels = connected_components3d[uint8_t](             # <<<<<<<<<<<<<<
  *       &arr_memview8u[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<uint8_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_24 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_25 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_26 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<uint8_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_24 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_25 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_26 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":114
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype in (np.uint8, np.bool):             # <<<<<<<<<<<<<<
  *     arr_memview8u = data.astype(np.uint8)
@@ -3766,7 +3784,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   }
 
   /* "cc3d.pyx":120
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int64:             # <<<<<<<<<<<<<<
  *     arr_memview64 = data
@@ -3799,7 +3817,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview64 = data
  *     labels = connected_components3d[int64_t](
  *       &arr_memview64[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_28 = 0;
@@ -3828,12 +3846,12 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview64 = data
  *     labels = connected_components3d[int64_t](             # <<<<<<<<<<<<<<
  *       &arr_memview64[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<int64_t>((&(*((int64_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview64.data + __pyx_t_28 * __pyx_v_arr_memview64.strides[0]) ) + __pyx_t_29 * __pyx_v_arr_memview64.strides[1]) ) + __pyx_t_30 * __pyx_v_arr_memview64.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<int64_t>((&(*((int64_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview64.data + __pyx_t_28 * __pyx_v_arr_memview64.strides[0]) ) + __pyx_t_29 * __pyx_v_arr_memview64.strides[1]) ) + __pyx_t_30 * __pyx_v_arr_memview64.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":120
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int64:             # <<<<<<<<<<<<<<
  *     arr_memview64 = data
@@ -3843,7 +3861,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   }
 
   /* "cc3d.pyx":126
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int32:             # <<<<<<<<<<<<<<
  *     arr_memview32 = data
@@ -3876,7 +3894,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview32 = data
  *     labels = connected_components3d[int32_t](
  *       &arr_memview32[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_32 = 0;
@@ -3905,12 +3923,12 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview32 = data
  *     labels = connected_components3d[int32_t](             # <<<<<<<<<<<<<<
  *       &arr_memview32[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<int32_t>((&(*((int32_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview32.data + __pyx_t_32 * __pyx_v_arr_memview32.strides[0]) ) + __pyx_t_33 * __pyx_v_arr_memview32.strides[1]) ) + __pyx_t_34 * __pyx_v_arr_memview32.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<int32_t>((&(*((int32_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview32.data + __pyx_t_32 * __pyx_v_arr_memview32.strides[0]) ) + __pyx_t_33 * __pyx_v_arr_memview32.strides[1]) ) + __pyx_t_34 * __pyx_v_arr_memview32.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":126
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int32:             # <<<<<<<<<<<<<<
  *     arr_memview32 = data
@@ -3920,7 +3938,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   }
 
   /* "cc3d.pyx":132
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int16:             # <<<<<<<<<<<<<<
  *     arr_memview16 = data
@@ -3953,7 +3971,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview16 = data
  *     labels = connected_components3d[int16_t](
  *       &arr_memview16[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_36 = 0;
@@ -3982,12 +4000,12 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview16 = data
  *     labels = connected_components3d[int16_t](             # <<<<<<<<<<<<<<
  *       &arr_memview16[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<int16_t>((&(*((int16_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview16.data + __pyx_t_36 * __pyx_v_arr_memview16.strides[0]) ) + __pyx_t_37 * __pyx_v_arr_memview16.strides[1]) ) + __pyx_t_38 * __pyx_v_arr_memview16.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<int16_t>((&(*((int16_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview16.data + __pyx_t_36 * __pyx_v_arr_memview16.strides[0]) ) + __pyx_t_37 * __pyx_v_arr_memview16.strides[1]) ) + __pyx_t_38 * __pyx_v_arr_memview16.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":132
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int16:             # <<<<<<<<<<<<<<
  *     arr_memview16 = data
@@ -3997,7 +4015,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   }
 
   /* "cc3d.pyx":138
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int8:             # <<<<<<<<<<<<<<
  *     arr_memview8 = data
@@ -4030,7 +4048,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview8 = data
  *     labels = connected_components3d[int8_t](
  *       &arr_memview8[0,0,0],             # <<<<<<<<<<<<<<
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  */
     __pyx_t_40 = 0;
@@ -4059,12 +4077,12 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     arr_memview8 = data
  *     labels = connected_components3d[int8_t](             # <<<<<<<<<<<<<<
  *       &arr_memview8[0,0,0],
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  */
-    __pyx_v_labels = cc3d::connected_components3d<int8_t>((&(*((int8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8.data + __pyx_t_40 * __pyx_v_arr_memview8.strides[0]) ) + __pyx_t_41 * __pyx_v_arr_memview8.strides[1]) ) + __pyx_t_42 * __pyx_v_arr_memview8.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels);
+    __pyx_v_labels = cc3d::connected_components3d<int8_t>((&(*((int8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8.data + __pyx_t_40 * __pyx_v_arr_memview8.strides[0]) ) + __pyx_t_41 * __pyx_v_arr_memview8.strides[1]) ) + __pyx_t_42 * __pyx_v_arr_memview8.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, __pyx_v_parallel);
 
     /* "cc3d.pyx":138
- *       sx, sy, sz, max_labels
+ *       sx, sy, sz, max_labels, parallel
  *     )
  *   elif dtype == np.int8:             # <<<<<<<<<<<<<<
  *     arr_memview8 = data
@@ -4464,7 +4482,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
   /* "cc3d.pyx":32
  *   )
  * 
- * def connected_components(data, int64_t max_labels=-1):             # <<<<<<<<<<<<<<
+ * def connected_components(data, int64_t max_labels=-1, uint32_t parallel=1):             # <<<<<<<<<<<<<<
  *   """
  *   Connected components applied to 3D images
  */
@@ -21512,6 +21530,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_order, __pyx_k_order, sizeof(__pyx_k_order), 0, 0, 1, 1},
   {&__pyx_n_s_output, __pyx_k_output, sizeof(__pyx_k_output), 0, 0, 1, 1},
   {&__pyx_n_s_pack, __pyx_k_pack, sizeof(__pyx_k_pack), 0, 0, 1, 1},
+  {&__pyx_n_s_parallel, __pyx_k_parallel, sizeof(__pyx_k_parallel), 0, 0, 1, 1},
   {&__pyx_n_s_pickle, __pyx_k_pickle, sizeof(__pyx_k_pickle), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_PickleError, __pyx_k_pyx_PickleError, sizeof(__pyx_k_pyx_PickleError), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_checksum, __pyx_k_pyx_checksum, sizeof(__pyx_k_pyx_checksum), 0, 0, 1, 1},
@@ -21860,14 +21879,14 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "cc3d.pyx":32
  *   )
  * 
- * def connected_components(data, int64_t max_labels=-1):             # <<<<<<<<<<<<<<
+ * def connected_components(data, int64_t max_labels=-1, uint32_t parallel=1):             # <<<<<<<<<<<<<<
  *   """
  *   Connected components applied to 3D images
  */
-  __pyx_tuple__32 = PyTuple_Pack(22, __pyx_n_s_data, __pyx_n_s_max_labels, __pyx_n_s_dims, __pyx_n_s_order, __pyx_n_s_shape, __pyx_n_s_sx, __pyx_n_s_sy, __pyx_n_s_sz, __pyx_n_s_arr_memview8u, __pyx_n_s_arr_memview16u, __pyx_n_s_arr_memview32u, __pyx_n_s_arr_memview64u, __pyx_n_s_arr_memview8, __pyx_n_s_arr_memview16, __pyx_n_s_arr_memview32, __pyx_n_s_arr_memview64, __pyx_n_s_labels, __pyx_n_s_voxels, __pyx_n_s_dtype, __pyx_n_s_labels_view, __pyx_n_s_buf, __pyx_n_s_output); if (unlikely(!__pyx_tuple__32)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_tuple__32 = PyTuple_Pack(23, __pyx_n_s_data, __pyx_n_s_max_labels, __pyx_n_s_parallel, __pyx_n_s_dims, __pyx_n_s_order, __pyx_n_s_shape, __pyx_n_s_sx, __pyx_n_s_sy, __pyx_n_s_sz, __pyx_n_s_arr_memview8u, __pyx_n_s_arr_memview16u, __pyx_n_s_arr_memview32u, __pyx_n_s_arr_memview64u, __pyx_n_s_arr_memview8, __pyx_n_s_arr_memview16, __pyx_n_s_arr_memview32, __pyx_n_s_arr_memview64, __pyx_n_s_labels, __pyx_n_s_voxels, __pyx_n_s_dtype, __pyx_n_s_labels_view, __pyx_n_s_buf, __pyx_n_s_output); if (unlikely(!__pyx_tuple__32)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__32);
   __Pyx_GIVEREF(__pyx_tuple__32);
-  __pyx_codeobj__33 = (PyObject*)__Pyx_PyCode_New(2, 0, 22, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__32, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_connected_components, 32, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__33)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_codeobj__33 = (PyObject*)__Pyx_PyCode_New(3, 0, 23, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__32, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_connected_components, 32, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__33)) __PYX_ERR(0, 32, __pyx_L1_error)
 
   /* "View.MemoryView":286
  *         return self.name
@@ -22356,7 +22375,7 @@ if (!__Pyx_RefNanny) {
   /* "cc3d.pyx":32
  *   )
  * 
- * def connected_components(data, int64_t max_labels=-1):             # <<<<<<<<<<<<<<
+ * def connected_components(data, int64_t max_labels=-1, uint32_t parallel=1):             # <<<<<<<<<<<<<<
  *   """
  *   Connected components applied to 3D images
  */
@@ -25703,195 +25722,6 @@ raise_neg_overflow:
 }
 
 /* CIntFromPy */
-static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
-    const int neg_one = (int) ((int) 0 - (int) 1), const_zero = (int) 0;
-    const int is_unsigned = neg_one > const_zero;
-#if PY_MAJOR_VERSION < 3
-    if (likely(PyInt_Check(x))) {
-        if (sizeof(int) < sizeof(long)) {
-            __PYX_VERIFY_RETURN_INT(int, long, PyInt_AS_LONG(x))
-        } else {
-            long val = PyInt_AS_LONG(x);
-            if (is_unsigned && unlikely(val < 0)) {
-                goto raise_neg_overflow;
-            }
-            return (int) val;
-        }
-    } else
-#endif
-    if (likely(PyLong_Check(x))) {
-        if (is_unsigned) {
-#if CYTHON_USE_PYLONG_INTERNALS
-            const digit* digits = ((PyLongObject*)x)->ob_digit;
-            switch (Py_SIZE(x)) {
-                case  0: return (int) 0;
-                case  1: __PYX_VERIFY_RETURN_INT(int, digit, digits[0])
-                case 2:
-                    if (8 * sizeof(int) > 1 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) >= 2 * PyLong_SHIFT) {
-                            return (int) (((((int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
-                        }
-                    }
-                    break;
-                case 3:
-                    if (8 * sizeof(int) > 2 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) >= 3 * PyLong_SHIFT) {
-                            return (int) (((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
-                        }
-                    }
-                    break;
-                case 4:
-                    if (8 * sizeof(int) > 3 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) >= 4 * PyLong_SHIFT) {
-                            return (int) (((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
-                        }
-                    }
-                    break;
-            }
-#endif
-#if CYTHON_COMPILING_IN_CPYTHON
-            if (unlikely(Py_SIZE(x) < 0)) {
-                goto raise_neg_overflow;
-            }
-#else
-            {
-                int result = PyObject_RichCompareBool(x, Py_False, Py_LT);
-                if (unlikely(result < 0))
-                    return (int) -1;
-                if (unlikely(result == 1))
-                    goto raise_neg_overflow;
-            }
-#endif
-            if (sizeof(int) <= sizeof(unsigned long)) {
-                __PYX_VERIFY_RETURN_INT_EXC(int, unsigned long, PyLong_AsUnsignedLong(x))
-#ifdef HAVE_LONG_LONG
-            } else if (sizeof(int) <= sizeof(unsigned PY_LONG_LONG)) {
-                __PYX_VERIFY_RETURN_INT_EXC(int, unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong(x))
-#endif
-            }
-        } else {
-#if CYTHON_USE_PYLONG_INTERNALS
-            const digit* digits = ((PyLongObject*)x)->ob_digit;
-            switch (Py_SIZE(x)) {
-                case  0: return (int) 0;
-                case -1: __PYX_VERIFY_RETURN_INT(int, sdigit, (sdigit) (-(sdigit)digits[0]))
-                case  1: __PYX_VERIFY_RETURN_INT(int,  digit, +digits[0])
-                case -2:
-                    if (8 * sizeof(int) - 1 > 1 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, long, -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) - 1 > 2 * PyLong_SHIFT) {
-                            return (int) (((int)-1)*(((((int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
-                        }
-                    }
-                    break;
-                case 2:
-                    if (8 * sizeof(int) > 1 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) - 1 > 2 * PyLong_SHIFT) {
-                            return (int) ((((((int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
-                        }
-                    }
-                    break;
-                case -3:
-                    if (8 * sizeof(int) - 1 > 2 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, long, -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) - 1 > 3 * PyLong_SHIFT) {
-                            return (int) (((int)-1)*(((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
-                        }
-                    }
-                    break;
-                case 3:
-                    if (8 * sizeof(int) > 2 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) - 1 > 3 * PyLong_SHIFT) {
-                            return (int) ((((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
-                        }
-                    }
-                    break;
-                case -4:
-                    if (8 * sizeof(int) - 1 > 3 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, long, -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) - 1 > 4 * PyLong_SHIFT) {
-                            return (int) (((int)-1)*(((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
-                        }
-                    }
-                    break;
-                case 4:
-                    if (8 * sizeof(int) > 3 * PyLong_SHIFT) {
-                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(int) - 1 > 4 * PyLong_SHIFT) {
-                            return (int) ((((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
-                        }
-                    }
-                    break;
-            }
-#endif
-            if (sizeof(int) <= sizeof(long)) {
-                __PYX_VERIFY_RETURN_INT_EXC(int, long, PyLong_AsLong(x))
-#ifdef HAVE_LONG_LONG
-            } else if (sizeof(int) <= sizeof(PY_LONG_LONG)) {
-                __PYX_VERIFY_RETURN_INT_EXC(int, PY_LONG_LONG, PyLong_AsLongLong(x))
-#endif
-            }
-        }
-        {
-#if CYTHON_COMPILING_IN_PYPY && !defined(_PyLong_AsByteArray)
-            PyErr_SetString(PyExc_RuntimeError,
-                            "_PyLong_AsByteArray() not available in PyPy, cannot convert large numbers");
-#else
-            int val;
-            PyObject *v = __Pyx_PyNumber_IntOrLong(x);
- #if PY_MAJOR_VERSION < 3
-            if (likely(v) && !PyLong_Check(v)) {
-                PyObject *tmp = v;
-                v = PyNumber_Long(tmp);
-                Py_DECREF(tmp);
-            }
- #endif
-            if (likely(v)) {
-                int one = 1; int is_little = (int)*(unsigned char *)&one;
-                unsigned char *bytes = (unsigned char *)&val;
-                int ret = _PyLong_AsByteArray((PyLongObject *)v,
-                                              bytes, sizeof(val),
-                                              is_little, !is_unsigned);
-                Py_DECREF(v);
-                if (likely(!ret))
-                    return val;
-            }
-#endif
-            return (int) -1;
-        }
-    } else {
-        int val;
-        PyObject *tmp = __Pyx_PyNumber_IntOrLong(x);
-        if (!tmp) return (int) -1;
-        val = __Pyx_PyInt_As_int(tmp);
-        Py_DECREF(tmp);
-        return val;
-    }
-raise_overflow:
-    PyErr_SetString(PyExc_OverflowError,
-        "value too large to convert to int");
-    return (int) -1;
-raise_neg_overflow:
-    PyErr_SetString(PyExc_OverflowError,
-        "can't convert negative value to int");
-    return (int) -1;
-}
-
-/* CIntFromPy */
 static CYTHON_INLINE uint32_t __Pyx_PyInt_As_uint32_t(PyObject *x) {
     const uint32_t neg_one = (uint32_t) ((uint32_t) 0 - (uint32_t) 1), const_zero = (uint32_t) 0;
     const int is_unsigned = neg_one > const_zero;
@@ -26078,6 +25908,195 @@ raise_neg_overflow:
     PyErr_SetString(PyExc_OverflowError,
         "can't convert negative value to uint32_t");
     return (uint32_t) -1;
+}
+
+/* CIntFromPy */
+static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
+    const int neg_one = (int) ((int) 0 - (int) 1), const_zero = (int) 0;
+    const int is_unsigned = neg_one > const_zero;
+#if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_Check(x))) {
+        if (sizeof(int) < sizeof(long)) {
+            __PYX_VERIFY_RETURN_INT(int, long, PyInt_AS_LONG(x))
+        } else {
+            long val = PyInt_AS_LONG(x);
+            if (is_unsigned && unlikely(val < 0)) {
+                goto raise_neg_overflow;
+            }
+            return (int) val;
+        }
+    } else
+#endif
+    if (likely(PyLong_Check(x))) {
+        if (is_unsigned) {
+#if CYTHON_USE_PYLONG_INTERNALS
+            const digit* digits = ((PyLongObject*)x)->ob_digit;
+            switch (Py_SIZE(x)) {
+                case  0: return (int) 0;
+                case  1: __PYX_VERIFY_RETURN_INT(int, digit, digits[0])
+                case 2:
+                    if (8 * sizeof(int) > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) >= 2 * PyLong_SHIFT) {
+                            return (int) (((((int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
+                        }
+                    }
+                    break;
+                case 3:
+                    if (8 * sizeof(int) > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) >= 3 * PyLong_SHIFT) {
+                            return (int) (((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
+                        }
+                    }
+                    break;
+                case 4:
+                    if (8 * sizeof(int) > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) >= 4 * PyLong_SHIFT) {
+                            return (int) (((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0]));
+                        }
+                    }
+                    break;
+            }
+#endif
+#if CYTHON_COMPILING_IN_CPYTHON
+            if (unlikely(Py_SIZE(x) < 0)) {
+                goto raise_neg_overflow;
+            }
+#else
+            {
+                int result = PyObject_RichCompareBool(x, Py_False, Py_LT);
+                if (unlikely(result < 0))
+                    return (int) -1;
+                if (unlikely(result == 1))
+                    goto raise_neg_overflow;
+            }
+#endif
+            if (sizeof(int) <= sizeof(unsigned long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(int, unsigned long, PyLong_AsUnsignedLong(x))
+#ifdef HAVE_LONG_LONG
+            } else if (sizeof(int) <= sizeof(unsigned PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(int, unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong(x))
+#endif
+            }
+        } else {
+#if CYTHON_USE_PYLONG_INTERNALS
+            const digit* digits = ((PyLongObject*)x)->ob_digit;
+            switch (Py_SIZE(x)) {
+                case  0: return (int) 0;
+                case -1: __PYX_VERIFY_RETURN_INT(int, sdigit, (sdigit) (-(sdigit)digits[0]))
+                case  1: __PYX_VERIFY_RETURN_INT(int,  digit, +digits[0])
+                case -2:
+                    if (8 * sizeof(int) - 1 > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, long, -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) - 1 > 2 * PyLong_SHIFT) {
+                            return (int) (((int)-1)*(((((int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
+                        }
+                    }
+                    break;
+                case 2:
+                    if (8 * sizeof(int) > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) - 1 > 2 * PyLong_SHIFT) {
+                            return (int) ((((((int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
+                        }
+                    }
+                    break;
+                case -3:
+                    if (8 * sizeof(int) - 1 > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, long, -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) - 1 > 3 * PyLong_SHIFT) {
+                            return (int) (((int)-1)*(((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
+                        }
+                    }
+                    break;
+                case 3:
+                    if (8 * sizeof(int) > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) - 1 > 3 * PyLong_SHIFT) {
+                            return (int) ((((((((int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
+                        }
+                    }
+                    break;
+                case -4:
+                    if (8 * sizeof(int) - 1 > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, long, -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) - 1 > 4 * PyLong_SHIFT) {
+                            return (int) (((int)-1)*(((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
+                        }
+                    }
+                    break;
+                case 4:
+                    if (8 * sizeof(int) > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(int, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(int) - 1 > 4 * PyLong_SHIFT) {
+                            return (int) ((((((((((int)digits[3]) << PyLong_SHIFT) | (int)digits[2]) << PyLong_SHIFT) | (int)digits[1]) << PyLong_SHIFT) | (int)digits[0])));
+                        }
+                    }
+                    break;
+            }
+#endif
+            if (sizeof(int) <= sizeof(long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(int, long, PyLong_AsLong(x))
+#ifdef HAVE_LONG_LONG
+            } else if (sizeof(int) <= sizeof(PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(int, PY_LONG_LONG, PyLong_AsLongLong(x))
+#endif
+            }
+        }
+        {
+#if CYTHON_COMPILING_IN_PYPY && !defined(_PyLong_AsByteArray)
+            PyErr_SetString(PyExc_RuntimeError,
+                            "_PyLong_AsByteArray() not available in PyPy, cannot convert large numbers");
+#else
+            int val;
+            PyObject *v = __Pyx_PyNumber_IntOrLong(x);
+ #if PY_MAJOR_VERSION < 3
+            if (likely(v) && !PyLong_Check(v)) {
+                PyObject *tmp = v;
+                v = PyNumber_Long(tmp);
+                Py_DECREF(tmp);
+            }
+ #endif
+            if (likely(v)) {
+                int one = 1; int is_little = (int)*(unsigned char *)&one;
+                unsigned char *bytes = (unsigned char *)&val;
+                int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                              bytes, sizeof(val),
+                                              is_little, !is_unsigned);
+                Py_DECREF(v);
+                if (likely(!ret))
+                    return val;
+            }
+#endif
+            return (int) -1;
+        }
+    } else {
+        int val;
+        PyObject *tmp = __Pyx_PyNumber_IntOrLong(x);
+        if (!tmp) return (int) -1;
+        val = __Pyx_PyInt_As_int(tmp);
+        Py_DECREF(tmp);
+        return val;
+    }
+raise_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "value too large to convert to int");
+    return (int) -1;
+raise_neg_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "can't convert negative value to int");
+    return (int) -1;
 }
 
 /* CIntFromPy */
