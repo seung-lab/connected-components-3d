@@ -32,13 +32,15 @@
  * Date: August 2018
  */
 
+#ifndef CC3D_HPP
+#define CC3D_HPP 
+
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
 
-#ifndef CC3D_HPP
-#define CC3D_HPP 
+#include "threadpool.h"
 
 namespace cc3d {
 
@@ -398,39 +400,56 @@ template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels
+    int64_t max_labels, uint32_t parallel = 1
   ) {
 
 	const int64_t voxels = sx * sy * sz;
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  DisjointSet<uint32_t> *equivalences = new DisjointSet<uint32_t>(max_labels);
 
   uint32_t* out_labels = new uint32_t[voxels]();
-  uint32_t next_label = 0;
+
+  ThreadPool pool(parallel);
+
+  int64_t parts = std::max(sz / parallel, static_cast<int64_t>(1L));
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
-  for (int64_t z = 0; z < sz; z++) {
-    for (int64_t y = 0; y < sy; y++) {
-      for (int64_t x = 0; x < sx; x++) {
-        connect_voxel<T>(
-          x, y, z,
-          sx, sy, sz,
-          in_labels, out_labels,
-          equivalences, next_label
-        );
+  for (int64_t thread_i = 0; thread_i < parallel; thread_i++) {
+    
+    int64_t zmax = std::min(((thread_i+1) * parts), sz);
+    pool.enqueue([thread_i, parts, zmax, sx, sy, sz, in_labels, out_labels, equivalences](){
+
+      uint32_t next_label = thread_i * parts;
+      for (int64_t z = thread_i * parts; z < zmax; z++) {
+        for (int64_t y = 0; y < sy; y++) {
+          for (int64_t x = 0; x < sx; x++) {
+            connect_voxel<T>(
+              x, y, z,
+              sx, sy, sz,
+              in_labels, out_labels,
+              *equivalences, next_label
+            );
+          }
+        }
+      }
+    });
+  }
+
+  pool.join();
+
+  // Raster Scan 2: Write final labels based on equivalences
+  for (int64_t thread_i = 0; thread_i < parallel; thread_i++) {
+    for (int64_t loc = 0; loc < voxels; loc++) {
+      if (out_labels[loc]) {
+        out_labels[loc] = equivalences->root(out_labels[loc]);
       }
     }
   }
 
-  // Raster Scan 2: Write final labels based on equivalences
-  for (int64_t loc = 0; loc < voxels; loc++) {
-    if (out_labels[loc]) {
-      out_labels[loc] = equivalences.root(out_labels[loc]);
-    }
-  }
+  delete equivalences;
 
   return out_labels;
 }
