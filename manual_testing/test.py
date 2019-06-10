@@ -8,8 +8,6 @@ import time
 
 from PIL import Image
 
-from skimage.draw import random_shapes
-
 def twod():
   img = Image.open('test2d.png')
   return np.array(img)[:,:,0].T
