@@ -37,9 +37,6 @@
 
 #include "libdivide.h"
 
-#ifndef CC3D_HPP
-#define CC3D_HPP 
-
 namespace cc3d {
 
 template <typename T>
