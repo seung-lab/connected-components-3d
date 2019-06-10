@@ -1,35 +1,30 @@
 /*
  * Connected Components for 3D images. 
  * Implments a 3D variant of the two pass algorithim by
- * Rosenfeld and Pflatz augmented with Union-Find.
+ * Rosenfeld and Pflatz augmented with Union-Find and a decision
+ * tree influenced by the work of Wu et al.
  * 
- * Modern connected components algorithms appear to 
- * do better by 2x-5x depending on the data, but there is
- * no superlinear improvement. I picked this algorithm mainly
- * because it is easy to understand and implement.
- *
  * Essentially, you raster scan, and every time you first encounter 
  * a foreground pixel, mark it with a new label if the pixels to its
  * top and left are background. If there is a preexisting label in its
  * neighborhood, use that label instead. Whenever you see that two labels
  * are adjacent, record that we should unify them in the next pass. This
- * equivalency table can be constructed in several ways, but some popular
- * approaches are Union-Find with path compression and Selkow's algorithm
- * (which can avoid pipeline stalls). However, Selkow's algorithm is designed
- * for two trees of depth two, appropriate for binary images. We would like to 
- * process multiple labels at the same time, making union-find mandatory.
+ * equivalency table can be constructed in several ways, but we've choseen
+ * to use Union-Find with full path compression and union by size.
+ * 
+ * We also use a decision tree that aims to minimize the number of expensive
+ * unify operations and replaces them with simple label copies when valid.
  *
  * In the next pass, the pixels are relabeled using the equivalency table.
  * Union-Find (disjoint sets) establishes one label as the root label of a 
  * tree, and so the root is considered the representative label. Each pixel
- * is labeled with the representative label.
- *  
- * There appear to be some modern competing approaches involving decision trees,
- * and an approach called "Light Speed Labeling".
+ * is labeled with the representative label. The representative labels
+ * are themselves remapped into an increasing consecutive sequence 
+ * starting from one. 
  *
  * Author: William Silversmith
  * Affiliation: Seung Lab, Princeton University
- * Date: August 2018
+ * Date: August 2018 - June 2019
  */
 
 #include <algorithm>
