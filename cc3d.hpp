@@ -50,16 +50,19 @@ public:
   T *ids;
   size_t *size;
   size_t length;
+  bool has_size;
   DisjointSet () {
     length = 65536;
     ids = new T[length]();
     size = new size_t[length]();
+    has_size = true;
   }
 
   DisjointSet (size_t len) {
     length = len;
     ids = new T[length]();
     size = new size_t[length]();
+    has_size = true;
   }
 
   DisjointSet (const DisjointSet &cpy) {
@@ -71,11 +74,19 @@ public:
       ids[i] = cpy.ids[i];
       size[i] = cpy.size[i];
     }
+    has_size = true;
+  }
+
+  void drop_size () {
+    if (has_size) {
+      delete []size;
+      has_size = false;
+    }
   }
 
   ~DisjointSet () {
     delete []ids;
-    delete []size;
+    drop_size();
   }
 
   T root (T n) {
@@ -422,12 +433,31 @@ uint32_t* connected_components3d(
     }
   }
 
+  equivalences.drop_size();
+
+  uint32_t label;
+  uint32_t* renumber = new uint32_t[next_label + 1]();
+  next_label = 1;
+
   // Raster Scan 2: Write final labels based on equivalences
   for (int64_t loc = 0; loc < voxels; loc++) {
-    if (out_labels[loc]) {
-      out_labels[loc] = equivalences.root(out_labels[loc]);
+    if (!out_labels[loc]) {
+      continue;
+    }
+   
+    label = equivalences.root(out_labels[loc]);
+
+    if (renumber[label]) {
+      out_labels[loc] = renumber[label];
+    }
+    else {
+      renumber[label] = next_label;
+      out_labels[loc] = next_label;
+      next_label++;
     }
   }
+
+  delete[] renumber;
 
   return out_labels;
 }
