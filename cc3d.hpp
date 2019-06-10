@@ -27,6 +27,9 @@
  * Date: August 2018 - June 2019
  */
 
+#ifndef CC3D_HPP
+#define CC3D_HPP 
+
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
