@@ -203,7 +203,7 @@ template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels
+    int64_t max_labels, uint32_t *out_labels = NULL
   ) {
 
 	const int64_t sxy = sx * sy;
@@ -220,7 +220,10 @@ uint32_t* connected_components3d(
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
-  uint32_t* out_labels = new uint32_t[voxels]();
+  if (out_labels == NULL) {
+    out_labels = new uint32_t[voxels]();
+  }
+  
   uint32_t next_label = 0;
   int64_t x, y, z;
     
