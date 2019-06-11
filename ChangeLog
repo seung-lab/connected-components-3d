@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+1.2.2
+-----
+
+* release(1.2.2): avoid copying output to numpy array
+* perf: save time and memory by not copying to numpy array (#19)
+
 1.2.1
 -----
 
