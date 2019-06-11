@@ -8,8 +8,8 @@ import fastremap
 def cc3d_test(labels):
   labels, remap = fastremap.renumber(labels)
   res = cc3d.connected_components(labels)
-  uniques = np.unique(res)[1:]
-  for segid in tqdm(uniques):
+  N = np.max(labels)
+  for segid in tqdm(range(1, N+1)):
     extracted = (res == segid)
 
 def ndimage_test(labels):
