@@ -49,7 +49,7 @@ for segid in range(1, N+1):
   process(extracted_image)
 ```
 
-If you know approximately how many labels you are going to generate, you can save substantial memory by specifying a number a bit above that range. The max label ID in your input labels must be less than `max_labels`.
+If you know approximately how many labels you are going to generate, you can save substantial memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.
 
 ```python
 labels_out = connected_components(labels_in, max_labels=20000)
