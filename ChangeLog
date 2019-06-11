@@ -1,6 +1,53 @@
 CHANGES
 =======
 
+1.2.1
+-----
+
+* release(1.2.1): drop union by size for half memory and 10-20% more speed
+* perf: remove union-by-size for lower memory and better performance (#17)
+* fix: merge error
+* refactor: move includes inside ifndef
+* docs: update description in hpp file
+* chore: remove scikit-image dependency from manual testing
+
+1.2.0
+-----
+
+* release(1.2.0): return an array with a contiguous sequence of labels
+* feat: return renumbered array (#14)
+* docs: correct dense label times to 1.9 sec
+* Update README.md
+* docs: writeup of benchmark
+* docs: added benchmark images
+* test+fix: adapt perf.py to work correctly
+
+1.1.1
+-----
+
+* release: small performance improvement from tweaked decision tree
+* test: performance masurement
+* test: added script for manual testing
+* docs: give shoutout to Sutheebanjard
+* feat: two decision tree tweaks (#10)
+* chore: upgrade Dockerfile for new scipy test
+
+1.1.0
+-----
+
+* release: 1.1.0 - Change algorithm to decision tree
+* docs: shout out to Grana et al
+* feat: replace forward pass with decision tree (#8)
+* docs: add citation for Wu et al 2005 to README
+* chore: update setup.cfg
+
+1.0.7
+-----
+
+* release: 1.0.7
+* fix: no match for std::max due to type mismatch
+* chore: update ChangeLog
+
 1.0.6
 -----
 
@@ -9,11 +56,6 @@ CHANGES
 * refactor: use C++ style casts rather than C style
 * chore: add GPLv3+ classifier
 * fix: compiler warning about printf statement
-
-
-1.0.5
------
-
 * chore: bump version to 1.0.5
 * fix: 64-bit array length support (#5)
 * docs: add 64-bit test commented out
@@ -39,8 +81,16 @@ CHANGES
 * feat: better compatibility with F and C array orders
 * Update README.md
 * Update README.md
+
+1.0.2
+-----
+
 * fix: numpy 1.16.0 stopped building binaries for Python 3.4 so use 1.15.4 instead
 * chore: bump version to 1.0.2
+
+1.0.1
+-----
+
 * chore: bump version to 1.0.1
 * Update README.md
 * fix: Windows wheel creation
