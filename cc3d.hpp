@@ -10,7 +10,7 @@
  * neighborhood, use that label instead. Whenever you see that two labels
  * are adjacent, record that we should unify them in the next pass. This
  * equivalency table can be constructed in several ways, but we've choseen
- * to use Union-Find with full path compression and union by size.
+ * to use Union-Find with full path compression.
  * 
  * We also use a decision tree that aims to minimize the number of expensive
  * unify operations and replaces them with simple label copies when valid.
@@ -43,45 +43,29 @@ template <typename T>
 class DisjointSet {
 public:
   T *ids;
-  size_t *size;
   size_t length;
-  bool has_size;
+
   DisjointSet () {
     length = 65536;
     ids = new T[length]();
-    size = new size_t[length]();
-    has_size = true;
   }
 
   DisjointSet (size_t len) {
     length = len;
     ids = new T[length]();
-    size = new size_t[length]();
-    has_size = true;
   }
 
   DisjointSet (const DisjointSet &cpy) {
     length = cpy.length;
     ids = new T[length]();
-    size = new size_t[length]();
 
     for (int i = 0; i < length; i++) {
       ids[i] = cpy.ids[i];
-      size[i] = cpy.size[i];
-    }
-    has_size = true;
-  }
-
-  void drop_size () {
-    if (has_size) {
-      delete []size;
-      has_size = false;
     }
   }
 
   ~DisjointSet () {
     delete []ids;
-    drop_size();
   }
 
   T root (T n) {
@@ -106,7 +90,6 @@ public:
 
     if (ids[p] == 0) {
       ids[p] = p;
-      size[p] = 1;
     }
   }
 
@@ -128,23 +111,12 @@ public:
       j = q;
     }
 
-    if (size[i] < size[j]) {
-      ids[i] = j;
-      size[j] += size[i];
-    }
-    else {
-      ids[j] = i;
-      size[i] += size[j];
-    }
+    ids[i] = j;
   }
 
   void print() {
     for (int i = 0; i < 15; i++) {
       printf("%d, ", ids[i]);
-    }
-    printf("\n");
-    for (int i = 0; i < 15; i++) {
-      printf("%d, ", size[i]);
     }
     printf("\n");
   }
@@ -427,8 +399,6 @@ uint32_t* connected_components3d(
       equivalences.add(out_labels[loc]);
     }
   }
-
-  equivalences.drop_size();
 
   uint32_t label;
   uint32_t* renumber = new uint32_t[next_label + 1]();
