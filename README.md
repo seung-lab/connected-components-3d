@@ -43,8 +43,10 @@ labels_in = np.ones((512, 512, 512), dtype=np.int32)
 labels_out = connected_components(labels_in)
 
 # You can extract individual components like so:
-segids = [ x for x in np.unique(labels_out) if x != 0 ]
-extracted_image = labels_out * (labels_out == segid[0])
+N = np.max(labels_out)
+for segid in range(1, N+1):
+  extracted_image = labels_out * (labels_out == segid)
+  process(extracted_image)
 ```
 
 If you know approximately how many labels you are going to generate, you can save substantial memory by specifying a number a bit above that range. The max label ID in your input labels must be less than `max_labels`.
