@@ -1,6 +1,6 @@
 # Benchmarks
 
-On an x86_64 3.7 GHz Intel Core i7-4820K CPU @ 3.70GHz and DDR3 1600 MHz RAM, I compared the performance of cc3d to the commonly used `scipy.ndimage.measurements.label` which supports 26-connected binary images. cc3d was designed to handle multilabel datasets more efficiently, and does so. Scipy appears to use a "runs" based algorithm, while cc3d uses a decision tree around each voxel. 
+On an x86_64 3.7 GHz Intel Core i7-4820K CPU @ 3.70GHz with DDR3 1600 MHz RAM, I compared the performance of cc3d to the commonly used `scipy.ndimage.measurements.label` which supports 26-connected binary images. cc3d was designed to handle multilabel datasets more efficiently, and does so. Scipy appears to use a "runs" based algorithm, while cc3d uses a decision tree around each voxel. 
 
 I compared the time and memory performance of both libraries on a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
 
