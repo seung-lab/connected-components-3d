@@ -44,7 +44,7 @@ In this test, `cc3d_test` was run to completion in 225 seconds after loading the
 
 `cc3d` has a disadvantage compared with SciPy in that input images must only contain labels smaller than the maximum size of the image or that of a uint32 (whichever is smaller). That is why it is treated with `fastremap.renumber` prior to running. If it is known that the values of the labels are small compared with the image size, this additional step is not needed. The large difference in memory usage is due to the implementation of `cc3d`'s union-find data structure and the run based equivalences in SciPy. If we were to use an `std::unordered_map` in `cc3d`, it would slow down the performance of the initial run, but would reduce memory by about half, and prevent the need for using renumber. However, SciPy would still do better on memory due to its representations.
 
-# 10x Head to Head Comparison  
+# 10x Head to Head: Connectomics Data
 
 <p style="font-style: italics;" align="center">
 <img height=384 src="https://github.com/seung-lab/connected-components-3d/blob/master/benchmarks/cc3d_vs_scipy_single_label_10x.png" alt="Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.3.0 (blue) cc3d 1.2.2" /><br>
@@ -74,3 +74,27 @@ for i in tqdm(range(10)):
 ```
 
 This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. `cc3d` performs each iteration in 0.4 seconds while SciPy takes about 6.1 seconds. In previous experiments (not shown) on dense labels, `cc3d` takes about 1.3 seconds per an iteration, so it becomes faster when the volume is less dense. While in previous versions, cc3d used many times more memory than scipy in this experiment, as of version 1.2.2, the memory usage is much more comparable though SciPy is still in the lead.
+
+## 10x Head to Head: Random Binary Images  
+
+<p style="font-style: italics;" align="center">
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images.png" alt="Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images. (black) SciPy 1.3.0 (blue) cc3d 1.2.2" /><br>
+Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images. (black) SciPy 1.3.0 (blue) cc3d 1.2.2
+</p>   
+
+```python
+import numpy as np
+import scipy.ndimage.measurements
+import cc3d
+
+labels = [ 
+  np.random.randint(0,2, size=(384, 384, 384), dtype=np.bool) 
+  for _ in range(10)
+]
+
+for label in labels:
+  # scipy.ndimage.measurements.label(label)
+  cc3d.connected_components(label)
+```
+
+On random binary images, SciPy wins on memory with a peak memory cosumption of about 850 MB vs. cc3d with a peak consumption of about 1150 MB (1.4x). SciPy also wins on performance with an average time of 1.09 sec versus cc3d at 1.16 sec (1.06x). Bear in mind that 10 binary images are stored in memory at once, inflating the baseline.
