@@ -41,6 +41,8 @@ ctypedef fused INTEGER:
 
 def connected_components(data, int64_t max_labels=-1):
   """
+  ndarray connected_components(data, int64_t max_labels=-1)
+
   Connected components applied to 3D images
   with 26-connectivity and handling for multiple labels.
 
@@ -176,6 +178,45 @@ def connected_components(data, int64_t max_labels=-1):
     return out_labels.reshape( (sx), order=order)
 
 
+cpdef set region_graph(cnp.ndarray[INTEGER, ndim=3, cast=True] labels):
+  """
+  Get the 26-connected region adjacancy graph of a 2D or 3D image.
+
+  labels: 3D numpy array of integer segmentation labels
+
+  Returns: set of edges
+  """
+  cdef int64_t x = 0
+  cdef int64_t y = 0
+  cdef int64_t z = 0
+
+  cdef int64_t sx = labels.shape[0]
+  cdef int64_t sy = labels.shape[1]
+  cdef int64_t sz = labels.shape[2]
+
+  cdef set edges = set()
+
+  cdef INTEGER cur = 0
+  cdef INTEGER label = 0
+
+  for z in range(sz):
+    for y in range(sy):
+      for x in range(sx):
+        cur = labels[x,y,z]
+        if cur == 0:
+          continue
+
+        for label in neighbors(labels, x,y,z, sx,sy,sz):
+          if label == 0:
+            continue
+          elif cur != label:
+            if cur > label:
+              edges.add( (label, cur) )
+            else:
+              edges.add( (cur, label) )
+
+  return edges
+
 cdef tuple neighbors(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels, 
     int64_t x, int64_t y, int64_t z, 
@@ -214,41 +255,6 @@ cdef tuple neighbors(
     (x < sx - 1 and y <  sy - 1 and z > 0 and labels[x + 1, y + 1, z - 1]),
     (x < sx - 1 and y <  sy - 1 and z < sz - 1 and labels[x + 1, y + 1, z + 1]),
   )
-
-
-def region_graph(cnp.ndarray[INTEGER, ndim=3, cast=True] labels):
-  cdef int64_t x = 0
-  cdef int64_t y = 0
-  cdef int64_t z = 0
-
-  cdef int64_t sx = labels.shape[0]
-  cdef int64_t sy = labels.shape[1]
-  cdef int64_t sz = labels.shape[2]
-
-  cdef set edges = set()
-
-  cdef INTEGER cur = 0
-  cdef INTEGER label = 0
-
-  for z in range(sz):
-    for y in range(sy):
-      for x in range(sx):
-        cur = labels[x,y,z]
-        if cur == 0:
-          continue
-
-        for label in neighbors(labels, x,y,z, sx,sy,sz):
-          if label == 0:
-            continue
-          elif cur != label:
-            if cur > label:
-              edges.add( (label, cur) )
-            else:
-              edges.add( (cur, label) )
-
-  return edges
-
-
 
 
 
