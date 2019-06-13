@@ -388,3 +388,19 @@ def test_compare_scipy():
 # def test_sixty_four_bit():
 #   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
 #   cc3d.connected_components(input_labels, max_labels=0)  
+
+def test_region_grap():
+  labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
+
+  labels[1,1,1] = 1
+  labels[2,2,2] = 2
+  labels[3,3,3] = 3
+
+  labels[4,3,3] = 4
+  labels[2,3,3] = 5
+
+  # not connected to anything else
+  labels[6,:,:] = 6
+
+  res = cc3d.region_graph(labels)
+  assert res == set([ (1,2), (2,3), (2,5), (3,4), (3,5) ])
