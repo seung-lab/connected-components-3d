@@ -176,7 +176,7 @@ def connected_components(data, int64_t max_labels=-1):
     return out_labels.reshape( (sx), order=order)
 
 
-def neighbors(
+cdef tuple neighbors(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels, 
     int64_t x, int64_t y, int64_t z, 
     int64_t sx, int64_t sy, int64_t sz
