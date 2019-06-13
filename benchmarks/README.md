@@ -97,4 +97,4 @@ for label in labels:
   cc3d.connected_components(label)
 ```
 
-On random binary images, SciPy wins on memory with a peak memory cosumption of about 850 MB vs. cc3d with a peak consumption of about 1150 MB (1.4x). SciPy also wins on performance with an average time of 1.09 sec versus cc3d at 1.16 sec (1.06x). Bear in mind that 10 binary images are stored in memory at once, inflating the baseline.
+On random binary images, SciPy wins on memory with a peak memory cosumption of about 850 MB vs. cc3d with a peak consumption of about 1150 MB (1.4x). SciPy also wins on performance with an average time of 1.09 sec versus cc3d at 1.16 sec (1.06x). Bear in mind that 10 binary images are stored in memory at once, inflating the baseline. Each image is about 56MB, so 10 of them are about 560MB. With interpreter overhead, the baseline is somewhere around 600 MB. Therefore, SciPy uses about 250 MB and cc3d uses about 550 MB.
