@@ -29,8 +29,20 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     int64_t max_labels, uint32_t* out_labels
   )
 
+ctypedef fused INTEGER:
+  uint8_t
+  uint16_t
+  uint32_t
+  uint64_t
+  int8_t
+  int16_t
+  int32_t
+  int64_t
+
 def connected_components(data, int64_t max_labels=-1):
   """
+  ndarray connected_components(data, int64_t max_labels=-1)
+
   Connected components applied to 3D images
   with 26-connectivity and handling for multiple labels.
 
@@ -164,3 +176,86 @@ def connected_components(data, int64_t max_labels=-1):
       return out_labels.reshape( (sx, sy), order=order)
   else:
     return out_labels.reshape( (sx), order=order)
+
+
+cpdef set region_graph(cnp.ndarray[INTEGER, ndim=3, cast=True] labels):
+  """
+  Get the 26-connected region adjacancy graph of a 2D or 3D image.
+
+  labels: 3D numpy array of integer segmentation labels
+
+  Returns: set of edges
+  """
+  cdef int64_t x = 0
+  cdef int64_t y = 0
+  cdef int64_t z = 0
+
+  cdef int64_t sx = labels.shape[0]
+  cdef int64_t sy = labels.shape[1]
+  cdef int64_t sz = labels.shape[2]
+
+  cdef set edges = set()
+
+  cdef INTEGER cur = 0
+  cdef INTEGER label = 0
+
+  for z in range(sz):
+    for y in range(sy):
+      for x in range(sx):
+        cur = labels[x,y,z]
+        if cur == 0:
+          continue
+
+        for label in neighbors(labels, x,y,z, sx,sy,sz):
+          if label == 0:
+            continue
+          elif cur != label:
+            if cur > label:
+              edges.add( (label, cur) )
+            else:
+              edges.add( (cur, label) )
+
+  return edges
+
+cdef tuple neighbors(
+    cnp.ndarray[INTEGER, ndim=3, cast=True] labels, 
+    int64_t x, int64_t y, int64_t z, 
+    int64_t sx, int64_t sy, int64_t sz
+  ):
+
+  return (
+    (x > 0 and labels[x - 1, y, z]),
+    (x < sx - 1 and labels[x + 1, y, z]),
+    (y > 0 and labels[x, y - 1, z]),
+    (y < sy - 1 and labels[x, y + 1, z]),
+    (z > 0 and labels[x, y, z - 1]),
+    (z < sz - 1 and labels[x, y, z + 1]),
+
+    (x > 0 and y > 0 and labels[x - 1, y - 1, z]),
+    (x < sx - 1 and y > 0 and labels[x + 1, y - 1, z]),
+    (x > 0 and y < sy - 1 and labels[x - 1, y + 1, z]),
+    (x < sx - 1 and y < sy - 1 and labels[x + 1, y + 1, z]),
+
+    (x > 0 and z > 0 and labels[x - 1, y, z - 1]),
+    (x < sx - 1 and z > 0 and labels[x + 1, y, z - 1]),
+    (x > 0 and z < sz - 1 and labels[x - 1, y, z + 1]),
+    (x < sx - 1 and z < sz - 1 and labels[x + 1, y, z + 1]),
+
+    (y > 0 and z > 0 and labels[x, y - 1, z - 1]),
+    (y < sy - 1 and z > 0 and labels[x, y + 1, z - 1]),
+    (y > 0 and z < sz - 1 and labels[x, y - 1, z + 1]),
+    (y < sy - 1 and z < sz - 1 and labels[x, y + 1, z + 1]),
+
+    (x > 0 and y > 0 and z > 0 and labels[x - 1, y - 1, z - 1]),
+    (x < sx - 1 and y > 0 and z > 0 and labels[x + 1, y - 1, z - 1]),
+    (x > 0 and y < sy - 1 and z > 0 and labels[x - 1, y + 1, z - 1]),
+    (x > 0 and y > 0 and z < sz - 1 and labels[x - 1, y - 1, z + 1]),
+    (x < sx - 1 and y > 0 and z < sz - 1 and labels[x + 1, y - 1, z + 1]),
+    (x > 0 and y <  sy - 1 and z < sz - 1 and labels[x - 1, y + 1, z + 1]),
+    (x < sx - 1 and y <  sy - 1 and z > 0 and labels[x + 1, y + 1, z - 1]),
+    (x < sx - 1 and y <  sy - 1 and z < sz - 1 and labels[x + 1, y + 1, z + 1]),
+  )
+
+
+
+

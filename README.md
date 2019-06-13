@@ -36,17 +36,22 @@ python setup.py develop
 ## Python Use
 
 ```python
-from cc3d import connected_components
+import cc3d
 import numpy as np
 
 labels_in = np.ones((512, 512, 512), dtype=np.int32)
-labels_out = connected_components(labels_in)
+labels_out = cc3d.connected_components(labels_in)
 
 # You can extract individual components like so:
 N = np.max(labels_out)
 for segid in range(1, N+1):
   extracted_image = labels_out * (labels_out == segid)
   process(extracted_image)
+
+# We also include a 26-connected region adjacency graph function 
+# that returns a set of undirected edges. It is not optimized 
+# (100x slower than connected_components) but it could be improved.
+graph = cc3d.region_graph(labels_out) 
 ```
 
 If you know approximately how many labels you are going to generate, you can save substantial memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.
