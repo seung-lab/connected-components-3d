@@ -75,6 +75,12 @@ for i in tqdm(range(10)):
 
 This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. `cc3d` performs each iteration in 0.4 seconds while SciPy takes about 6.1 seconds. In previous experiments (not shown) on dense labels, `cc3d` takes about 1.3 seconds per an iteration, so it becomes faster when the volume is less dense. While in previous versions, cc3d used many times more memory than scipy in this experiment, as of version 1.2.2, the memory usage is much more comparable though SciPy is still in the lead.
 
+| Trial             | MVx/sec | MB/sec | Rel. Perf. |
+|-------------------|---------|--------|------------|
+| SciPy 1.3.0       | 22.0    | 44.0   | 1.00x      |
+| cc3d 1.2.2        | 335.5   | 671.1  | 15.3x      |
+
+
 ## 10x Head to Head: Random Binary Images  
 
 <p style="font-style: italics;" align="center">
@@ -105,3 +111,9 @@ for label in labels:
 ```
 
 On random binary images, SciPy wins on memory with a peak memory cosumption of about 800 MB vs. cc3d with a peak consumption of about 1150 MB (1.4x). However, SciPy doesn't perform as well as cc3d in running time with an average run time of 1.96 sec versus 1.15 sec. When cc3d's max_labels is set to 100x less than the image size, the memory usage falls to about 875 MB and the runtime falls to 1.07 sec. Bear in mind that 10 binary images are stored in memory at once, inflating the baseline. Each image is about 56MB, so 10 of them are about 560MB. With interpreter overhead, the baseline is somewhere around 600 MB. Therefore, SciPy uses about 200 MB, cc3d uses about 550 MB, and cc3d with max_labels / 100 uses about 275 MB.
+
+| Trial             | MVx/sec | MB/sec | Rel. Perf. |
+|-------------------|---------|--------|------------|
+| SciPy 1.3.0       | 28.9    | 28.9   | 1.00x      |
+| cc3d 1.2.2        | 49.2    | 49.2   | 1.70x      |
+| cc3d + max_labels | 52.9    | 52.9   | 1.83x      |
