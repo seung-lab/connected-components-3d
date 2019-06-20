@@ -9,13 +9,13 @@ I wrote this package because I was working on densely labeled 3D biomedical imag
 
 ## Python `pip` Installaction
 
-If binaries are available for your platform:
+If compatible binaries are available for your platform, installation is particularly simple. 
 
 ```bash
 pip install connected-components-3d
 ```
 
-Otherwise:  
+If compatible binaries are not available, you can install from source as follows. 
 
 *Requires a C++ compiler.*  
 
@@ -23,6 +23,8 @@ Otherwise:
 pip install numpy
 pip install connected-components-3d --no-binary :all:
 ```
+
+Occasionally, you may appear to successfully install cc3d, but on import you'll see an error that includes: `numpy.ufunc size changed, may indicate binary incompatibility`. cc3d was compiled against numpy 1.16+ and unfortunately, there was a backwards incompatibilty between numpy 1.15 and 1.16. You can either try upgrading numpy or compiling from source in this case.
 
 ## Python Manual Installation
 
