@@ -234,35 +234,22 @@ cdef tuple neighbors(
 
   return (
     (x > 0 and labels[x - 1, y, z]),
-    (x < sx - 1 and labels[x + 1, y, z]),
     (y > 0 and labels[x, y - 1, z]),
-    (y < sy - 1 and labels[x, y + 1, z]),
     (z > 0 and labels[x, y, z - 1]),
-    (z < sz - 1 and labels[x, y, z + 1]),
 
     (x > 0 and y > 0 and labels[x - 1, y - 1, z]),
     (x < sx - 1 and y > 0 and labels[x + 1, y - 1, z]),
-    (x > 0 and y < sy - 1 and labels[x - 1, y + 1, z]),
-    (x < sx - 1 and y < sy - 1 and labels[x + 1, y + 1, z]),
 
     (x > 0 and z > 0 and labels[x - 1, y, z - 1]),
     (x < sx - 1 and z > 0 and labels[x + 1, y, z - 1]),
-    (x > 0 and z < sz - 1 and labels[x - 1, y, z + 1]),
-    (x < sx - 1 and z < sz - 1 and labels[x + 1, y, z + 1]),
 
     (y > 0 and z > 0 and labels[x, y - 1, z - 1]),
     (y < sy - 1 and z > 0 and labels[x, y + 1, z - 1]),
-    (y > 0 and z < sz - 1 and labels[x, y - 1, z + 1]),
-    (y < sy - 1 and z < sz - 1 and labels[x, y + 1, z + 1]),
 
     (x > 0 and y > 0 and z > 0 and labels[x - 1, y - 1, z - 1]),
     (x < sx - 1 and y > 0 and z > 0 and labels[x + 1, y - 1, z - 1]),
     (x > 0 and y < sy - 1 and z > 0 and labels[x - 1, y + 1, z - 1]),
-    (x > 0 and y > 0 and z < sz - 1 and labels[x - 1, y - 1, z + 1]),
-    (x < sx - 1 and y > 0 and z < sz - 1 and labels[x + 1, y - 1, z + 1]),
-    (x > 0 and y <  sy - 1 and z < sz - 1 and labels[x - 1, y + 1, z + 1]),
     (x < sx - 1 and y <  sy - 1 and z > 0 and labels[x + 1, y + 1, z - 1]),
-    (x < sx - 1 and y <  sy - 1 and z < sz - 1 and labels[x + 1, y + 1, z + 1]),
   )
 
 
