@@ -3,7 +3,7 @@
 Connected Components 3D
 =======================
 
-Implementation of connected components in three dimensions using a 26-connected neighborhood. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It can be used with 2D or 3D images. 
+Implementation of connected components in three dimensions using a 26, 18, or 6 connected neighborhood. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It can be used with 2D or 3D images. 
 
 I wrote this package because I was working on densely labeled 3D biomedical images of brain tissue (e.g. 512x512x512 voxels). Other off the shelf implementations I reviewed were limited to binary images. This rendered these other packages too slow for my use case as it required masking each label and running the connected components algorithm once each time. For reference, there are often between hundreds to thousands of labels in a given volume. The benefit of this package is that it labels all connected components in one shot, improving performance by one or more orders of magnitude.
 
@@ -42,7 +42,10 @@ import cc3d
 import numpy as np
 
 labels_in = np.ones((512, 512, 512), dtype=np.int32)
-labels_out = cc3d.connected_components(labels_in)
+labels_out = cc3d.connected_components(labels_in) # 26-connected
+
+connectivity = 6 # only 26, 18, and 6 are allowed
+labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
 # You can extract individual components like so:
 N = np.max(labels_out)
@@ -56,7 +59,7 @@ for segid in range(1, N+1):
 graph = cc3d.region_graph(labels_out) 
 ```
 
-If you know approximately how many labels you are going to generate, you can save substantial memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.
+If you know approximately how many labels you are going to generate, you can save some memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.
 
 ```python
 labels_out = connected_components(labels_in, max_labels=20000)
@@ -79,7 +82,7 @@ uint32_t* cc_labels = cc3d::connected_components3d<int>(
 
 ## Algorithm Description
 
-The algorithm contained in this package is an elaboration into 3D images of the 2D image connected components algorithm described by Rosenfeld and Pflatz (RP) in 1968 [1] (which is well illustrated by [this youtube video](https://www.youtube.com/watch?v=ticZclUYy88)) using an equivalency list implemented as Tarjan's Union-Find disjoint set with path compression and balancing [2] and augmented with a decision tree based on work by Wu, Otoo, and Suzuki (WOS). [3]
+The algorithm contained in this package is an elaboration into 3D images of the 2D image connected components algorithm described by Rosenfeld and Pflatz (RP) in 1968 [1] (which is well illustrated by [this youtube video](https://www.youtube.com/watch?v=ticZclUYy88)) using an equivalency list implemented as Tarjan's Union-Find disjoint set with path compression and balancing [2] and augmented with a decision tree based on work by Wu, Otoo, and Suzuki (WOS). [3] The description below describes the 26-connected algorithm, but once you understand it, deriving 18 and 6 are simple.
 
 ### First Principles in 2D
 
