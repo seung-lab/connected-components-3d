@@ -279,9 +279,9 @@ uint32_t* connected_components3d_26(
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
-  for (int64_t z = 0; z < sz; z++) {
-    for (int64_t y = 0; y < sy; y++) {
-      for (int64_t x = 0; x < sx; x++) {
+  for (int32_t z = 0; z < sz; z++) {
+    for (int32_t y = 0; y < sy; y++) {
+      for (int32_t x = 0; x < sx; x++) {
         loc = x + sx * (y + sy * z);
         const T cur = in_labels[loc];
 
