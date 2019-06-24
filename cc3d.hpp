@@ -190,6 +190,11 @@ inline void unify2d_lt(
   }
 }
 
+// This is the second raster pass of the two pass algorithm family.
+// The input array (output_labels) has been assigned provisional 
+// labels and this resolves them into their final labels. We
+// modify this pass to also ensure that the output labels are
+// numbered from 1 sequentially.
 uint32_t* relabel(
     uint32_t* out_labels, const int64_t voxels,
     const int64_t num_labels, DisjointSet<uint32_t> &equivalences
