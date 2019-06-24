@@ -66,10 +66,10 @@ class DimensionError(Exception):
 
 def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
   """
-  ndarray connected_components(data, int64_t max_labels=-1)
+  ndarray connected_components(data, int64_t max_labels=-1, int64_t connectivity=26)
 
-  Connected components applied to 3D images
-  with 26-connectivity and handling for multiple labels.
+  Connected components applied to 3D images with 
+  handling for multiple labels.
 
   Required:
     data: Input weights in a 2D or 3D numpy array. 
@@ -77,6 +77,7 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
     max_labels (int): save memory by predicting the maximum
       number of possible labels that might be output.
       Defaults to number of voxels.
+    connectivity (int): 6 (voxel faces), 18 (+edges), or 26 (+corners)
   
   Returns: 2D or 3D numpy array remapped to reflect
     the connected components.
