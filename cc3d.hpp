@@ -195,7 +195,7 @@ inline void unify2d_lt(
 // labels and this resolves them into their final labels. We
 // modify this pass to also ensure that the output labels are
 // numbered from 1 sequentially.
-inline uint32_t* relabel(
+uint32_t* relabel(
     uint32_t* out_labels, const int64_t voxels,
     const int64_t num_labels, DisjointSet<uint32_t> &equivalences
   ) {
@@ -281,9 +281,8 @@ uint32_t* connected_components3d_26(
   // record equivalences in a disjoint set.
   for (int64_t z = 0; z < sz; z++) {
     for (int64_t y = 0; y < sy; y++) {
-      loc = sx * (y + sy * z);
       for (int64_t x = 0; x < sx; x++) {
-        loc += 1;
+        loc = x + sx * (y + sy * z);
         const T cur = in_labels[loc];
 
         if (cur == 0) {
