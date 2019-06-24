@@ -195,7 +195,7 @@ inline void unify2d_lt(
 // labels and this resolves them into their final labels. We
 // modify this pass to also ensure that the output labels are
 // numbered from 1 sequentially.
-uint32_t* relabel(
+inline uint32_t* relabel(
     uint32_t* out_labels, const int64_t voxels,
     const int64_t num_labels, DisjointSet<uint32_t> &equivalences
   ) {
@@ -281,8 +281,9 @@ uint32_t* connected_components3d_26(
   // record equivalences in a disjoint set.
   for (int64_t z = 0; z < sz; z++) {
     for (int64_t y = 0; y < sy; y++) {
+      loc = sx * (y + sy * z);
       for (int64_t x = 0; x < sx; x++) {
-        loc = x + sx * (y + sy * z);
+        loc += 1;
         const T cur = in_labels[loc];
 
         if (cur == 0) {
@@ -657,16 +658,6 @@ template <typename T>
 uint32_t* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity=26
-  ) {
-  const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T>(in_labels, sx, sy, sz, voxels, connectivity);
-}
-
-template <typename T>
-uint32_t* connected_components3d(
-    T* in_labels, 
-    const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels, const int64_t connectivity,
     uint32_t *out_labels = NULL
   ) {
@@ -692,6 +683,16 @@ uint32_t* connected_components3d(
   else {
     throw "Only 6, 18, and 26 3D connectivities are supported.";
   }
+}
+
+template <typename T>
+uint32_t* connected_components3d(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy, const int64_t sz,
+    const int64_t connectivity=26
+  ) {
+  const int64_t voxels = sx * sy * sz;
+  return connected_components3d<T>(in_labels, sx, sy, sz, voxels, connectivity);
 }
 
 };
