@@ -1,6 +1,26 @@
 CHANGES
 =======
 
+1.3.0
+-----
+
+* release(1.3.0): add basic region graph function
+* feat: region graph function (#20)
+* Update README.md
+* Update README.md
+* docs: add table to benchmarks on head to head comparisons
+* docs+fix: random benchmark was not using 26-connected on scipy
+* Update README.md
+* Update README.md
+* docs: add benchmark for random binary images
+* Update README.md
+* docs: update changelog
+* docs: change language around max\_labels usage
+* docs: update instructions for extracting labels
+* docs: update multilabel benchmark for 1.2.2
+* chore: update perf.py with new way of finding max labels
+* docs: update head to head benchmark
+
 1.2.2
 -----
 

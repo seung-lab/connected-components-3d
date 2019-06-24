@@ -364,7 +364,7 @@ def test_max_labels_nonsensical():
   assert np.all(real_labels == zero_labels)
   assert np.all(real_labels == negative_labels)
 
-def test_compare_scipy():
+def test_compare_scipy_26():
   import scipy.ndimage.measurements
 
   sx, sy, sz = 256, 256, 256
@@ -376,8 +376,43 @@ def test_compare_scipy():
     [[1,1,1], [1,1,1], [1,1,1]]
   ]
 
-  cc3d_labels = cc3d.connected_components(labels)
+  cc3d_labels = cc3d.connected_components(labels, connectivity=26)
   scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
+
+  print(cc3d_labels)
+  print(scipy_labels)
+
+  assert np.all(cc3d_labels == scipy_labels)
+
+def test_compare_scipy_18():
+  import scipy.ndimage.measurements
+
+  sx, sy, sz = 256, 256, 256
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+
+  structure = [
+    [[0,1,0], [1,1,1], [0,1,0]],
+    [[1,1,1], [1,1,1], [1,1,1]],
+    [[0,1,0], [1,1,1], [0,1,0]]
+  ]
+
+  cc3d_labels = cc3d.connected_components(labels, connectivity=18)
+  scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
+
+  print(cc3d_labels)
+  print(scipy_labels)
+
+  assert np.all(cc3d_labels == scipy_labels)
+
+
+def test_compare_scipy_6():
+  import scipy.ndimage.measurements
+
+  sx, sy, sz = 256, 256, 256
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+
+  cc3d_labels = cc3d.connected_components(labels, connectivity=6)
+  scipy_labels, wow = scipy.ndimage.measurements.label(labels)
 
   print(cc3d_labels)
   print(scipy_labels)
@@ -389,18 +424,103 @@ def test_compare_scipy():
 #   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
 #   cc3d.connected_components(input_labels, max_labels=0)  
 
-def test_region_grap():
+def test_region_graph_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
-  labels[1,1,1] = 1
-  labels[2,2,2] = 2
-  labels[3,3,3] = 3
+  labels[5,5,5] = 1
+  labels[6,6,6] = 2
+  labels[4,4,6] = 3
+  labels[4,6,6] = 4
+  labels[6,4,6] = 5
 
-  labels[4,3,3] = 4
-  labels[2,3,3] = 5
+  labels[4,4,4] = 6
+  labels[4,6,4] = 7
+  labels[6,4,4] = 8
+  labels[6,6,4] = 9
 
   # not connected to anything else
-  labels[6,:,:] = 6
+  labels[1,:,:] = 10
 
-  res = cc3d.region_graph(labels)
-  assert res == set([ (1,2), (2,3), (2,5), (3,4), (3,5) ])
+  res = cc3d.region_graph(labels, connectivity=26)
+  assert res == set([ (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9) ])
+
+  res = cc3d.region_graph(labels, connectivity=18)
+  assert res == set()
+
+  res = cc3d.region_graph(labels, connectivity=6)
+  assert res == set()
+
+def test_region_graph_18():
+  labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
+
+  labels[5,5,5] = 1
+  labels[5,6,6] = 2
+  labels[5,4,6] = 3
+  labels[6,5,6] = 4
+  labels[4,5,6] = 5
+
+  labels[5,4,4] = 6
+  labels[5,6,4] = 7
+  labels[6,5,4] = 8
+  labels[4,5,4] = 9
+
+  # not connected to anything else
+  labels[1,:,:] = 10
+
+  res = cc3d.region_graph(labels, connectivity=26)
+  assert res == set([ 
+    (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), 
+    (2,4), (2,5), (3,4), (3,5),
+    (6,8), (6,9), (7,8), (7,9),
+  ])
+
+  res = cc3d.region_graph(labels, connectivity=18)
+  assert res == set([ 
+    (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), 
+    (2,4), (2,5), (3,4), (3,5),
+    (6,8), (6,9), (7,8), (7,9),
+  ])
+
+  res = cc3d.region_graph(labels, connectivity=6)
+  assert res == set()
+
+
+def test_region_graph_6():
+  labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
+
+  labels[5,5,5] = 1
+
+  labels[5,5,6] = 2
+  labels[5,5,4] = 3
+
+  labels[4,5,5] = 4
+  labels[6,5,5] = 5
+
+  labels[5,4,5] = 6
+  labels[5,6,5] = 7
+
+  # not connected to anything else
+  labels[1,:,:] = 10
+
+  res = cc3d.region_graph(labels, connectivity=26)
+  assert res == set([ 
+    (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
+    (2,4), (2,5), (2,6), (2,7),
+    (3,4), (3,5), (3,6), (3,7),
+    (4,6), (4,7),
+    (5,6), (5,7)
+  ])
+
+  res = cc3d.region_graph(labels, connectivity=18)
+  assert res == set([ 
+    (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
+    (2,4), (2,5), (2,6), (2,7),
+    (3,4), (3,5), (3,6), (3,7),
+    (4,6), (4,7),
+    (5,6), (5,7)
+  ])
+
+  res = cc3d.region_graph(labels, connectivity=6)
+  assert res == set([
+    (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
+  ])

@@ -37,7 +37,7 @@ int main () {
 		big[i] = 1;
 	}
 
-	cc3d::connected_components3d(big, 512,512,512);	
+	cc3d::connected_components3d<int>(big, 512,512,512);	
 
 
 	// int twod[25] = {
