@@ -186,15 +186,23 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
   else:
     return out_labels.reshape( (sx), order=order)
 
-
-cpdef set region_graph(cnp.ndarray[INTEGER, ndim=3, cast=True] labels):
+cpdef set region_graph(
+    cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
+    int8_t connectivity=26
+  ):
   """
-  Get the 26-connected region adjacancy graph of a 2D or 3D image.
+  Get the N-connected region adjacancy graph of a 3D image.
+
+  Supports 26, 18, and 6 connectivities.
 
   labels: 3D numpy array of integer segmentation labels
+  connectivity: 6, 16, or 26 (default)
 
   Returns: set of edges
   """
+  if connectivity not in (6, 18, 26):
+    raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
+
   cdef int64_t x = 0
   cdef int64_t y = 0
   cdef int64_t z = 0
@@ -215,7 +223,7 @@ cpdef set region_graph(cnp.ndarray[INTEGER, ndim=3, cast=True] labels):
         if cur == 0:
           continue
 
-        for label in neighbors(labels, x,y,z, sx,sy,sz):
+        for label in neighbors(labels, x,y,z, sx,sy,sz, connectivity):
           if label == 0:
             continue
           elif cur != label:
@@ -229,28 +237,57 @@ cpdef set region_graph(cnp.ndarray[INTEGER, ndim=3, cast=True] labels):
 cdef tuple neighbors(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels, 
     int64_t x, int64_t y, int64_t z, 
-    int64_t sx, int64_t sy, int64_t sz
+    int64_t sx, int64_t sy, int64_t sz,
+    int16_t connectivity
   ):
 
-  return (
-    (x > 0 and labels[x - 1, y, z]),
-    (y > 0 and labels[x, y - 1, z]),
-    (z > 0 and labels[x, y, z - 1]),
+  if connectivity == 6:
+    return (
+      # N=6
+      (x > 0 and labels[x - 1, y, z]),
+      (y > 0 and labels[x, y - 1, z]),
+      (z > 0 and labels[x, y, z - 1]),
+    )
+  elif connectivity == 18:
+    return (
+      # N=6
+      (x > 0 and labels[x - 1, y, z]),
+      (y > 0 and labels[x, y - 1, z]),
+      (z > 0 and labels[x, y, z - 1]),
 
-    (x > 0 and y > 0 and labels[x - 1, y - 1, z]),
-    (x < sx - 1 and y > 0 and labels[x + 1, y - 1, z]),
+      # N=18
+      (x > 0 and y > 0 and labels[x - 1, y - 1, z]),
+      (x < sx - 1 and y > 0 and labels[x + 1, y - 1, z]),
 
-    (x > 0 and z > 0 and labels[x - 1, y, z - 1]),
-    (x < sx - 1 and z > 0 and labels[x + 1, y, z - 1]),
+      (x > 0 and z > 0 and labels[x - 1, y, z - 1]),
+      (x < sx - 1 and z > 0 and labels[x + 1, y, z - 1]),
 
-    (y > 0 and z > 0 and labels[x, y - 1, z - 1]),
-    (y < sy - 1 and z > 0 and labels[x, y + 1, z - 1]),
+      (y > 0 and z > 0 and labels[x, y - 1, z - 1]),
+      (y < sy - 1 and z > 0 and labels[x, y + 1, z - 1]),
+    )
+  else:
+    return (
+      # N=6
+      (x > 0 and labels[x - 1, y, z]),
+      (y > 0 and labels[x, y - 1, z]),
+      (z > 0 and labels[x, y, z - 1]),
 
-    (x > 0 and y > 0 and z > 0 and labels[x - 1, y - 1, z - 1]),
-    (x < sx - 1 and y > 0 and z > 0 and labels[x + 1, y - 1, z - 1]),
-    (x > 0 and y < sy - 1 and z > 0 and labels[x - 1, y + 1, z - 1]),
-    (x < sx - 1 and y <  sy - 1 and z > 0 and labels[x + 1, y + 1, z - 1]),
-  )
+      # N=18
+      (x > 0 and y > 0 and labels[x - 1, y - 1, z]),
+      (x < sx - 1 and y > 0 and labels[x + 1, y - 1, z]),
+
+      (x > 0 and z > 0 and labels[x - 1, y, z - 1]),
+      (x < sx - 1 and z > 0 and labels[x + 1, y, z - 1]),
+
+      (y > 0 and z > 0 and labels[x, y - 1, z - 1]),
+      (y < sy - 1 and z > 0 and labels[x, y + 1, z - 1]),
+
+      # N=26
+      (x > 0 and y > 0 and z > 0 and labels[x - 1, y - 1, z - 1]),
+      (x < sx - 1 and y > 0 and z > 0 and labels[x + 1, y - 1, z - 1]),
+      (x > 0 and y < sy - 1 and z > 0 and labels[x - 1, y + 1, z - 1]),
+      (x < sx - 1 and y <  sy - 1 and z > 0 and labels[x + 1, y + 1, z - 1]),
+    )
 
 
 
