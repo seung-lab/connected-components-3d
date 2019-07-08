@@ -7,6 +7,8 @@ Implementation of connected components in three dimensions using a 26, 18, or 6 
 
 I wrote this package because I was working on densely labeled 3D biomedical images of brain tissue (e.g. 512x512x512 voxels). Other off the shelf implementations I reviewed were limited to binary images. This rendered these other packages too slow for my use case as it required masking each label and running the connected components algorithm once each time. For reference, there are often between hundreds to thousands of labels in a given volume. The benefit of this package is that it labels all connected components in one shot, improving performance by one or more orders of magnitude.
 
+Check out [benchmarks](https://github.com/seung-lab/connected-components-3d/tree/master/benchmarks) to see a comparison with SciPy on a few different tasks.  
+
 ## Python `pip` Installaction
 
 If compatible binaries are available for your platform, installation is particularly simple. 
