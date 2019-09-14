@@ -2,6 +2,15 @@ import cc3d
 import numpy as np
 from dataIO import ReadH5File
 
+def is2D(points):
+    if all_same(points[:,0]) or all_same(points[:,1]) or all_same(points[:,2]):
+        return True
+    else:
+        return False
+
+def all_same(items):
+    return all(x == items[0] for x in items)
+
 data_in = ReadH5File("/home/frtim/wiring/raw_data/segmentations/JWR/cell032_downsampled.h5")
 
 print("data was read in; shape: " + str(data_in.shape) + "; DataType is: " + str(data_in.dtype))
@@ -39,22 +48,29 @@ import matplotlib.pyplot as plt
 import time
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-for region in range(5,6):
+for region in range(2,50):
+    print("Loading component " + str(region) +"...")
     #further examine component 3 (random choice)
     # find coordinates of points that belong to component three
     idx_compThree = np.argwhere(labels_out==region)
     # debug: print indices and check that all points are labeld as three
-    print(idx_compThree)
+    #print(idx_compThree)
     cods = np.array([idx_compThree[:,0],idx_compThree[:,1],idx_compThree[:,2]]).transpose()
-    print(cods)
+    #print(cods)
 
     # debug: plot points as 3D scatter plot
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(cods[:,0],cods[:,1],cods[:,2])
+    ax.scatter(cods[:,0],cods[:,1],cods[:,2],c='b')
+
+    if not is2D(cods):
+        # compute hull and its extremum points
+        hull = ConvexHull(cods)
+        boundary_idx = np.unique(hull.simplices)
+        boundary_pts_cods = cods[boundary_idx,:]
+        ax.scatter(boundary_pts_cods[:,0],boundary_pts_cods[:,1],boundary_pts_cods[:,2],c='r')
+
     plt.show()
-    hull = ConvexHull(cods)
-    print(hull)
 
 #idx = np.unravel_index(unique_inverse[:15], (200,500,500))
 
