@@ -32,12 +32,29 @@ print("Conntected Regions found: " + str(N))
 unique, unique_inverse, counts = np.unique(labels_out, return_counts=True, return_inverse = True)
 print(dict(zip(unique, counts)))
 
-#further examine component 3 (random choice)
-idx_compThree = np.argwhere(labels_out==3)
-#idx_conpThree = np.unravel_index(idx_componentThree, (200,500,500))
+## DEBUG:
 
-print(idx_compThree)
-print(labels_out[idx_compThree])
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+import time
+from scipy.spatial import ConvexHull, convex_hull_plot_2d
+
+for region in range(5,6):
+    #further examine component 3 (random choice)
+    # find coordinates of points that belong to component three
+    idx_compThree = np.argwhere(labels_out==region)
+    # debug: print indices and check that all points are labeld as three
+    print(idx_compThree)
+    cods = np.array([idx_compThree[:,0],idx_compThree[:,1],idx_compThree[:,2]]).transpose()
+    print(cods)
+
+    # debug: plot points as 3D scatter plot
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(cods[:,0],cods[:,1],cods[:,2])
+    plt.show()
+    hull = ConvexHull(cods)
+    print(hull)
 
 #idx = np.unravel_index(unique_inverse[:15], (200,500,500))
 
