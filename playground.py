@@ -3,6 +3,9 @@
 import numpy as np
 a = np.repeat(2,6)
 print(a)
+
+print(np.max(np.absolute([5,0])))
+
 # from scipy.spatial import ConvexHull, convex_hull_plot_2d
 # points = np.random.rand(30, 2)   # 30 random points in 2-D
 # hull = ConvexHull(points)

@@ -100,6 +100,7 @@ def checkifwhole(boundary_pts_cods):
     isWhole = False
     adjComp = np.zeros((6, boundary_pts_cods.shape[0]))
     counter = 0
+    connectedNeuron = -1
 
     for p in boundary_pts_cods:
         adjComp[:,counter] = getadjcomp(p)
@@ -111,7 +112,15 @@ def checkifwhole(boundary_pts_cods):
 
     elif len(np.unique(adjComp))==2:
         isWhole = True
-        print("Whole detected!")
+
+        #find Neuron that this whole is connected to
+        connectedNeuron = np.max(np.absolute(np.unique(adjComp)))
+        print("Whole detected! Conntected to Neuron " + str(int(connectedNeuron)))
+
+        #check if whole is composed of Zeros
+        if (np.min(np.absolute(np.unique(adjComp)))!= 0):
+            isWhole = False
+            print("Error! Whole is not composed of 0 and hence is not a valid Whole!")
 
     elif len(np.unique(adjComp))==1:
         print("Error, this connected component was detected wrong!")
@@ -119,8 +128,9 @@ def checkifwhole(boundary_pts_cods):
     else:
         print("This connected component is not a whole (>2 neighbors)!")
 
-    return isWhole
+    return isWhole, connectedNeuron
 
+#read data from HD5, given the file path
 def readData(filename):
     # read in data block
     data_in = ReadH5File(filename)
@@ -128,8 +138,9 @@ def readData(filename):
     global labels
     labels = data_in[x_start:x_end,y_start:y_end,z_start:z_end]
 
-    print("data was read in; shape: " + str(data_in.shape) + "; DataType is: " + str(data_in.dtype))
+    print("data was read in; shape: " + str(labels.shape) + "; DataType is: " + str(data_in.dtype))
 
+#compute the connected Com ponent labels
 def computeConnectedComp():
     lables_inverse = 1 - labels
     connectivity = 6 # only 26, 18, and 6 are allowed
@@ -146,10 +157,16 @@ def computeConnectedComp():
 
     return labels_out, n_comp
 
+# fill a whole by changing the labels to the neuron it belongs to
+def fillWhole(cods,connectedNeuron):
+
+    labels[cods[:,0],cods[:,1],cods[:,2]] = np.ones((cods.shape[0],))*connectedNeuron
+    print("Whole has been filled!!")
+
 def main():
 
     # turn Visualization on and off
-    Viz = True
+    Viz = False
 
     # read in data (written to global variable labels")
     readData("/home/frtim/wiring/raw_data/segmentations/JWR/cell032_downsampled.h5")
@@ -172,8 +189,13 @@ def main():
             boundary_pts_cods = convHull3D(cods)
 
         # check if connected component is a whole
-        isWhole = checkifwhole(boundary_pts_cods)
+        isWhole, connectedNeuron = checkifwhole(boundary_pts_cods)
 
+        # fill whole if detected
+        if isWhole:
+            fillWhole(cods, connectedNeuron)
+
+        #fill wholes
         if (Viz):
             # debug: plot points as 3D scatter plot, extreme points in red
             fig = plt.figure()
