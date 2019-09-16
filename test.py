@@ -45,32 +45,32 @@ def all_same(items):
 # fits a convex hull to a 2D point object and returns the coordinates of the points that describe the border
 def convHull2D(points):
     if all_same(points[:,0]):
-        cods = np.array([points[:,1],points[:,2]]).transpose()
-        hull = ConvexHull(cods)
+        coods = np.array([points[:,1],points[:,2]]).transpose()
+        hull = ConvexHull(coods)
         boundary_idx = np.unique(hull.simplices)
-        boundary_pts_cods = points[boundary_idx,:]
+        boundary_pts_coods = points[boundary_idx,:]
 
     if all_same(points[:,1]):
-        cods = np.array([points[:,0],points[:,2]]).transpose()
-        hull = ConvexHull(cods)
+        coods = np.array([points[:,0],points[:,2]]).transpose()
+        hull = ConvexHull(coods)
         boundary_idx = np.unique(hull.simplices)
-        boundary_pts_cods = points[boundary_idx,:]
+        boundary_pts_coods = points[boundary_idx,:]
 
     if all_same(points[:,2]):
-        cods = np.array([points[:,0],points[:,1]]).transpose()
-        hull = ConvexHull(cods)
+        coods = np.array([points[:,0],points[:,1]]).transpose()
+        hull = ConvexHull(coods)
         boundary_idx = np.unique(hull.simplices)
-        boundary_pts_cods = points[boundary_idx,:]
+        boundary_pts_coods = points[boundary_idx,:]
 
-    return boundary_pts_cods
+    return boundary_pts_coods
 
 # fits a convex hull to a 3D point object and returns the coordinates of the points that describe the hull surface
 def convHull3D(points):
     hull = ConvexHull(points)
     boundary_idx = np.unique(hull.simplices)
-    boundary_pts_cods = points[boundary_idx,:]
+    boundary_pts_coods = points[boundary_idx,:]
 
-    return boundary_pts_cods
+    return boundary_pts_coods
 
 # returns the 6 adjacent components for a point, adjacent component is -1 if out of boundary
 def getadjcomp(p):
@@ -95,14 +95,14 @@ def getadjcomp(p):
     return comp
 
 # checks the adjacent coponents of an array of boundary points and applies rules to check if whole (see code)
-def checkifwhole(boundary_pts_cods):
+def checkifwhole(boundary_pts_coods):
 
     isWhole = False
-    adjComp = np.zeros((6, boundary_pts_cods.shape[0]))
+    adjComp = np.zeros((6, boundary_pts_coods.shape[0]))
     counter = 0
     connectedNeuron = -1
 
-    for p in boundary_pts_cods:
+    for p in boundary_pts_coods:
         adjComp[:,counter] = getadjcomp(p)
         counter = counter + 1
 
@@ -158,15 +158,43 @@ def computeConnectedComp():
     return labels_out, n_comp
 
 # fill a whole by changing the labels to the neuron it belongs to
-def fillWhole(cods,connectedNeuron):
+def fillWhole(coods,connectedNeuron):
 
-    labels[cods[:,0],cods[:,1],cods[:,2]] = np.ones((cods.shape[0],))*connectedNeuron
+    labels[coods[:,0],coods[:,1],coods[:,2]] = np.ones((coods.shape[0],))*connectedNeuron
     print("Whole has been filled!!")
+
+# find the coordinates of the points that belong to a selected connected component
+def findCoodsOfComp(compQuery, compLabels):
+    print("Loading component " + str(compQuery) +"...")
+    # find coordinates of points that belong to component
+    idx_comp = np.argwhere(compLabels==compQuery)
+    # find coordinates of connected component
+    coods = np.array([idx_comp[:,0],idx_comp[:,1],idx_comp[:,2]]).transpose()
+    return coods
+
+# find the points that describe the hull space of a given set of points
+def findHullPoints(points):
+    # check if selected points are in a plane (2D object) and compute points that define hull surface
+    if is2D(points):
+        HullPts= convHull2D(points)
+    else:
+        HullPts = convHull3D(points)
+
+    return HullPts
+
+# show points of a cloud in blue and mark the hull points in red
+def runViz(coods, hull_coods):
+    # debug: plot points as 3D scatter plot, extreme points in red
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(coods[:,0],coods[:,1],coods[:,2],c='b')
+    ax.scatter(hull_coods[:,0],hull_coods[:,1],hull_coods[:,2],c='r')
+    plt.show()
 
 def main():
 
     # turn Visualization on and off
-    Viz = False
+    Viz = True
 
     # read in data (written to global variable labels")
     readData("/home/frtim/wiring/raw_data/segmentations/JWR/cell032_downsampled.h5")
@@ -175,34 +203,25 @@ def main():
     labels_out, n_comp = computeConnectedComp()
 
     # check if connected component is a whole)
-    n_start = 2 if Viz else 0
+    # start at 1 as component 0 is always the neuron itself, which has label 1
+    n_start = 2 if Viz else 1
     for region in range(n_start,n_comp):
-        print("Loading component " + str(region) +"...")
-        # find coordinates of points that belong to component
-        idx_compThree = np.argwhere(labels_out==region)
-        # find coordinates of connected component
-        cods = np.array([idx_compThree[:,0],idx_compThree[:,1],idx_compThree[:,2]]).transpose()
-        # check if selected points are in a plane (2D object) and compute points that define hull surface
-        if is2D(cods):
-            boundary_pts_cods = convHull2D(cods)
-        else:
-            boundary_pts_cods = convHull3D(cods)
+
+        # find coordinates of points that belong to the selected component
+        coods = findCoodsOfComp(region, labels_out)
+
+        # find coordinates that describe the hull space
+        hull_coods = findHullPoints(coods)
 
         # check if connected component is a whole
-        isWhole, connectedNeuron = checkifwhole(boundary_pts_cods)
+        isWhole, connectedNeuron = checkifwhole(hull_coods)
 
         # fill whole if detected
-        if isWhole:
-            fillWhole(cods, connectedNeuron)
+        if isWhole: fillWhole(coods, connectedNeuron)
 
-        #fill wholes
-        if (Viz):
-            # debug: plot points as 3D scatter plot, extreme points in red
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(cods[:,0],cods[:,1],cods[:,2],c='b')
-            ax.scatter(boundary_pts_cods[:,0],boundary_pts_cods[:,1],boundary_pts_cods[:,2],c='r')
-            plt.show()
+        # run visualization
+        if Viz: runViz(coods,hull_coods)
+
 
 if __name__== "__main__":
   main()
