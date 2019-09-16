@@ -1,17 +1,21 @@
+
+
 import numpy as np
-from scipy.spatial import ConvexHull, convex_hull_plot_2d
-points = np.random.rand(30, 2)   # 30 random points in 2-D
-hull = ConvexHull(points)
-
-import matplotlib.pyplot as plt
-plt.plot(points[:,0], points[:,1], 'o')
-print(points)
-print("Simplices: ")
-print(hull.simplices)
-for simplex in hull.simplices:
-    plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
-
-plt.show()
+a = np.repeat(2,6)
+print(a)
+# from scipy.spatial import ConvexHull, convex_hull_plot_2d
+# points = np.random.rand(30, 2)   # 30 random points in 2-D
+# hull = ConvexHull(points)
+#
+# import matplotlib.pyplot as plt
+# plt.plot(points[:,0], points[:,1], 'o')
+# print(points)
+# print("Simplices: ")
+# print(hull.simplices)
+# for simplex in hull.simplices:
+#     plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
+#
+# plt.show()
 # from mpl_toolkits.mplot3d import Axes3D
 # import matplotlib.pyplot as plt
 # import numpy as np
