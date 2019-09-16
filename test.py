@@ -130,53 +130,57 @@ def readData(filename):
 
     print("data was read in; shape: " + str(data_in.shape) + "; DataType is: " + str(data_in.dtype))
 
-def main():
-
-    # read in data (written to global variable labels")
-    readData("/home/frtim/wiring/raw_data/segmentations/JWR/cell032_downsampled.h5")
-
-    t = time.time()
+def computeConnectedComp():
     lables_inverse = 1 - labels
-    print("elapsed: " + str(time.time() - t))
-
     connectivity = 6 # only 26, 18, and 6 are allowed
     labels_out = cc3d.connected_components(lables_inverse, connectivity=connectivity)
 
     # You can extract individual components like so:
-    N = np.max(labels_out)
-    print("Conntected Regions found: " + str(N))
+    n_comp = np.max(labels_out)
+    print("Conntected Regions found: " + str(n_comp))
 
     # determine indices, numbers and counts for the connected regions
-    unique, unique_inverse, counts = np.unique(labels_out, return_counts=True, return_inverse = True)
+    unique, counts = np.unique(labels_out, return_counts=True)
     print("Conntected regions and associated points: ")
     print(dict(zip(unique, counts)))
 
+    return labels_out, n_comp
 
-    for region in range(2,50):
+def main():
+
+    # turn Visualization on and off
+    Viz = True
+
+    # read in data (written to global variable labels")
+    readData("/home/frtim/wiring/raw_data/segmentations/JWR/cell032_downsampled.h5")
+
+    #compute the labels of the conencted connected components
+    labels_out, n_comp = computeConnectedComp()
+
+    # check if connected component is a whole)
+    n_start = 2 if Viz else 0
+    for region in range(n_start,n_comp):
         print("Loading component " + str(region) +"...")
-        #further examine component 3 (random choice)
-        # find coordinates of points that belong to component three
+        # find coordinates of points that belong to component
         idx_compThree = np.argwhere(labels_out==region)
-        # debug: print indices and check that all points are labeld as three
-        #print(idx_compThree)
+        # find coordinates of connected component
         cods = np.array([idx_compThree[:,0],idx_compThree[:,1],idx_compThree[:,2]]).transpose()
-        #print(cods)
-
-        # debug: plot points as 3D scatter plot
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(cods[:,0],cods[:,1],cods[:,2],c='b')
-
+        # check if selected points are in a plane (2D object) and compute points that define hull surface
         if is2D(cods):
             boundary_pts_cods = convHull2D(cods)
         else:
             boundary_pts_cods = convHull3D(cods)
 
-        checkifwhole(boundary_pts_cods)
+        # check if connected component is a whole
+        isWhole = checkifwhole(boundary_pts_cods)
 
-        ax.scatter(boundary_pts_cods[:,0],boundary_pts_cods[:,1],boundary_pts_cods[:,2],c='r')
-
-        plt.show()
+        if (Viz):
+            # debug: plot points as 3D scatter plot, extreme points in red
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.scatter(cods[:,0],cods[:,1],cods[:,2],c='b')
+            ax.scatter(boundary_pts_cods[:,0],boundary_pts_cods[:,1],boundary_pts_cods[:,2],c='r')
+            plt.show()
 
 if __name__== "__main__":
   main()
