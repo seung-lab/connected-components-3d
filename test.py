@@ -201,7 +201,7 @@ def doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, cnt):
     # First column: Check if connected component is a whole
     if isWhole: statTable[cnt,0] = 1
     else: statTable[cnt,0] = 0
-    
+
     # check if this is a 3D whole (1 if is 3D, otherwise 0)
     if is2D(coods): statTable[cnt,1] = 0
     else: statTable[cnt,1] = 1
@@ -285,6 +285,8 @@ def writeStatistics(statTable, statistics_path, sample_name):
 
     header =  header_a + header_b + header_c + header_d + header_e + header_f
 
+    if(header.count(',')!=(statTable.shape[1]-1)):
+        print("Error! Header variables are not equal to number of columns in the statistics!")
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
 def main():
