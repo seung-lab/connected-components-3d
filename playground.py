@@ -1,10 +1,22 @@
 
 
-import numpy as np
-a = np.repeat(2,6)
-print(a)
+# import numpy as np
+#
+# a = np.array([[1, 2],
+#            [3, 4]])
+# b = np.array([1,1])
+#
+# print("a: " + str(a))
+# print("b: " + str(b))
+#
+# print(str(tuple(b)))
+# print(str(a[b]))
 
-print(np.max(np.absolute([5,0])))
+
+# a = np.repeat(2,6)
+# print(a)
+#
+# print(np.max(np.absolute([5,0])))
 
 # from scipy.spatial import ConvexHull, convex_hull_plot_2d
 # points = np.random.rand(30, 2)   # 30 random points in 2-D
