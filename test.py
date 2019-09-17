@@ -6,23 +6,24 @@ import matplotlib.pyplot as plt
 from scipy.spatial import ConvexHull
 import time
 from scipy.spatial import distance
+import h5py
 
 global x_start
 x_start = 500
 global x_end
-x_end = 700
+x_end = 773
 global x_size
 x_size = x_end-x_start
 
 global y_start
-y_start = 1500
+y_start = 1000
 global y_end
 y_end = 2000
 global y_size
 y_size = y_end-y_start
 
 global z_start
-z_start = 1800
+z_start = 1000
 global z_end
 z_end = 2000
 global z_size
@@ -139,7 +140,13 @@ def readData(filename):
     global labels
     labels = data_in[x_start:x_end,y_start:y_end,z_start:z_end]
 
-    print("data was read in; shape: " + str(labels.shape) + "; DataType is: " + str(data_in.dtype))
+    print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
+
+# write data to H5 file
+def writeData(filename):
+    with h5py.File(filename, 'w') as hf:
+        # should cover all cases of affinities/images
+        hf.create_dataset("main", data=labels, compression='gzip')
 
 #compute the connected Com ponent labels
 def computeConnectedComp():
@@ -152,9 +159,9 @@ def computeConnectedComp():
     print("Conntected Regions found: " + str(n_comp))
 
     # determine indices, numbers and counts for the connected regions
-    unique, counts = np.unique(labels_out, return_counts=True)
-    print("Conntected regions and associated points: ")
-    print(dict(zip(unique, counts)))
+    # unique, counts = np.unique(labels_out, return_counts=True)
+    # print("Conntected regions and associated points: ")
+    # print(dict(zip(unique, counts)))
 
     return labels_out, n_comp
 
@@ -166,8 +173,9 @@ def fillWhole(coods,connectedNeuron):
 
 # find the coordinates of the points that belong to a selected connected component
 def findCoodsOfComp(compQuery, compLabels):
-    print("Loading component " + str(compQuery) +"...")
+
     # find coordinates of points that belong to component
+    print("executing np.argwhere...")
     idx_comp = np.argwhere(compLabels==compQuery)
     # find coordinates of connected component
     coods = np.array([idx_comp[:,0],idx_comp[:,1],idx_comp[:,2]]).transpose()
@@ -200,29 +208,29 @@ def doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, cnt):
 
     # First column: Check if connected component is a whole
     if isWhole: statTable[cnt,0] = 1
-    else: statTable[cnt,0] = 0
+    else: statTable[cnt,1] = 0
 
     # check if this is a 3D whole (1 if is 3D, otherwise 0)
     if is2D(coods): statTable[cnt,1] = 0
-    else: statTable[cnt,1] = 1
+    else: statTable[cnt,2] = 1
 
     # number of points
-    statTable[cnt,2] = int(coods.shape[0])
+    statTable[cnt,3] = int(coods.shape[0])
 
     # number of hull points
     n_hull_points = int(hull_coods.shape[0])
-    statTable[cnt,3] = n_hull_points
+    statTable[cnt,4] = n_hull_points
 
     # intermediate step: compute pairwise distances between all hull points
     d_table = distance.cdist(hull_coods, hull_coods, 'euclidean')
 
     # average distance between hull points
     avg_hull_dist = np.sum(d_table)/(n_hull_points*n_hull_points-n_hull_points)
-    statTable[cnt,4] = avg_hull_dist
+    statTable[cnt,5] = avg_hull_dist
 
     # maximum distance between hull points
     max_hull_dist = np.max(d_table)
-    statTable[cnt,5] = max_hull_dist
+    statTable[cnt,6] = max_hull_dist
 
     # intermediate step: find mid point (as the average over all points)
     mid_point = np.mean(coods, axis=0, keepdims=True)
@@ -235,40 +243,40 @@ def doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, cnt):
     d_allPoints_to_mid_mean = np.mean(d_allPoints_to_mid_table)
     d_allPoints_to_mid_median = np.median(d_allPoints_to_mid_table)
     d_allPoints_to_mid_std = np.std(d_allPoints_to_mid_table)
-    statTable[cnt,6] = d_allPoints_to_mid_mean
-    statTable[cnt,7] = d_allPoints_to_mid_median
-    statTable[cnt,8] = d_allPoints_to_mid_std
+    statTable[cnt,7] = d_allPoints_to_mid_mean
+    statTable[cnt,8] = d_allPoints_to_mid_median
+    statTable[cnt,9] = d_allPoints_to_mid_std
 
     # compute mean, median and std for distance for all points from hull mid point
     d_allPoints_to_hullmid_table = distance.cdist(hull_mid_point, coods, 'euclidean')
     d_allPoints_to_hullmid_mean = np.mean(d_allPoints_to_hullmid_table)
     d_allPoints_to_hullmid_median = np.median(d_allPoints_to_hullmid_table)
     d_allPoints_to_hullmid_std = np.std(d_allPoints_to_hullmid_table)
-    statTable[cnt,9] = d_allPoints_to_hullmid_mean
-    statTable[cnt,10] = d_allPoints_to_hullmid_median
-    statTable[cnt,11] = d_allPoints_to_hullmid_std
+    statTable[cnt,10] = d_allPoints_to_hullmid_mean
+    statTable[cnt,11] = d_allPoints_to_hullmid_median
+    statTable[cnt,12] = d_allPoints_to_hullmid_std
 
     # compute mean, median and std for distance for hull points from mid point
     d_hullPoints_to_mid_table = distance.cdist(mid_point, hull_coods, 'euclidean')
     d_hullPoints_to_mid_mean = np.mean(d_hullPoints_to_mid_table)
     d_hullPoints_to_mid_median = np.median(d_hullPoints_to_mid_table)
     d_hullPoints_to_mid_std = np.std(d_hullPoints_to_mid_table)
-    statTable[cnt,12] = d_hullPoints_to_mid_mean
-    statTable[cnt,13] = d_hullPoints_to_mid_median
-    statTable[cnt,14] = d_hullPoints_to_mid_std
+    statTable[cnt,13] = d_hullPoints_to_mid_mean
+    statTable[cnt,14] = d_hullPoints_to_mid_median
+    statTable[cnt,15] = d_hullPoints_to_mid_std
 
     # compute mean, median and std for distance for hull points from hull mid point
     d_hullPoints_to_hullmid_table = distance.cdist(hull_mid_point, hull_coods, 'euclidean')
     d_hullPoints_to_hullmid_mean = np.mean(d_hullPoints_to_hullmid_table)
     d_hullPoints_to_hullmid_median = np.median(d_hullPoints_to_hullmid_table)
     d_hullPoints_to_hullmid_std = np.std(d_hullPoints_to_hullmid_table)
-    statTable[cnt,15] = d_hullPoints_to_mid_mean
-    statTable[cnt,16] = d_hullPoints_to_mid_median
-    statTable[cnt,17] = d_hullPoints_to_mid_std
+    statTable[cnt,16] = d_hullPoints_to_mid_mean
+    statTable[cnt,17] = d_hullPoints_to_mid_median
+    statTable[cnt,18] = d_hullPoints_to_mid_std
 
     #distance between hull mid point and all points mid point
     d_mid_to_hullmid = np.linalg.norm(hull_mid_point-mid_point)
-    statTable[cnt,18] = d_mid_to_hullmid
+    statTable[cnt,19] = d_mid_to_hullmid
 
     return statTable
 
@@ -276,7 +284,7 @@ def doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, cnt):
 def writeStatistics(statTable, statistics_path, sample_name):
     filename = statistics_path + sample_name.replace("/","_").replace(".","_") + "_statistics_" + str(time.time())[:10] + ".txt"
 
-    header_a = "isWhole,is3D,nPoints,nHullPoints,avgHullDist,maxHullDist,"
+    header_a = "number,isWhole,is3D,nPoints,nHullPoints,avgHullDist,maxHullDist,"
     header_b = "d_allPoints_to_mid_mean,d_allPoints_to_mid_median,d_allPoints_to_mid_std,"
     header_c = "d_allPoints_to_hullmid_mean,d_allPoints_to_hullmid_median,d_allPoints_to_hullmid_std,"
     header_d = "d_hullPoints_to_mid_mean,d_hullPoints_to_mid_median,d_hullPoints_to_mid_std,"
@@ -294,10 +302,13 @@ def main():
     # turn Visualization on and off
     Viz = False
     saveStatistics = True
-    n_features = 19
+    n_features = 20
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/"
     sample_name = "JWR/cell032_downsampled.h5"
+    output_name = "JWR/cell032_downsampled_filled.h5"
+
+    # needed to time the code (n_functions as the number of subfunctions considered for timing)
 
     # read in data (written to global variable labels")
     readData(data_path+sample_name)
@@ -307,30 +318,40 @@ def main():
 
     # check if connected component is a whole)
     # start at 1 as component 0 is always the neuron itself, which has label 1
-    n_start = 2 if Viz else 1
+    # maybe always start at component 2, as this omits the 2 biggest components, whic are normally backgroudn and neuron with labels 0 and 1
+    n_start = 2 if Viz else 2
     if saveStatistics: statTable = np.ones((n_comp-1, n_features))*-1
     for region in range(n_start,n_comp):
 
+        print("Loading component " + str(region) +"...")
         # find coordinates of points that belong to the selected component
         coods = findCoodsOfComp(region, labels_out)
 
+        print("finding points that describe the hull...")
         # find coordinates that describe the hull space
         hull_coods = findHullPoints(coods)
 
+        print("Checking if this is a whole...")
         # check if connected component is a whole
         isWhole, connectedNeuron = checkifwhole(hull_coods)
 
+        print("Felling Whole...")
         # fill whole if detected
         if isWhole: fillWhole(coods, connectedNeuron)
 
+        print("Computing statistics...")
         # compute statistics and save to numpy array
         if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
 
+        print("Running Visualization...")
         # run visualization
         if Viz: runViz(coods,hull_coods)
 
     # save the statistics file to a .txt file
     if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
+
+    # write filled data to H5
+    writeData(data_path+output_name)
 
 if __name__== "__main__":
   main()
