@@ -7,6 +7,7 @@ from scipy.spatial import ConvexHull
 import time
 from scipy.spatial import distance
 import h5py
+from numba import jit
 
 global x_start
 x_start = 500
@@ -297,6 +298,29 @@ def writeStatistics(statTable, statistics_path, sample_name):
         print("Error! Header variables are not equal to number of columns in the statistics!")
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
+# @jit(nopython=True)
+def findAdjComp(n_comp):
+
+    adj_comp = [np.zeros((),dtype=np.uint8) for _ in range(n_comp)]
+
+    for ix in range(1, 10):#x_size-1):
+        for iy in range(1, y_size-1):
+            for iz in range(1, z_size-1):
+
+                curr_comp = labels[ix,iy,iz]
+
+                if labels[ix+1,iy,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp] = np.append(adj_comp[curr_comp], labels[ix+1,iy,iz])
+                # if labels[ix-1,iy,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix-1,iy,iz])
+                # if labels[ix,iy+1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy+1,iz])
+                # if labels[ix,iy-1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy-1,iz])
+                # if labels[ix,iy,iz+1] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy,iz+1])
+                # if labels[ix,iy,iz-1] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy,iz-1])
+
+        # print("ix is " + str(ix) + " of " + str(x_size))
+    # print(adj_comp)
+
+    return adj_comp
+
 def main():
 
     # turn Visualization on and off
@@ -320,38 +344,42 @@ def main():
     # start at 1 as component 0 is always the neuron itself, which has label 1
     # maybe always start at component 2, as this omits the 2 biggest components, whic are normally backgroudn and neuron with labels 0 and 1
     n_start = 2 if Viz else 2
-    if saveStatistics: statTable = np.ones((n_comp-1, n_features))*-1
-    for region in range(n_start,n_comp):
 
-        print("Loading component " + str(region) +"...")
-        # find coordinates of points that belong to the selected component
-        coods = findCoodsOfComp(region, labels_out)
+    adjComp = findAdjComp(n_comp)
+    print(adjComp)
 
-        print("finding points that describe the hull...")
-        # find coordinates that describe the hull space
-        hull_coods = findHullPoints(coods)
-
-        print("Checking if this is a whole...")
-        # check if connected component is a whole
-        isWhole, connectedNeuron = checkifwhole(hull_coods)
-
-        print("Felling Whole...")
-        # fill whole if detected
-        if isWhole: fillWhole(coods, connectedNeuron)
-
-        print("Computing statistics...")
-        # compute statistics and save to numpy array
-        if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
-
-        print("Running Visualization...")
-        # run visualization
-        if Viz: runViz(coods,hull_coods)
-
-    # save the statistics file to a .txt file
-    if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
-
-    # write filled data to H5
-    writeData(data_path+output_name)
+    # if saveStatistics: statTable = np.ones((n_comp-1, n_features))*-1
+    # for region in range(n_start,n_comp):
+    #
+    #     print("Loading component " + str(region) +"...")
+    #     # find coordinates of points that belong to the selected component
+    #     coods = findCoodsOfComp(region, labels_out)
+    #
+    #     print("finding points that describe the hull...")
+    #     # find coordinates that describe the hull space
+    #     hull_coods = findHullPoints(coods)
+    #
+    #     print("Checking if this is a whole...")
+    #     # check if connected component is a whole
+    #     isWhole, connectedNeuron = checkifwhole(hull_coods)
+    #
+    #     print("Felling Whole...")
+    #     # fill whole if detected
+    #     if isWhole: fillWhole(coods, connectedNeuron)
+    #
+    #     print("Computing statistics...")
+    #     # compute statistics and save to numpy array
+    #     if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
+    #
+    #     print("Running Visualization...")
+    #     # run visualization
+    #     if Viz: runViz(coods,hull_coods)
+    #
+    # # save the statistics file to a .txt file
+    # if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
+    #
+    # # write filled data to H5
+    # writeData(data_path+output_name)
 
 if __name__== "__main__":
   main()
