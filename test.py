@@ -7,7 +7,7 @@ from scipy.spatial import ConvexHull
 import time
 from scipy.spatial import distance
 import h5py
-from numba import jit
+from numba import njit
 
 global x_start
 x_start = 500
@@ -298,20 +298,31 @@ def writeStatistics(statTable, statistics_path, sample_name):
         print("Error! Header variables are not equal to number of columns in the statistics!")
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
-@jit(nopython=True)
-def findAdjComp(n_comp):
+@njit(parallel=True)
+def findAdjComp(labels_out, n_comp):
 
-    adj_comp = [np.zeros((),dtype=np.uint8) for _ in range(n_comp)]
+    #adj_comp = [[] for _ in range(n_comp)]
+    neighbor_sets = set()
+    print (x_size)
+    print (y_size)
+    print (z_size)
+    for ix in prange(0, x_size-1):
+        for iy in range(0, y_size-1):
+            for iz in range(0, z_size-1):
+                curr_comp = labels_out[ix,iy,iz]
 
-    for ix in range(1, 10):#x_size-1):
-        for iy in range(1, y_size-1):
-            for iz in range(1, z_size-1):
+                if curr_comp != labels_out[ix+1,iy,iz]:
+                    neighbor_sets.add((curr_comp, labels_out[ix+1,iy,iz]))
+                    neighbor_sets.add((labels_out[ix+1,iy,iz], curr_comp))
+                if curr_comp != labels[ix,iy+1,iz]:
+                    neighbor_sets.add((curr_comp, labels_out[ix,iy+1,iz]))
+                    neighbor_sets.add((labels_out[ix,iy+1,iz], curr_comp))
+                if curr_comp != labels[ix,iy,iz+1]:
+                    neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
+                    neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
 
-                curr_comp = labels[ix,iy,iz]
-
-                if labels[ix+1,iy,iz] not in adj_comp[curr_comp]:
-                    new = np.array(labels[ix+1,iy,iz],dtype=np.uint8)
-                    adj_comp[curr_comp] = np.hstack((adj_comp[curr_comp],new))
+                    #new = np.array(labels[ix+1,iy,iz],dtype=np.uint8)
+                    #adj_comp[curr_comp] = np.hstack((adj_comp[curr_comp],new))
                 # if labels[ix-1,iy,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix-1,iy,iz])
                 # if labels[ix,iy+1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy+1,iz])
                 # if labels[ix,iy-1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy-1,iz])
@@ -321,7 +332,7 @@ def findAdjComp(n_comp):
         # print("ix is " + str(ix) + " of " + str(x_size))
     # print(adj_comp)
 
-    return adj_comp
+    return neighbor_sets
 
 def main():
 
@@ -347,8 +358,11 @@ def main():
     # maybe always start at component 2, as this omits the 2 biggest components, whic are normally backgroudn and neuron with labels 0 and 1
     n_start = 2 if Viz else 2
 
-    adjComp = findAdjComp(n_comp)
+    import time
+    start_time = time.time()
+    adjComp = findAdjComp(labels_out, n_comp)
     print(adjComp)
+    print (time.time() - start_time)
 
     # if saveStatistics: statTable = np.ones((n_comp-1, n_features))*-1
     # for region in range(n_start,n_comp):
