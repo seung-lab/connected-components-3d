@@ -298,7 +298,7 @@ def writeStatistics(statTable, statistics_path, sample_name):
         print("Error! Header variables are not equal to number of columns in the statistics!")
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def findAdjComp(n_comp):
 
     adj_comp = [np.zeros((),dtype=np.uint8) for _ in range(n_comp)]
@@ -309,7 +309,9 @@ def findAdjComp(n_comp):
 
                 curr_comp = labels[ix,iy,iz]
 
-                if labels[ix+1,iy,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp] = np.append(adj_comp[curr_comp], labels[ix+1,iy,iz])
+                if labels[ix+1,iy,iz] not in adj_comp[curr_comp]:
+                    new = np.array(labels[ix+1,iy,iz],dtype=np.uint8)
+                    adj_comp[curr_comp] = np.hstack((adj_comp[curr_comp],new))
                 # if labels[ix-1,iy,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix-1,iy,iz])
                 # if labels[ix,iy+1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy+1,iz])
                 # if labels[ix,iy-1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy-1,iz])
