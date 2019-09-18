@@ -298,17 +298,15 @@ def writeStatistics(statTable, statistics_path, sample_name):
         print("Error! Header variables are not equal to number of columns in the statistics!")
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
-@njit(parallel=True)
+@njit
 def findAdjComp(labels_out, n_comp):
 
     #adj_comp = [[] for _ in range(n_comp)]
     neighbor_sets = set()
-    print (x_size)
-    print (y_size)
-    print (z_size)
-    for ix in prange(0, x_size-1):
+    for ix in range(0, x_size-1):
         for iy in range(0, y_size-1):
             for iz in range(0, z_size-1):
+
                 curr_comp = labels_out[ix,iy,iz]
 
                 if curr_comp != labels_out[ix+1,iy,iz]:
@@ -321,16 +319,23 @@ def findAdjComp(labels_out, n_comp):
                     neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
                     neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
 
-                    #new = np.array(labels[ix+1,iy,iz],dtype=np.uint8)
-                    #adj_comp[curr_comp] = np.hstack((adj_comp[curr_comp],new))
-                # if labels[ix-1,iy,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix-1,iy,iz])
-                # if labels[ix,iy+1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy+1,iz])
-                # if labels[ix,iy-1,iz] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy-1,iz])
-                # if labels[ix,iy,iz+1] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy,iz+1])
-                # if labels[ix,iy,iz-1] not in adj_comp[curr_comp]: adj_comp[curr_comp].append(labels[ix,iy,iz-1])
+    for ix in [0, x_size-1]:
+        for iy in range(0, y_size):
+            for iz in range(0, z_size):
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
 
-        # print("ix is " + str(ix) + " of " + str(x_size))
-    # print(adj_comp)
+    for ix in range(0, x_size):
+        for iy in [0, y_size-1]:
+            for iz in range(0, z_size):
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
+
+    for ix in range(0, x_size):
+        for iy in range(0, y_size):
+            for iz in [0, z_size-1]:
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
 
     return neighbor_sets
 
@@ -360,7 +365,8 @@ def main():
 
     import time
     start_time = time.time()
-    adjComp = findAdjComp(labels_out, n_comp)
+    adjComp, counter_a, counter_b, counter_c = findAdjComp(labels_out, n_comp)
+    print(counter_a, counter_b, counter_c)
     print(adjComp)
     print (time.time() - start_time)
 
