@@ -168,7 +168,7 @@ def computeConnectedComp():
 # fill a whole by changing the labels to the neuron it belongs to
 def fillWhole(coods,connectedNeuron):
 
-    labels[coods[:,0],coods[:,1],coods[:,2]] = np.ones((coods.shape[0],))*connectedNeuron
+    labels[coods[:,0],coods[:,1],coods[:,2]] = np.ones((coods.shape[0],))*(connectedNeuron+1)
     print("Whole has been filled!!")
 
 # find the coordinates of the points that belong to a selected connected component
@@ -306,7 +306,7 @@ def main():
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/"
     sample_name = "JWR/cell032_downsampled.h5"
-    output_name = "JWR/cell032_downsampled_filled.h5"
+    output_name = "JWR/cell032_downsampled_filled_viz.h5"
 
     # needed to time the code (n_functions as the number of subfunctions considered for timing)
 
