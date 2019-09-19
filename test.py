@@ -361,14 +361,9 @@ def main():
     # check if connected component is a whole)
     # start at 1 as component 0 is always the neuron itself, which has label 1
     # maybe always start at component 2, as this omits the 2 biggest components, whic are normally backgroudn and neuron with labels 0 and 1
-    n_start = 2 if Viz else 2
 
-    import time
-    start_time = time.time()
-    adjComp, counter_a, counter_b, counter_c = findAdjComp(labels_out, n_comp)
-    print(counter_a, counter_b, counter_c)
-    print(adjComp)
-    print (time.time() - start_time)
+    adjComp_sets = findAdjComp(labels_out, n_comp)
+    print(adjComp_sets)
 
     # if saveStatistics: statTable = np.ones((n_comp-1, n_features))*-1
     # for region in range(n_start,n_comp):
