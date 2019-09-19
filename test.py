@@ -16,7 +16,8 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 # [z_start,z_end,y_start,y_end,x_start,x_end]
-box = [600,728,1024,2048,1024,2048]
+# box = [600,728,1024,2048,1024,2048]
+box = [600,728,0,2048,0,2048]
 
 #read data from HD5, given the file path
 def readData(box, filename):
@@ -214,8 +215,6 @@ def findWholesList(adjComp_sets, n_comp):
         else:
             non_wholes.append(c)
 
-    print("found " + str(len(wholes)) + " wholes")
-
     # convert to sets
     wholes_set = set(wholes)
     non_wholes_set = set(non_wholes)
@@ -264,18 +263,26 @@ def main():
 
     #compute the labels of the conencted connected components
     labels_out, n_comp = computeConnectedComp(labels)
+    time_connected_components = time.time()
+    print ("time to compute connected components: " + str(time_connected_components - start_time))
 
     # compute the sets of connected components (also including boundary)
     adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
+    time_find_adj_comp_sets = time.time()
+    print ("time to find adjacent component set: " + str(time_find_adj_comp_sets - time_connected_components))
 
     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
     wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
+    time_detect_wholes = time.time()
+    print ("time to detect whole components: " + str(time_detect_wholes - time_find_adj_comp_sets))
 
     # fill detected wholes and visualize non_wholes
     labels = fillWholes(box, labels, labels_out, wholes_set, non_wholes_set)
+    time_fill_wholes = time.time()
+    print ("time to fill wholes: " + str(time_fill_wholes - time_detect_wholes))
 
     # end timing
-    print ("time needed: " + str(time.time() - start_time))
+    print ("time needed total: " + str(time.time() - start_time))
 
     # print("Computing statistics...")
     # # compute statistics and save to numpy array
