@@ -30,73 +30,6 @@ z_end = 2000
 global z_size
 z_size = z_end-z_start
 
-# input lables (0 is background, 1 = neuron1, (2 = neuron2,...))
-# defined later:
-# global labels
-
-# this function checks if an array of points contains a 2D or a 3D structure
-def is2D(points):
-    if all_same(points[:,0]) or all_same(points[:,1]) or all_same(points[:,2]):
-        return True
-    else:
-        return False
-
-# function to check if all elements in items have the same value
-def all_same(items):
-    return all(x == items[0] for x in items)
-
-# fits a convex hull to a 2D point object and returns the coordinates of the points that describe the border
-def convHull2D(points):
-    if all_same(points[:,0]):
-        coods = np.array([points[:,1],points[:,2]]).transpose()
-        hull = ConvexHull(coods)
-        boundary_idx = np.unique(hull.simplices)
-        boundary_pts_coods = points[boundary_idx,:]
-
-    if all_same(points[:,1]):
-        coods = np.array([points[:,0],points[:,2]]).transpose()
-        hull = ConvexHull(coods)
-        boundary_idx = np.unique(hull.simplices)
-        boundary_pts_coods = points[boundary_idx,:]
-
-    if all_same(points[:,2]):
-        coods = np.array([points[:,0],points[:,1]]).transpose()
-        hull = ConvexHull(coods)
-        boundary_idx = np.unique(hull.simplices)
-        boundary_pts_coods = points[boundary_idx,:]
-
-    return boundary_pts_coods
-
-# fits a convex hull to a 3D point object and returns the coordinates of the points that describe the hull surface
-def convHull3D(points):
-    hull = ConvexHull(points)
-    boundary_idx = np.unique(hull.simplices)
-    boundary_pts_coods = points[boundary_idx,:]
-
-    return boundary_pts_coods
-
-# returns the 6 adjacent components for a point, adjacent component is -1 if out of boundary
-def getadjcomp(p):
-
-    # set label to -1 if outside of boundary (needed for whole detection)
-    comp = np.zeros((1,6))
-
-    # store component number that is adjacend
-    if (p[0]+1 < x_size): comp[0,0] = labels[p[0]+1,p[1],p[2]]
-    else: comp[0,0] = -1
-    if (p[0]-1 > 0): comp[0,1] = labels[p[0]-1,p[1],p[2]]
-    else: comp[0,1] = -1
-    if (p[1]+1 < y_size): comp[0,2] = labels[p[0],p[1]+1,p[2]]
-    else: comp[0,2] = -1
-    if (p[1]-1 > 0): comp[0,3] = labels[p[0],p[1]-1,p[2]]
-    else: comp[0,3] = -1
-    if (p[2]+1 < z_size): comp[0,4] = labels[p[0],p[1],p[2]+1]
-    else: comp[0,4] = -1
-    if (p[2]-1 > 0): comp[0,5] = labels[p[0],p[1],p[2]-1]
-    else: comp[0,5] = -1
-
-    return comp
-
 # checks the adjacent coponents of an array of boundary points and applies rules to check if whole (see code)
 def checkifwhole(boundary_pts_coods):
 
@@ -138,25 +71,28 @@ def readData(filename):
     # read in data block
     data_in = ReadH5File(filename)
 
-    global labels
     labels = data_in[x_start:x_end,y_start:y_end,z_start:z_end]
 
     print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
+    return labels
 
 # write data to H5 file
-def writeData(filename):
-    with h5py.File(filename, 'w') as hf:
+def writeData(filename,labels):
+
+    filename_comp = filename + "_" + str(time.time())[:10] +".h5"
+
+    with h5py.File(filename_comp, 'w') as hf:
         # should cover all cases of affinities/images
         hf.create_dataset("main", data=labels, compression='gzip')
 
 #compute the connected Com ponent labels
-def computeConnectedComp():
+def computeConnectedComp(labels):
     lables_inverse = 1 - labels
     connectivity = 6 # only 26, 18, and 6 are allowed
     labels_out = cc3d.connected_components(lables_inverse, connectivity=connectivity)
 
     # You can extract individual components like so:
-    n_comp = np.max(labels_out)
+    n_comp = np.max(labels_out) + 1
     print("Conntected Regions found: " + str(n_comp))
 
     # determine indices, numbers and counts for the connected regions
@@ -165,32 +101,6 @@ def computeConnectedComp():
     # print(dict(zip(unique, counts)))
 
     return labels_out, n_comp
-
-# fill a whole by changing the labels to the neuron it belongs to
-def fillWhole(coods,connectedNeuron):
-
-    labels[coods[:,0],coods[:,1],coods[:,2]] = np.ones((coods.shape[0],))*(connectedNeuron+1)
-    print("Whole has been filled!!")
-
-# find the coordinates of the points that belong to a selected connected component
-def findCoodsOfComp(compQuery, compLabels):
-
-    # find coordinates of points that belong to component
-    print("executing np.argwhere...")
-    idx_comp = np.argwhere(compLabels==compQuery)
-    # find coordinates of connected component
-    coods = np.array([idx_comp[:,0],idx_comp[:,1],idx_comp[:,2]]).transpose()
-    return coods
-
-# find the points that describe the hull space of a given set of points
-def findHullPoints(points):
-    # check if selected points are in a plane (2D object) and compute points that define hull surface
-    if is2D(points):
-        HullPts= convHull2D(points)
-    else:
-        HullPts = convHull3D(points)
-
-    return HullPts
 
 # show points of a cloud in blue and mark the hull points in red
 def runViz(coods, hull_coods):
@@ -299,7 +209,7 @@ def writeStatistics(statTable, statistics_path, sample_name):
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
 @njit
-def findAdjComp(labels_out, n_comp):
+def findAdjCompSets(labels_out, n_comp):
 
     #adj_comp = [[] for _ in range(n_comp)]
     neighbor_sets = set()
@@ -312,10 +222,10 @@ def findAdjComp(labels_out, n_comp):
                 if curr_comp != labels_out[ix+1,iy,iz]:
                     neighbor_sets.add((curr_comp, labels_out[ix+1,iy,iz]))
                     neighbor_sets.add((labels_out[ix+1,iy,iz], curr_comp))
-                if curr_comp != labels[ix,iy+1,iz]:
+                if curr_comp != labels_out[ix,iy+1,iz]:
                     neighbor_sets.add((curr_comp, labels_out[ix,iy+1,iz]))
                     neighbor_sets.add((labels_out[ix,iy+1,iz], curr_comp))
-                if curr_comp != labels[ix,iy,iz+1]:
+                if curr_comp != labels_out[ix,iy,iz+1]:
                     neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
                     neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
 
@@ -339,6 +249,42 @@ def findAdjComp(labels_out, n_comp):
 
     return neighbor_sets
 
+# create string of connected components that are a whole
+def findWholesList(adjComp_sets, n_comp):
+
+    # find the components that each connected component is connected to
+    adj_comp = [[] for _ in range(n_comp)]
+    for s in range(len(adjComp_sets)):
+        temp = adjComp_sets.pop()
+        if temp[1] not in adj_comp[temp[0]]:
+            adj_comp[temp[0]].append(temp[1])
+
+    #find connected components that are a whole
+    wholes = []
+    for c in range(n_comp):
+        # check that only connected to one component and that this component is not border (which is numbered as -1)
+        if (len(adj_comp[c]) is 1):
+            if(adj_comp[c][0] is not -1):
+                wholes.append(c)
+
+    print("found " + str(len(wholes)) + " wholes")
+    return wholes
+
+@njit
+def fillWholes(labels, labels_out, wholes_set):
+
+    for ix in range(0, x_size):
+        for iy in range(0, y_size):
+            for iz in range(0, z_size):
+
+                curr_comp = labels_out[ix,iy,iz]
+
+                if curr_comp in wholes_set:
+                    # assign all wholes ID 2 to be able to visualize them
+                    labels[ix,iy,iz] = 2
+
+    return labels
+
 def main():
 
     # turn Visualization on and off
@@ -348,22 +294,25 @@ def main():
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/"
     sample_name = "JWR/cell032_downsampled.h5"
-    output_name = "JWR/cell032_downsampled_filled_viz.h5"
+    output_name = "JWR/cell032_downsampled_filled_viz"
 
     # needed to time the code (n_functions as the number of subfunctions considered for timing)
 
     # read in data (written to global variable labels")
-    readData(data_path+sample_name)
+    labels = readData(data_path+sample_name)
 
     #compute the labels of the conencted connected components
-    labels_out, n_comp = computeConnectedComp()
+    labels_out, n_comp = computeConnectedComp(labels)
 
-    # check if connected component is a whole)
-    # start at 1 as component 0 is always the neuron itself, which has label 1
-    # maybe always start at component 2, as this omits the 2 biggest components, whic are normally backgroudn and neuron with labels 0 and 1
-
-    adjComp_sets = findAdjComp(labels_out, n_comp)
+    adjComp_sets = findAdjCompSets(labels_out, n_comp)
     print(adjComp_sets)
+
+    wholes_array = findWholesList(adjComp_sets, n_comp)
+    print(wholes_array)
+
+    wholes_set = set(wholes_array)
+
+    labels = fillWholes(labels, labels_out, wholes_set)
 
     # if saveStatistics: statTable = np.ones((n_comp-1, n_features))*-1
     # for region in range(n_start,n_comp):
@@ -395,8 +344,8 @@ def main():
     # # save the statistics file to a .txt file
     # if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
     #
-    # # write filled data to H5
-    # writeData(data_path+output_name)
+    # write filled data to H5
+    writeData(data_path+output_name, labels)
 
 if __name__== "__main__":
   main()
