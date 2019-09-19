@@ -17,7 +17,7 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 # [z_start,z_end,y_start,y_end,x_start,x_end]
 # box = [600,728,1024,2048,1024,2048]
-box = [600,728,0,2048,0,2048]
+box = [0,773,1200,2600,0,3328]
 
 #read data from HD5, given the file path
 def readData(box, filename):
@@ -156,8 +156,8 @@ def writeStatistics(statTable, statistics_path, sample_name):
 @njit
 def findAdjCompSets(box, labels_out, n_comp):
 
-    #adj_comp = [[] for _ in range(n_comp)]
     neighbor_sets = set()
+
     for ix in range(0, box[1]-box[0]-1):
         for iy in range(0, box[3]-box[2]-1):
             for iz in range(0, box[5]-box[4]-1):
@@ -193,6 +193,52 @@ def findAdjCompSets(box, labels_out, n_comp):
                 neighbor_sets.add((curr_comp, -1))
 
     return neighbor_sets
+
+# for statistics: additinallz count occurence of each component
+@njit
+def findAdjCompSetsWithCount(box, labels_out, n_comp):
+
+    counts = np.zeros((n_comp),dtype=np.uint64)
+
+    neighbor_sets = set()
+
+    for ix in range(0, box[1]-box[0]-1):
+        for iy in range(0, box[3]-box[2]-1):
+            for iz in range(0, box[5]-box[4]-1):
+
+                curr_comp = labels_out[ix,iy,iz]
+
+                counts[curr_comp] += 1
+
+                if curr_comp != labels_out[ix+1,iy,iz]:
+                    neighbor_sets.add((curr_comp, labels_out[ix+1,iy,iz]))
+                    neighbor_sets.add((labels_out[ix+1,iy,iz], curr_comp))
+                if curr_comp != labels_out[ix,iy+1,iz]:
+                    neighbor_sets.add((curr_comp, labels_out[ix,iy+1,iz]))
+                    neighbor_sets.add((labels_out[ix,iy+1,iz], curr_comp))
+                if curr_comp != labels_out[ix,iy,iz+1]:
+                    neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
+                    neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
+
+    for ix in [0, box[1]-box[0]-1]:
+        for iy in range(0, box[3]-box[2]):
+            for iz in range(0, box[5]-box[4]):
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
+
+    for ix in range(0, box[1]-box[0]):
+        for iy in [0, box[3]-box[2]-1]:
+            for iz in range(0, box[5]-box[4]):
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
+
+    for ix in range(0, box[1]-box[0]):
+        for iy in range(0, box[3]-box[2]):
+            for iz in [0, box[5]-box[4]-1]:
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
+
+    return neighbor_sets, counts
 
 # create string of connected components that are a whole
 def findWholesList(adjComp_sets, n_comp):
@@ -267,9 +313,16 @@ def main():
     print ("time to compute connected components: " + str(time_connected_components - start_time))
 
     # compute the sets of connected components (also including boundary)
-    adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
-    time_find_adj_comp_sets = time.time()
-    print ("time to find adjacent component set: " + str(time_find_adj_comp_sets - time_connected_components))
+    if doStatistics is False:
+        adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
+        time_find_adj_comp_sets = time.time()
+        print ("time to find adjacent component set: " + str(time_find_adj_comp_sets - time_connected_components))
+
+    else:
+        adjComp_sets, counts = findAdjCompSetsWithCount(box, labels_out, n_comp)
+        print(counts)
+        time_find_adj_comp_sets = time.time()
+        print ("time to find adjacent component set: " + str(time_find_adj_comp_sets - time_connected_components))
 
     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
     wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
