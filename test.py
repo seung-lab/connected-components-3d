@@ -16,7 +16,7 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 # [z_start,z_end,y_start,y_end,x_start,x_end]
-box = [500,773,1000,2000,1000,2000]
+box = [600,728,1024,2048,1024,2048]
 
 #read data from HD5, given the file path
 def readData(box, filename):
@@ -259,6 +259,9 @@ def main():
     # read in data
     labels = readData(box, data_path+sample_name)
 
+    # take time
+    start_time = time.time()
+
     #compute the labels of the conencted connected components
     labels_out, n_comp = computeConnectedComp(labels)
 
@@ -270,6 +273,9 @@ def main():
 
     # fill detected wholes and visualize non_wholes
     labels = fillWholes(box, labels, labels_out, wholes_set, non_wholes_set)
+
+    # end timing
+    print ("time needed: " + str(time.time() - start_time))
 
     # print("Computing statistics...")
     # # compute statistics and save to numpy array
