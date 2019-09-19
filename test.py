@@ -8,70 +8,22 @@ import time
 from scipy.spatial import distance
 import h5py
 from numba import njit
+from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import warnings
 
-global x_start
-x_start = 500
-global x_end
-x_end = 773
-global x_size
-x_size = x_end-x_start
+# set will be deprecated soon on numba, but until now an alternative has not been implemented
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
-global y_start
-y_start = 1000
-global y_end
-y_end = 2000
-global y_size
-y_size = y_end-y_start
-
-global z_start
-z_start = 1000
-global z_end
-z_end = 2000
-global z_size
-z_size = z_end-z_start
-
-# checks the adjacent coponents of an array of boundary points and applies rules to check if whole (see code)
-def checkifwhole(boundary_pts_coods):
-
-    isWhole = False
-    adjComp = np.zeros((6, boundary_pts_coods.shape[0]))
-    counter = 0
-    connectedNeuron = -1
-
-    for p in boundary_pts_coods:
-        adjComp[:,counter] = getadjcomp(p)
-        counter = counter + 1
-
-    if -1 in adjComp:
-        isWhole = False
-        print("Not a Whole, connected to Boundary!")
-
-    elif len(np.unique(adjComp))==2:
-        isWhole = True
-
-        #find Neuron that this whole is connected to
-        connectedNeuron = np.max(np.absolute(np.unique(adjComp)))
-        print("Whole detected! Conntected to Neuron " + str(int(connectedNeuron)))
-
-        #check if whole is composed of Zeros
-        if (np.min(np.absolute(np.unique(adjComp)))!= 0):
-            isWhole = False
-            print("Error! Whole is not composed of 0 and hence is not a valid Whole!")
-
-    elif len(np.unique(adjComp))==1:
-        print("Error, this connected component was detected wrong!")
-
-    else:
-        print("This connected component is not a whole (>2 neighbors)!")
-
-    return isWhole, connectedNeuron
+# [z_start,z_end,y_start,y_end,x_start,x_end]
+box = [500,773,1000,2000,1000,2000]
 
 #read data from HD5, given the file path
-def readData(filename):
+def readData(box, filename):
     # read in data block
     data_in = ReadH5File(filename)
 
-    labels = data_in[x_start:x_end,y_start:y_end,z_start:z_end]
+    labels = data_in[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
 
     print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
     return labels
@@ -101,15 +53,6 @@ def computeConnectedComp(labels):
     # print(dict(zip(unique, counts)))
 
     return labels_out, n_comp
-
-# show points of a cloud in blue and mark the hull points in red
-def runViz(coods, hull_coods):
-    # debug: plot points as 3D scatter plot, extreme points in red
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(coods[:,0],coods[:,1],coods[:,2],c='b')
-    ax.scatter(hull_coods[:,0],hull_coods[:,1],hull_coods[:,2],c='r')
-    plt.show()
 
 # compute statistics for the connected conmponents that have been found
 def doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, cnt):
@@ -208,14 +151,15 @@ def writeStatistics(statTable, statistics_path, sample_name):
         print("Error! Header variables are not equal to number of columns in the statistics!")
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
+# find sets of adjacent components
 @njit
-def findAdjCompSets(labels_out, n_comp):
+def findAdjCompSets(box, labels_out, n_comp):
 
     #adj_comp = [[] for _ in range(n_comp)]
     neighbor_sets = set()
-    for ix in range(0, x_size-1):
-        for iy in range(0, y_size-1):
-            for iz in range(0, z_size-1):
+    for ix in range(0, box[1]-box[0]-1):
+        for iy in range(0, box[3]-box[2]-1):
+            for iz in range(0, box[5]-box[4]-1):
 
                 curr_comp = labels_out[ix,iy,iz]
 
@@ -229,21 +173,21 @@ def findAdjCompSets(labels_out, n_comp):
                     neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
                     neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
 
-    for ix in [0, x_size-1]:
-        for iy in range(0, y_size):
-            for iz in range(0, z_size):
+    for ix in [0, box[1]-box[0]-1]:
+        for iy in range(0, box[3]-box[2]):
+            for iz in range(0, box[5]-box[4]):
                 curr_comp = labels_out[ix,iy,iz]
                 neighbor_sets.add((curr_comp, -1))
 
-    for ix in range(0, x_size):
-        for iy in [0, y_size-1]:
-            for iz in range(0, z_size):
+    for ix in range(0, box[1]-box[0]):
+        for iy in [0, box[3]-box[2]-1]:
+            for iz in range(0, box[5]-box[4]):
                 curr_comp = labels_out[ix,iy,iz]
                 neighbor_sets.add((curr_comp, -1))
 
-    for ix in range(0, x_size):
-        for iy in range(0, y_size):
-            for iz in [0, z_size-1]:
+    for ix in range(0, box[1]-box[0]):
+        for iy in range(0, box[3]-box[2]):
+            for iz in [0, box[5]-box[4]-1]:
                 curr_comp = labels_out[ix,iy,iz]
                 neighbor_sets.add((curr_comp, -1))
 
@@ -261,34 +205,50 @@ def findWholesList(adjComp_sets, n_comp):
 
     #find connected components that are a whole
     wholes = []
+    non_wholes = []
+
     for c in range(n_comp):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
-        if (len(adj_comp[c]) is 1):
-            if(adj_comp[c][0] is not -1):
-                wholes.append(c)
+        if (len(adj_comp[c]) is 1 and adj_comp[c][0] is not -1):
+            wholes.append(c)
+        else:
+            non_wholes.append(c)
 
     print("found " + str(len(wholes)) + " wholes")
-    return wholes
 
+    # convert to sets
+    wholes_set = set(wholes)
+    non_wholes_set = set(non_wholes)
+
+    print("Wholes (total of " + str(len(wholes_set)) + "):")
+    print(wholes_set)
+    print("Non-Wholes (total of " + str(len(non_wholes_set)) + "):")
+    print(non_wholes_set)
+
+    return wholes_set, non_wholes_set
+
+# fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(labels, labels_out, wholes_set):
+def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set):
 
-    for ix in range(0, x_size):
-        for iy in range(0, y_size):
-            for iz in range(0, z_size):
+    for ix in range(0, box[1]-box[0]):
+        for iy in range(0, box[3]-box[2]):
+            for iz in range(0, box[5]-box[4]):
 
                 curr_comp = labels_out[ix,iy,iz]
 
+                # assign all wholes ID 2 to be able to visualize them
                 if curr_comp in wholes_set:
-                    # assign all wholes ID 2 to be able to visualize them
                     labels[ix,iy,iz] = 2
+
+                # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
+                if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
+                    labels[ix,iy,iz] = curr_comp
 
     return labels
 
 def main():
 
-    # turn Visualization on and off
-    Viz = False
     saveStatistics = True
     n_features = 20
     statistics_path = "/home/frtim/wiring/statistics/"
@@ -296,54 +256,28 @@ def main():
     sample_name = "JWR/cell032_downsampled.h5"
     output_name = "JWR/cell032_downsampled_filled_viz"
 
-    # needed to time the code (n_functions as the number of subfunctions considered for timing)
-
-    # read in data (written to global variable labels")
-    labels = readData(data_path+sample_name)
+    # read in data
+    labels = readData(box, data_path+sample_name)
 
     #compute the labels of the conencted connected components
     labels_out, n_comp = computeConnectedComp(labels)
 
-    adjComp_sets = findAdjCompSets(labels_out, n_comp)
-    print(adjComp_sets)
+    # compute the sets of connected components (also including boundary)
+    adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
 
-    wholes_array = findWholesList(adjComp_sets, n_comp)
-    print(wholes_array)
+    # compute lists of wholes and non_wholes (then saved as set for compability with njit)
+    wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
 
-    wholes_set = set(wholes_array)
+    # fill detected wholes and visualize non_wholes
+    labels = fillWholes(box, labels, labels_out, wholes_set, non_wholes_set)
 
-    labels = fillWholes(labels, labels_out, wholes_set)
-
-    # if saveStatistics: statTable = np.ones((n_comp-1, n_features))*-1
-    # for region in range(n_start,n_comp):
-    #
-    #     print("Loading component " + str(region) +"...")
-    #     # find coordinates of points that belong to the selected component
-    #     coods = findCoodsOfComp(region, labels_out)
-    #
-    #     print("finding points that describe the hull...")
-    #     # find coordinates that describe the hull space
-    #     hull_coods = findHullPoints(coods)
-    #
-    #     print("Checking if this is a whole...")
-    #     # check if connected component is a whole
-    #     isWhole, connectedNeuron = checkifwhole(hull_coods)
-    #
-    #     print("Felling Whole...")
-    #     # fill whole if detected
-    #     if isWhole: fillWhole(coods, connectedNeuron)
-    #
-    #     print("Computing statistics...")
-    #     # compute statistics and save to numpy array
-    #     if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
-    #
-    #     print("Running Visualization...")
-    #     # run visualization
-    #     if Viz: runViz(coods,hull_coods)
+    # print("Computing statistics...")
+    # # compute statistics and save to numpy array
+    # if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
     #
     # # save the statistics file to a .txt file
     # if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
-    #
+
     # write filled data to H5
     writeData(data_path+output_name, labels)
 
