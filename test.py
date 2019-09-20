@@ -300,6 +300,18 @@ def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set):
 
     return labels
 
+@njit
+def test_function_njit(box):
+    for ix in range(0, box[1]-box[0]-1):
+        for iy in range(0, box[3]-box[2]-1):
+            for iz in range(0, box[5]-box[4]-1):
+                continue
+
+def test_function_python(box):
+    for ix in range(0, box[1]-box[0]-1):
+        for iy in range(0, box[3]-box[2]-1):
+            for iz in range(0, box[5]-box[4]-1):
+                continue
 def main():
 
     saveStatistics = False
@@ -313,14 +325,26 @@ def main():
     box = [0,200,0,1000,0,1000]
 
     # factor by which to downsample input
-    downsample = 2
+    downsample = 5
 
     # read in data
     labels = readData(box, data_path+sample_name, downsample)
+
+    #update box size according to samplint factor
     box = [int(b*(1/downsample))for b in box]
 
     # take time
     start_time = time.time()
+
+    test_function_python(box)
+    time_test_python = time.time()
+    print ("time for test in python: " + str(time_test_python - start_time))
+
+    time_before_njit = time.time()
+    test_function_njit(box)
+    time_test_njit = time.time()
+    print ("time for test in njit: " + str(time_test_njit - time_before_njit))
+
 
     #compute the labels of the conencted connected components
     labels_out, n_comp = computeConnectedComp(labels)
