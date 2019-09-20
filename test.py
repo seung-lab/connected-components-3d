@@ -329,11 +329,11 @@ def main():
     print(labels.shape)
 
     #blocksize in z direction
-    bs_z = 22
+    bs_z = int(0.5*(box[1]-box[0]))
     n_blocks_z = math.floor((box[1]-box[0])/bs_z)
-    bs_y = 113
+    bs_y = int(0.5*(box[3]-box[2]))
     n_blocks_y = math.floor((box[3]-box[2])/bs_y)
-    bs_x = 113
+    bs_x = int(0.5*(box[5]-box[4]))
     n_blocks_x = math.floor((box[5]-box[4])/bs_x)
 
     print((box[5]-box[4])/bs_x)
@@ -349,25 +349,15 @@ def main():
         for by in range(n_blocks_y):
             for bx in range(n_blocks_x):
 
-                print (bz,by,bx)
-
-                if bx == n_blocks_x-1:
-                    print("TRUE")
-                    print(box[5])
-
                 z_max = box[1] if bz == n_blocks_z-1 else (bz+1)*bs_z
                 y_max = box[3] if by == n_blocks_y-1 else (by+1)*bs_y
                 x_max = box[5] if bx == n_blocks_x-1 else (bx+1)*bs_x
-
-                print(x_max)
 
                 box_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
                 # check if this is the last box (has to be enlarged)
 
                 #take only part of block
                 labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
-                print(labels_cut.shape)
-
                 #compute the labels of the conencted connected components
                 labels_out, n_comp = computeConnectedComp(labels_cut)
 
@@ -381,7 +371,7 @@ def main():
                 wholes_set.add(-10)
                 if len(wholes_set)!=0:
                     labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = fillWholes(box_dyn, labels_cut, labels_out, wholes_set, non_wholes_set, cell_counter)
-                    total_wholes_found += len(wholes_set)
+                    total_wholes_found += len(wholes_set)-1
                     total_non_wholes_found += (len(non_wholes_set)-2)
 
                 cell_counter+=1
