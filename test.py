@@ -283,7 +283,7 @@ def findWholesList(adjComp_sets, n_comp):
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set):
+def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set, color):
 
     for ix in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
@@ -294,6 +294,10 @@ def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set):
                 # assign all wholes ID 2 to be able to visualize them
                 if curr_comp in wholes_set:
                     labels[ix,iy,iz] = 2
+
+                # color different blocks in different colors
+                if curr_comp == 1:
+                    labels[ix,iy,iz] = color+20
 
                 # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
                 if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
@@ -308,7 +312,7 @@ def main():
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
     sample_name = "cell032_downsampled_test.h5"
-    output_name = "cell032_downsampled_test_filled.h5"
+    output_name = "cell032_downsampled_test_filled"
 
     # bos size
     box = [0,200,0,1000,0,1000]
@@ -322,44 +326,68 @@ def main():
     #update box size according to samplint factor
     box = [int(b*(1/downsample))for b in box]
 
-    #blocksize in z direction
-    bs_z = 20
-    n_blocks_z = math.ceil((box[1]-box[0])/bs_z)
-    bs_y = 100
-    n_blocks_y = math.ceil((box[3]-box[2])/bs_y)
-    bs_x = 100
-    n_blocks_x = math.ceil((box[5]-box[4])/bs_x)
+    print(labels.shape)
 
-    print("nblocks z is: " + str(n_blocks_z))
+    #blocksize in z direction
+    bs_z = 22
+    n_blocks_z = math.floor((box[1]-box[0])/bs_z)
+    bs_y = 113
+    n_blocks_y = math.floor((box[3]-box[2])/bs_y)
+    bs_x = 113
+    n_blocks_x = math.floor((box[5]-box[4])/bs_x)
+
+    print((box[5]-box[4])/bs_x)
+    print(math.floor((box[5]-box[4])/bs_x))
+
+    print("nblocks: " + str(n_blocks_z) + " " + str(n_blocks_y) + " " + str(n_blocks_x))
 
     total_wholes_found = 0
     total_non_wholes_found = 0
+    cell_counter = 0
 
     for bz in range(n_blocks_z):
         for by in range(n_blocks_y):
             for bx in range(n_blocks_x):
 
-                box = [bz*bs_z,(bz+1)*bs_z,by*bs_y,(by+1)*bs_y,bx*bs_x,(bx+1)*bs_x]
+                print (bz,by,bx)
+
+                if bx == n_blocks_x-1:
+                    print("TRUE")
+                    print(box[5])
+
+                z_max = box[1] if bz == n_blocks_z-1 else (bz+1)*bs_z
+                y_max = box[3] if by == n_blocks_y-1 else (by+1)*bs_y
+                x_max = box[5] if bx == n_blocks_x-1 else (bx+1)*bs_x
+
+                print(x_max)
+
+                box_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
+                # check if this is the last box (has to be enlarged)
 
                 #take only part of block
-                labels_cut = labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
+                labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
+                print(labels_cut.shape)
 
                 #compute the labels of the conencted connected components
                 labels_out, n_comp = computeConnectedComp(labels_cut)
 
                 # compute the sets of connected components (also including boundary)
-                adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
+                adjComp_sets = findAdjCompSets(box_dyn, labels_out, n_comp)
 
                 # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                 wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
 
                 # fill detected wholes and visualize non_wholes
+                wholes_set.add(-10)
                 if len(wholes_set)!=0:
-                    labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]] = fillWholes(box, labels_cut, labels_out, wholes_set, non_wholes_set)
+                    labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = fillWholes(box_dyn, labels_cut, labels_out, wholes_set, non_wholes_set, cell_counter)
                     total_wholes_found += len(wholes_set)
                     total_non_wholes_found += (len(non_wholes_set)-2)
 
+                cell_counter+=1
+
     # print out total of found wholes
+    print("Cells processed: " + str(cell_counter))
     print("Wholes filled (total): " + str(total_wholes_found))
     print("Non wholes detected (total): " + str(total_non_wholes_found))
 
