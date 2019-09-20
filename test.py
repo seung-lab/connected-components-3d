@@ -11,6 +11,7 @@ from numba import njit
 from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 import warnings
 import scipy.ndimage.interpolation
+import math
 
 # set will be deprecated soon on numba, but until now an alternative has not been implemented
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
@@ -313,7 +314,7 @@ def main():
     box = [0,200,0,1000,0,1000]
 
     # factor by which to downsample input
-    downsample = 5
+    downsample = 1
 
     # read in data
     labels = readData(box, data_path+sample_name, downsample)
@@ -321,18 +322,31 @@ def main():
     #update box size according to samplint factor
     box = [int(b*(1/downsample))for b in box]
 
-    #compute the labels of the conencted connected components
-    labels_out, n_comp = computeConnectedComp(labels)
+    #blocksize in z direction
+    bs_z = 50
+    n_blocks_z = math.ceil((box[1]-box[0])/50)
+    print("nblocks z is: " + str(n_blocks_z))
 
-    # compute the sets of connected components (also including boundary)
-    adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
+    for bz in range(n_blocks_z):
 
-    # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-    wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
+        box = [bz*bs_z,(bz+1)*bs_z,box[2],box[3],box[4],box[5]]
 
-    # fill detected wholes and visualize non_wholes
-    if len(wholes_set)!=0:
-        labels = fillWholes(box, labels, labels_out, wholes_set, non_wholes_set)
+        #take only part of block
+        labels_cut = labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
+        print(labels_cut.shape)
+
+        #compute the labels of the conencted connected components
+        labels_out, n_comp = computeConnectedComp(labels_cut)
+
+        # compute the sets of connected components (also including boundary)
+        adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
+
+        # compute lists of wholes and non_wholes (then saved as set for compability with njit)
+        wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
+
+        # fill detected wholes and visualize non_wholes
+        if len(wholes_set)!=0:
+            labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]] = fillWholes(box, labels_cut, labels_out, wholes_set, non_wholes_set)
 
     # write filled data to H5
     writeData(data_path+output_name, labels)
