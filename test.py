@@ -300,18 +300,6 @@ def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set):
 
     return labels
 
-@njit
-def test_function_njit(box):
-    for ix in range(0, box[1]-box[0]-1):
-        for iy in range(0, box[3]-box[2]-1):
-            for iz in range(0, box[5]-box[4]-1):
-                continue
-
-def test_function_python(box):
-    for ix in range(0, box[1]-box[0]-1):
-        for iy in range(0, box[3]-box[2]-1):
-            for iz in range(0, box[5]-box[4]-1):
-                continue
 def main():
 
     saveStatistics = False
@@ -333,56 +321,18 @@ def main():
     #update box size according to samplint factor
     box = [int(b*(1/downsample))for b in box]
 
-    # take time
-    start_time = time.time()
-
-    test_function_python(box)
-    time_test_python = time.time()
-    print ("time for test in python: " + str(time_test_python - start_time))
-
-    time_before_njit = time.time()
-    test_function_njit(box)
-    time_test_njit = time.time()
-    print ("time for test in njit: " + str(time_test_njit - time_before_njit))
-
-
     #compute the labels of the conencted connected components
     labels_out, n_comp = computeConnectedComp(labels)
-    time_connected_components = time.time()
-    print ("time to compute connected components: " + str(time_connected_components - start_time))
 
     # compute the sets of connected components (also including boundary)
-    if saveStatistics is False:
-        adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
-        time_find_adj_comp_sets = time.time()
-        print ("time to find adjacent component set: " + str(time_find_adj_comp_sets - time_connected_components))
-
-    else:
-        adjComp_sets, counts = findAdjCompSetsWithCount(box, labels_out, n_comp)
-        print(counts)
-        time_find_adj_comp_sets = time.time()
-        print ("time to find adjacent component set: " + str(time_find_adj_comp_sets - time_connected_components))
+    adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
 
     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
     wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
-    time_detect_wholes = time.time()
-    print ("time to detect whole components: " + str(time_detect_wholes - time_find_adj_comp_sets))
 
     # fill detected wholes and visualize non_wholes
     if len(wholes_set)!=0:
         labels = fillWholes(box, labels, labels_out, wholes_set, non_wholes_set)
-        time_fill_wholes = time.time()
-        print ("time to fill wholes: " + str(time_fill_wholes - time_detect_wholes))
-
-    # end timing
-    print ("time needed total: " + str(time.time() - start_time))
-
-    print("Computing statistics...")
-    # compute statistics and save to numpy array
-    if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
-
-    # save the statistics file to a .txt file
-    if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
 
     # write filled data to H5
     writeData(data_path+output_name, labels)
