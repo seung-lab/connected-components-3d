@@ -323,30 +323,42 @@ def main():
     box = [int(b*(1/downsample))for b in box]
 
     #blocksize in z direction
-    bs_z = 50
-    n_blocks_z = math.ceil((box[1]-box[0])/50)
+    bs_z = 20
+    n_blocks_z = math.ceil((box[1]-box[0])/bs_z)
+    bs_y = 20
+    n_blocks_y = math.ceil((box[3]-box[2])/bs_y)
+    bs_x = 20
+    n_blocks_x = math.ceil((box[5]-box[4])/bs_x)
+
     print("nblocks z is: " + str(n_blocks_z))
 
+    total_wholes_found = 0
+
     for bz in range(n_blocks_z):
+        for by in range(n_blocks_y):
+            for bx in range(n_blocks_x):
 
-        box = [bz*bs_z,(bz+1)*bs_z,box[2],box[3],box[4],box[5]]
+                box = [bz*bs_z,(bz+1)*bs_z,by*bs_y,(by+1)*bs_y,bx*bs_x,(bx+1)*bs_x]
 
-        #take only part of block
-        labels_cut = labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
-        print(labels_cut.shape)
+                #take only part of block
+                labels_cut = labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
 
-        #compute the labels of the conencted connected components
-        labels_out, n_comp = computeConnectedComp(labels_cut)
+                #compute the labels of the conencted connected components
+                labels_out, n_comp = computeConnectedComp(labels_cut)
 
-        # compute the sets of connected components (also including boundary)
-        adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
+                # compute the sets of connected components (also including boundary)
+                adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
 
-        # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-        wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
+                # compute lists of wholes and non_wholes (then saved as set for compability with njit)
+                wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
 
-        # fill detected wholes and visualize non_wholes
-        if len(wholes_set)!=0:
-            labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]] = fillWholes(box, labels_cut, labels_out, wholes_set, non_wholes_set)
+                # fill detected wholes and visualize non_wholes
+                if len(wholes_set)!=0:
+                    labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]] = fillWholes(box, labels_cut, labels_out, wholes_set, non_wholes_set)
+                    total_wholes_found += len(wholes_set)
+
+    # print out total of found wholes
+    print("Wholes filled (total): " + str(total_wholes_found))
 
     # write filled data to H5
     writeData(data_path+output_name, labels)
