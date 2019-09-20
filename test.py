@@ -297,7 +297,7 @@ def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set, color):
 
                 # color different blocks in different colors
                 if curr_comp == 1:
-                    labels[ix,iy,iz] = color+20
+                    labels[ix,iy,iz] = color+10+labels[ix,iy,iz]
 
                 # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
                 if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
@@ -318,7 +318,7 @@ def main():
     box = [0,200,0,1000,0,1000]
 
     # factor by which to downsample input
-    downsample = 1
+    downsample = 5
 
     # read in data
     labels = readData(box, data_path+sample_name, downsample)
@@ -327,6 +327,9 @@ def main():
     box = [int(b*(1/downsample))for b in box]
 
     print(labels.shape)
+
+    #specify block overlap
+    overlap = 0.05 #(one direction, total is twice as much)
 
     #blocksize in z direction
     bs_z = int(0.5*(box[1]-box[0]))
@@ -349,15 +352,27 @@ def main():
         for by in range(n_blocks_y):
             for bx in range(n_blocks_x):
 
-                z_max = box[1] if bz == n_blocks_z-1 else (bz+1)*bs_z
-                y_max = box[3] if by == n_blocks_y-1 else (by+1)*bs_y
-                x_max = box[5] if bx == n_blocks_x-1 else (bx+1)*bs_x
+                z_min = math.floor(bz*bs_z*(1-overlap))
+                z_max = math.ceil((bz+1)*bs_z*(1+overlap))
+                y_min = math.floor(by*bs_y*(1-overlap))
+                y_max = math.ceil((by+1)*bs_y*(1+overlap))
+                x_min = math.floor(bx*bs_x*(1-overlap))
+                x_max = math.ceil((bx+1)*bs_x*(1+overlap))
 
-                box_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
+                print(z_min,z_max,y_min,y_max,x_min,x_max)
+
+                # extend last block to the border (to avoid small blocks where wholes cannot be detected)
+                if bz == n_blocks_z-1: z_max = box[1]
+                if by == n_blocks_y-1: y_max = box[3]
+                if bx == n_blocks_x-1: x_max = box[5]
+
+                # box_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
+                box_dyn = [z_min,z_max,y_min,y_max,x_min,x_max]
                 # check if this is the last box (has to be enlarged)
 
                 #take only part of block
                 labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
+
                 #compute the labels of the conencted connected components
                 labels_out, n_comp = computeConnectedComp(labels_cut)
 
