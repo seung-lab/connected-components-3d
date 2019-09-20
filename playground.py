@@ -1,13 +1,20 @@
 
 import numpy as np
-arr = [np.zeros((),dtype=np.uint8) for _ in range(5)]
+x = np.linspace(1,100,100)
 
-arr[0] = np.append(arr[0],5)
-arr[1] = np.append(arr[1],6)
-arr[1] = np.append(arr[1],7)
-print(arr[0])
-print(arr[1])
-print(arr)
+print(x[::2])
+print(x[::3])
+print(x[10:40:6])
+
+
+# arr = [np.zeros((),dtype=np.uint8) for _ in range(5)]
+#
+# arr[0] = np.append(arr[0],5)
+# arr[1] = np.append(arr[1],6)
+# arr[1] = np.append(arr[1],7)
+# print(arr[0])
+# print(arr[1])
+# print(arr)
 
 # adj_comp = np.ones((3,1))*-2
 # test.append(1)

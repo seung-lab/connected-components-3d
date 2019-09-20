@@ -10,6 +10,7 @@ import h5py
 from numba import njit
 from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 import warnings
+import scipy.ndimage.interpolation
 
 # set will be deprecated soon on numba, but until now an alternative has not been implemented
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
@@ -17,16 +18,23 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 # [z_start,z_end,y_start,y_end,x_start,x_end]
 # box = [600,728,1024,2048,1024,2048]
-box = [0,773,1200,2600,0,3328]
+# box = [0,773,1200,2600,0,3328]
+box = [0,200,0,1000,0,1000]
 
 #read data from HD5, given the file path
-def readData(box, filename):
+def readData(box, filename, downsample):
     # read in data block
     data_in = ReadH5File(filename)
 
     labels = data_in[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
 
+    if downsample%2!=0:
+        print("Error, downsampling only possible for even integers")
+
     print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
+    labels = labels[::downsample,::downsample,::downsample]
+    print("downsampled to: " + str(labels.shape))
+
     return labels
 
 # write data to H5 file
@@ -294,15 +302,22 @@ def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set):
 
 def main():
 
-    saveStatistics = True
+    saveStatistics = False
     n_features = 20
     statistics_path = "/home/frtim/wiring/statistics/"
-    data_path = "/home/frtim/wiring/raw_data/segmentations/"
-    sample_name = "JWR/cell032_downsampled.h5"
-    output_name = "JWR/cell032_downsampled_filled_viz"
+    data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
+    sample_name = "cell032_downsampled_test.h5"
+    output_name = "cell032_downsampled_test_filled.h5"
+
+    # bos size
+    box = [0,200,0,1000,0,1000]
+
+    # factor by which to downsample input
+    downsample = 2
 
     # read in data
-    labels = readData(box, data_path+sample_name)
+    labels = readData(box, data_path+sample_name, downsample)
+    box = [int(b*(1/downsample))for b in box]
 
     # take time
     start_time = time.time()
@@ -313,7 +328,7 @@ def main():
     print ("time to compute connected components: " + str(time_connected_components - start_time))
 
     # compute the sets of connected components (also including boundary)
-    if doStatistics is False:
+    if saveStatistics is False:
         adjComp_sets = findAdjCompSets(box, labels_out, n_comp)
         time_find_adj_comp_sets = time.time()
         print ("time to find adjacent component set: " + str(time_find_adj_comp_sets - time_connected_components))
@@ -330,19 +345,20 @@ def main():
     print ("time to detect whole components: " + str(time_detect_wholes - time_find_adj_comp_sets))
 
     # fill detected wholes and visualize non_wholes
-    labels = fillWholes(box, labels, labels_out, wholes_set, non_wholes_set)
-    time_fill_wholes = time.time()
-    print ("time to fill wholes: " + str(time_fill_wholes - time_detect_wholes))
+    if len(wholes_set)!=0:
+        labels = fillWholes(box, labels, labels_out, wholes_set, non_wholes_set)
+        time_fill_wholes = time.time()
+        print ("time to fill wholes: " + str(time_fill_wholes - time_detect_wholes))
 
     # end timing
     print ("time needed total: " + str(time.time() - start_time))
 
-    # print("Computing statistics...")
-    # # compute statistics and save to numpy array
-    # if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
-    #
-    # # save the statistics file to a .txt file
-    # if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
+    print("Computing statistics...")
+    # compute statistics and save to numpy array
+    if saveStatistics: statTable = doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, region)
+
+    # save the statistics file to a .txt file
+    if saveStatistics: writeStatistics(statTable, statistics_path, sample_name)
 
     # write filled data to H5
     writeData(data_path+output_name, labels)
