@@ -325,14 +325,15 @@ def main():
     #blocksize in z direction
     bs_z = 20
     n_blocks_z = math.ceil((box[1]-box[0])/bs_z)
-    bs_y = 20
+    bs_y = 100
     n_blocks_y = math.ceil((box[3]-box[2])/bs_y)
-    bs_x = 20
+    bs_x = 100
     n_blocks_x = math.ceil((box[5]-box[4])/bs_x)
 
     print("nblocks z is: " + str(n_blocks_z))
 
     total_wholes_found = 0
+    total_non_wholes_found = 0
 
     for bz in range(n_blocks_z):
         for by in range(n_blocks_y):
@@ -356,9 +357,11 @@ def main():
                 if len(wholes_set)!=0:
                     labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]] = fillWholes(box, labels_cut, labels_out, wholes_set, non_wholes_set)
                     total_wholes_found += len(wholes_set)
+                    total_non_wholes_found += (len(non_wholes_set)-2)
 
     # print out total of found wholes
     print("Wholes filled (total): " + str(total_wholes_found))
+    print("Non wholes detected (total): " + str(total_non_wholes_found))
 
     # write filled data to H5
     writeData(data_path+output_name, labels)
