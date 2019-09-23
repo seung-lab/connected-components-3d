@@ -334,6 +334,51 @@ def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes
 
     return labels_cut_ext
 
+# compute extended boxes
+@njit
+def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x):
+
+        # down refers to downsampled scale, ext to extended boxes (extended by the overlap)
+        # compute the downsampled dynamic box
+        z_min_down_dyn = bz*bs_z
+        z_max_down_dyn = (bz+1)*bs_z if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
+        y_min_down_dyn = by*bs_y
+        y_max_down_dyn = (by+1)*bs_y if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
+        x_min_down_dyn = bx*bs_x
+        x_max_down_dyn = (bx+1)*bs_x if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
+
+        box_down_dyn = [z_min_down_dyn,z_max_down_dyn,y_min_down_dyn,y_max_down_dyn,x_min_down_dyn,x_max_down_dyn]
+        box_dyn = [int(b*downsample)for b in box_down_dyn]
+
+        # compute the downsampled dynamic box (extended by the overlap)
+        z_min_down_dyn_ext = bz*bs_z-overlap_d if (bz*bs_z-overlap_d >= 0) else 0
+        z_max_down_dyn_ext = (bz+1)*bs_z+overlap_d if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
+        y_min_down_dyn_ext = by*bs_y-overlap_d if (by*bs_y-overlap_d >= 0) else 0
+        y_max_down_dyn_ext = (by+1)*bs_y+overlap_d if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
+        x_min_down_dyn_ext = bx*bs_x-overlap_d if (bx*bs_x-overlap_d >= 0) else 0
+        x_max_down_dyn_ext = (bx+1)*bs_x+overlap_d if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
+
+        box_down_dyn_ext = [z_min_down_dyn_ext,z_max_down_dyn_ext,y_min_down_dyn_ext,y_max_down_dyn_ext,x_min_down_dyn_ext,x_max_down_dyn_ext]
+        box_dyn_ext = [int(b*downsample)for b in box_down_dyn_ext]
+
+        z_start = overlap if (bz*bs_z-overlap_d >= 0) else 0
+        z_end = -overlap if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_dyn[1]-box_dyn[0]+overlap)
+        y_start = overlap if (by*bs_y-overlap_d >= 0) else 0
+        y_end = -overlap if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_dyn[3]-box_dyn[2]+overlap)
+        x_start = overlap if (bx*bs_x-overlap_d >= 0) else 0
+        x_end = -overlap if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_dyn[5]-box_dyn[4]+overlap)
+
+        # compute the indexing to get from the extended dynamic box back to the standard size dynamic box
+        box_idx = [z_start, z_end, y_start, y_end, x_start, x_end]
+
+        # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
+        # print("box_dyn_ext: " + str(box_dyn_ext))
+        # print("box_down_dyn: " + str(box_down_dyn))
+        # print("box_dyn: " + str(box_dyn))
+        # print(z_start,z_end,y_start,y_end,x_start,x_end)
+
+        return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
+
 # process whole filling process for chung of data
 def processData(labels, downsample, overlap, rel_block_size):
 
@@ -372,37 +417,16 @@ def processData(labels, downsample, overlap, rel_block_size):
 
                     print('Bock {} ...'.format(bz), end='\r')
 
-                    # compute the downsampled dynamic box
-                    z_min_down_dyn = bz*bs_z
-                    z_max_down_dyn = (bz+1)*bs_z if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
-                    y_min_down_dyn = by*bs_y
-                    y_max_down_dyn = (by+1)*bs_y if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
-                    x_min_down_dyn = bx*bs_x
-                    x_max_down_dyn = (bx+1)*bs_x if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
-
-                    # compute the downsampled dynamic box (extended by the overlap)
-                    z_min_down_dyn_ext = bz*bs_z-overlap_d if (bz*bs_z-overlap_d >= 0) else 0
-                    z_max_down_dyn_ext = (bz+1)*bs_z+overlap_d if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
-                    y_min_down_dyn_ext = by*bs_y-overlap_d if (by*bs_y-overlap_d >= 0) else 0
-                    y_max_down_dyn_ext = (by+1)*bs_y+overlap_d if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
-                    x_min_down_dyn_ext = bx*bs_x-overlap_d if (bx*bs_x-overlap_d >= 0) else 0
-                    x_max_down_dyn_ext = (bx+1)*bs_x+overlap_d if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
-
-                    # also compute the dznamic boxes at original scale (both normal and extended)
-                    box_down_dyn_ext = [z_min_down_dyn_ext,z_max_down_dyn_ext,y_min_down_dyn_ext,y_max_down_dyn_ext,x_min_down_dyn_ext,x_max_down_dyn_ext]
-                    box_down_dyn = [z_min_down_dyn,z_max_down_dyn,y_min_down_dyn,y_max_down_dyn,x_min_down_dyn,x_max_down_dyn]
-                    box_dyn_ext = [int(b*downsample)for b in box_down_dyn_ext]
-                    box_dyn = [int(b*downsample)for b in box_down_dyn]
-
-                    # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
-                    # print("box_dyn_ext: " + str(box_dyn_ext))
-                    # print("box_down_dyn: " + str(box_down_dyn))
-                    # print("box_dyn: " + str(box_dyn))
-                    # print(z_start,z_end,y_start,y_end,x_start,x_end)
+                    #compute boxes (description in function)
+                    box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx = getBoxes(
+                        box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x)
 
                     #take only part of block
-                    labels_cut_down_ext = labels_down[box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
-                    labels_cut_ext = labels[box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
+                    labels_cut_down_ext = labels_down[
+                        box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
+
+                    labels_cut_ext = labels[
+                        box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
 
                     #compute the labels of the conencted connected components
                     labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext, printOn)
@@ -413,18 +437,11 @@ def processData(labels, downsample, overlap, rel_block_size):
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                     wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
 
-                    # compute the indexing to get from the extended dynamic box back to the standard size dynamic box
-                    z_start = overlap if (bz*bs_z-overlap_d >= 0) else 0
-                    z_end = -overlap if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_dyn[1]-box_dyn[0]+overlap)
-                    y_start = overlap if (by*bs_y-overlap_d >= 0) else 0
-                    y_end = -overlap if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_dyn[3]-box_dyn[2]+overlap)
-                    x_start = overlap if (bx*bs_x-overlap_d >= 0) else 0
-                    x_end = -overlap if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_dyn[5]-box_dyn[4]+overlap)
-
                     # fill detected wholes and visualize non_wholes
                     if len(wholes_set)!=0:
                         labels_cut_filled = fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes_set, non_wholes_set, downsample)
-                        labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_filled[z_start:z_end,y_start:y_end,x_start:x_end]
+                        labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_filled[
+                            box_idx[0]:box_idx[1],box_idx[2]:box_idx[3],box_idx[4]:box_idx[5]]
 
                         total_wholes_found += len(wholes_set)
                         total_non_wholes_found += len(non_wholes_set)
@@ -444,11 +461,11 @@ def main():
     n_features = 20
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
-    sample_name = "cell032_downsampled.h5"
+    sample_name = "cell032_downsampled_test.h5"
     output_name = "cell032_downsampled_filled"
 
     # bos size
-    box = [0,773,0,3328,0,3328]
+    box = [0,200,0,1000,0,1000]
 
     # read in data
     labels = readData(box, data_path+sample_name)
