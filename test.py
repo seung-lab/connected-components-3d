@@ -345,19 +345,19 @@ def main():
     # bos size
     box = [0,200,0,1000,0,1000]
 
-    # factor by which to downsample input
-    downsample = 7
-
     # read in data
     labels = readData(box, data_path+sample_name)
+
+    # factor by which to downsample input
+    downsample = 2
 
     # downsample data
     box_down, labels_down = downsampleDataClassic(box, downsample, labels)
 
-
     #specify block overlap
-    overlap = 0 #(one direction, total is twice as much)
-    rel_b_size = 1
+    overlapInPx = True
+    overlap = 10 #(one direction, total is twice as much)
+    rel_b_size = 0.5
 
     #blocksize in z direction
     bs_z = int(rel_b_size*(box_down[1]-box_down[0]))
@@ -381,12 +381,21 @@ def main():
         for by in range(n_blocks_y):
             for bx in range(n_blocks_x):
 
-                z_min = math.floor(bz*bs_z*(1-overlap))
-                z_max = math.ceil((bz+1)*bs_z*(1+overlap))
-                y_min = math.floor(by*bs_y*(1-overlap))
-                y_max = math.ceil((by+1)*bs_y*(1+overlap))
-                x_min = math.floor(bx*bs_x*(1-overlap))
-                x_max = math.ceil((bx+1)*bs_x*(1+overlap))
+                if not overlapInPx:
+                    z_min = math.floor(bz*bs_z*(1-overlap))
+                    z_max = math.ceil((bz+1)*bs_z*(1+overlap))
+                    y_min = math.floor(by*bs_y*(1-overlap))
+                    y_max = math.ceil((by+1)*bs_y*(1+overlap))
+                    x_min = math.floor(bx*bs_x*(1-overlap))
+                    x_max = math.ceil((bx+1)*bs_x*(1+overlap))
+
+                if overlapInPx:
+                    z_min = bz*bs_z-overlap
+                    z_max = (bz+1)*bs_z+overlap
+                    y_min = by*bs_y-overlap
+                    y_max = (by+1)*bs_y+overlap
+                    x_min = bx*bs_x-overlap
+                    x_max = (bx+1)*bs_x+overlap
 
                 # extend last block to the border (to avoid small blocks where wholes cannot be detected)
                 if bz == n_blocks_z-1: z_max = box_down[1]
