@@ -34,7 +34,7 @@ def readData(box, filename):
     return labels
 
 # downsample data by facter downsample
-def downsampleData(box, downsample, labels):
+def downsampleDataClassic(box, downsample, labels):
 
     if downsample%2!=0:
         print("Error, downsampling only possible for even integers")
@@ -47,6 +47,27 @@ def downsampleData(box, downsample, labels):
     box = [int(b*(1/downsample))for b in box]
 
     return box, labels
+
+# downsample with max
+@njit
+def downsampleDataMax(box, downsample, labels):
+
+    if downsample%2!=0:
+        print("Error, downsampling only possible for even integers")
+    box_down = [int(b*(1/downsample))for b in box]
+    labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint8)
+
+    # dsf = downsamplefactor
+    dsf = downsample
+
+    for ix in range(0, box_down[1]-box_down[0]):
+        for iy in range(0, box_down[3]-box_down[2]):
+            for iz in range(0, box_down[5]-box_down[4]):
+                labels_down[ix,iy,iz]=np.max(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
+
+    return box_down, labels_down
+
+
 
 # write data to H5 file
 def writeData(filename,labels):
@@ -293,25 +314,24 @@ def findWholesList(adjComp_sets, n_comp):
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set, color):
+def fillWholes(box_dyn_down, labels, labels_cut_out_down, wholes_set, non_wholes_set, downsample):
+
+    dsf = downsample
+    box = box_dyn_down
 
     for ix in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
             for iz in range(0, box[5]-box[4]):
 
-                curr_comp = labels_out[ix,iy,iz]
+                curr_comp = labels_cut_out_down[ix,iy,iz]
 
                 # assign all wholes ID 2 to be able to visualize them
                 if curr_comp in wholes_set:
-                    labels[ix,iy,iz] = 2
-                #
-                # # color different blocks in different colors
-                # if curr_comp == 1:
-                #     labels[ix,iy,iz] = color+10+labels[ix,iy,iz]
+                    labels[(ix+box[0])*dsf:(ix+box[0]+1)*dsf,(iy+box[2])*dsf:(iy+box[2]+1)*dsf,(iz+box[4])*dsf:(iz+box[4]+1)*dsf] = 2
 
                 # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
                 if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
-                    labels[ix,iy,iz] = curr_comp
+                    labels[(ix+box[0])*dsf:(ix+box[0]+1)*dsf,(iy+box[2])*dsf:(iy+box[2]+1)*dsf,(iz+box[4])*dsf:(iz+box[4]+1)*dsf] = curr_comp
 
     return labels
 
@@ -328,19 +348,19 @@ def main():
     box = [0,200,0,1000,0,1000]
 
     # factor by which to downsample input
-    downsample = 1
+    downsample = 2
 
     # read in data
     labels = readData(box, data_path+sample_name)
 
     # downsample data
-    box, labels = downsampleData(box, downsample, labels)
+    box, labels_down = downsampleDataMax(box, downsample, labels)
 
 
     #specify block overlap
     overlap = 0 #(one direction, total is twice as much)
+    rel_b_size = 1
 
-    rel_b_size = 0.5
     #blocksize in z direction
     bs_z = int(rel_b_size*(box[1]-box[0]))
     n_blocks_z = math.floor((box[1]-box[0])/bs_z)
@@ -380,23 +400,22 @@ def main():
                 # check if this is the last box (has to be enlarged)
 
                 #take only part of block
-                labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
+                labels_cut_down = labels_down[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
 
                 #compute the labels of the conencted connected components
-                labels_out, n_comp = computeConnectedComp(labels_cut)
+                labels_cut_out_down, n_comp = computeConnectedComp(labels_cut_down)
 
                 # compute the sets of connected components (also including boundary)
-                adjComp_sets = findAdjCompSets(box_dyn, labels_out, n_comp)
+                adjComp_sets = findAdjCompSets(box_dyn, labels_cut_out_down, n_comp)
 
                 # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                 wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
 
                 # fill detected wholes and visualize non_wholes
-                wholes_set.add(-10)
                 if len(wholes_set)!=0:
-                    labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = fillWholes(box_dyn, labels_cut, labels_out, wholes_set, non_wholes_set, cell_counter)
-                    total_wholes_found += len(wholes_set)-1
-                    total_non_wholes_found += (len(non_wholes_set)-2)
+                    labels = fillWholes(box_dyn, labels, labels_cut_out_down, wholes_set, non_wholes_set, downsample)
+                    total_wholes_found += len(wholes_set)
+                    total_non_wholes_found += len(non_wholes_set)
 
                 cell_counter+=1
 
