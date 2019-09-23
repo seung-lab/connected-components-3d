@@ -35,7 +35,7 @@ def readData(box, filename):
 # downsample data by facter downsample
 def downsampleDataClassic(box, downsample, labels):
 
-    if downsample%2!=0:
+    if downsample%2!=0 and downsample!=1:
         print("Error, downsampling only possible for even integers")
 
 
@@ -51,7 +51,7 @@ def downsampleDataClassic(box, downsample, labels):
 @njit
 def downsampleDataMax(box, downsample, labels):
 
-    if downsample%2!=0:
+    if downsample%2!=0 and downsample!=1:
         print("Error, downsampling only possible for even integers")
     box_down = [int(b*(1/downsample))for b in box]
     labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint8)
@@ -76,14 +76,16 @@ def writeData(filename,labels):
         hf.create_dataset("main", data=labels, compression='gzip')
 
 #compute the connected Com ponent labels
-def computeConnectedComp(labels):
+def computeConnectedComp(labels, printOn):
     lables_inverse = 1 - labels
     connectivity = 6 # only 26, 18, and 6 are allowed
     labels_out = cc3d.connected_components(lables_inverse, connectivity=connectivity)
 
     # You can extract individual components like so:
     n_comp = np.max(labels_out) + 1
-    # print("Conntected Regions found: " + str(n_comp))
+
+    if printOn:
+        print("Conntected Regions found: " + str(n_comp))
 
     # determine indices, numbers and counts for the connected regions
     # unique, counts = np.unique(labels_out, return_counts=True)
@@ -324,18 +326,17 @@ def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes
 
                 # assign all wholes ID 2 to be able to visualize them
                 if curr_comp in wholes_set:
-                    labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = 2
+                    labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = 1
 
-                # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
-                if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
-                    labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = curr_comp
+                # # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
+                # if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
+                #     labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = curr_comp
 
     return labels_cut_ext
 
 # process whole filling process for chung of data
 def processData(labels, downsample, overlap, rel_block_size):
 
-        print(labels.shape)
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
 
@@ -344,14 +345,13 @@ def processData(labels, downsample, overlap, rel_block_size):
 
         #specify block overlap in downsampled domain
         overlap_d = int(overlap/downsample)
-        rel_b_size = rel_block_size
 
         #compute number of blocks and block size
-        bs_z = int(rel_b_size*(box_down[1]-box_down[0]))
+        bs_z = int(rel_block_size*(box_down[1]-box_down[0]))
         n_blocks_z = math.floor((box_down[1]-box_down[0])/bs_z)
-        bs_y = int(rel_b_size*(box_down[3]-box_down[2]))
+        bs_y = int(rel_block_size*(box_down[3]-box_down[2]))
         n_blocks_y = math.floor((box_down[3]-box_down[2])/bs_y)
-        bs_x = int(rel_b_size*(box_down[5]-box_down[4]))
+        bs_x = int(rel_block_size*(box_down[5]-box_down[4]))
         n_blocks_x = math.floor((box_down[5]-box_down[4])/bs_x)
 
         print("nblocks: " + str(n_blocks_z) + ", " + str(n_blocks_y) + ", " + str(n_blocks_x))
@@ -360,6 +360,9 @@ def processData(labels, downsample, overlap, rel_block_size):
         total_wholes_found = 0
         total_non_wholes_found = 0
         cell_counter = 0
+
+        # print connected components only if all data processed in one
+        printOn = True if n_blocks_z == 1 else False
 
         #process blocks
         for bz in range(n_blocks_z):
@@ -387,23 +390,24 @@ def processData(labels, downsample, overlap, rel_block_size):
                     box_dyn = [int(b*downsample)for b in box_down_dyn]
 
                     z_start = overlap if (bz*bs_z-overlap_d >= 0) else 0
-                    z_end = -overlap if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else (box_dyn[1]-box_dyn[0]+overlap)
+                    z_end = -overlap if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_dyn[1]-box_dyn[0]+overlap)
                     y_start = overlap if (by*bs_y-overlap_d >= 0) else 0
-                    y_end = -overlap if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else (box_dyn[3]-box_dyn[2]+overlap)
+                    y_end = -overlap if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_dyn[3]-box_dyn[2]+overlap)
                     x_start = overlap if (bx*bs_x-overlap_d >= 0) else 0
-                    x_end = -overlap if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else (box_dyn[5]-box_dyn[4]+overlap)
+                    x_end = -overlap if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_dyn[5]-box_dyn[4]+overlap)
 
                     # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
                     # print("box_dyn_ext: " + str(box_dyn_ext))
                     # print("box_down_dyn: " + str(box_down_dyn))
                     # print("box_dyn: " + str(box_dyn))
+                    # print(z_start,z_end,y_start,y_end,x_start,x_end)
 
                     #take only part of block
                     labels_cut_down_ext = labels_down[box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
                     labels_cut_ext = labels[box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
 
                     #compute the labels of the conencted connected components
-                    labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext)
+                    labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext, printOn)
 
                     # compute the sets of connected components (also including boundary)
                     adjComp_sets = findAdjCompSets(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
@@ -442,9 +446,20 @@ def main():
     # read in data
     labels = readData(box, data_path+sample_name)
 
+    # process again to check success
+    # labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
+
+    print("_________________________________________________________________")
     # process chunk of data
     # overlap in points in one direction (total is twice)
-    labels = processData(labels, downsample=2, overlap=10, rel_block_size=0.5)
+    labels = processData(labels, downsample=5, overlap=0, rel_block_size=1)
+    print("_________________________________________________________________")
+
+    labels = processData(labels, downsample=1, overlap=5, rel_block_size=0.1)
+    print("_________________________________________________________________")
+
+    # process again to check success
+    labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
 
     # write filled data to H5
     writeData(data_path+output_name, labels)
