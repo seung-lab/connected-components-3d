@@ -415,7 +415,7 @@ def processData(labels, downsample, overlap, rel_block_size):
             for by in range(n_blocks_y):
                 for bx in range(n_blocks_x):
 
-                    print('Bock {} ...'.format(bz), end='\r')
+                    print('Bock {} ...'.format(bz+1), end='\r')
 
                     #compute boxes (description in function)
                     box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx = getBoxes(
@@ -461,11 +461,11 @@ def main():
     n_features = 20
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
-    sample_name = "cell032_downsampled_test.h5"
+    sample_name = "cell032_downsampled.h5"
     output_name = "cell032_downsampled_filled"
 
     # bos size
-    box = [0,200,0,1000,0,1000]
+    box = [0,773,0,3328,0,3328]
 
     # read in data
     labels = readData(box, data_path+sample_name)
