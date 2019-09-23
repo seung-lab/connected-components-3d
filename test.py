@@ -20,7 +20,6 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 # [z_start,z_end,y_start,y_end,x_start,x_end]
 # box = [600,728,1024,2048,1024,2048]
 # box = [0,773,1200,2600,0,3328]
-box = [0,200,0,1000,0,1000]
 
 #read data from HD5, given the file path
 def readData(box, filename):
@@ -303,10 +302,10 @@ def findWholesList(adjComp_sets, n_comp):
     wholes_set = set(wholes)
     non_wholes_set = set(non_wholes)
 
-    print("Wholes (total of " + str(len(wholes_set)) + "):")
-    print(wholes_set)
-    print("Non-Wholes (total of " + str(len(non_wholes_set)) + "):")
-    print(non_wholes_set)
+    # print("Wholes (total of " + str(len(wholes_set)) + "):")
+    # print(wholes_set)
+    # print("Non-Wholes (total of " + str(len(non_wholes_set)) + "):")
+    # print(non_wholes_set)
 
     return wholes_set, non_wholes_set
 
@@ -345,6 +344,8 @@ def main():
     # bos size
     box = [0,200,0,1000,0,1000]
 
+    print("box is: " + str(box))
+
     # read in data
     labels = readData(box, data_path+sample_name)
 
@@ -354,12 +355,14 @@ def main():
     # downsample data
     box_down, labels_down = downsampleDataClassic(box, downsample, labels)
 
+    print("box_down is: " + str(box_down))
+
     #specify block overlap
-    overlapInPx = True
-    overlap = 10 #(one direction, total is twice as much)
+    overlapInPx = False
+    overlap = 0 #(one direction, total is twice as much)
     rel_b_size = 0.5
 
-    #blocksize in z direction
+    #compute number of blocks and block size
     bs_z = int(rel_b_size*(box_down[1]-box_down[0]))
     n_blocks_z = math.floor((box_down[1]-box_down[0])/bs_z)
     bs_y = int(rel_b_size*(box_down[3]-box_down[2]))
@@ -367,14 +370,14 @@ def main():
     bs_x = int(rel_b_size*(box_down[5]-box_down[4]))
     n_blocks_x = math.floor((box_down[5]-box_down[4])/bs_x)
 
-    print((box_down[5]-box_down[4])/bs_x)
-    print(math.floor((box_down[5]-box_down[4])/bs_x))
-
-    print("nblocks: " + str(n_blocks_z) + " " + str(n_blocks_y) + " " + str(n_blocks_x))
+    print("nblocks: " + str(n_blocks_z) + ", " + str(n_blocks_y) + ", " + str(n_blocks_x))
 
     total_wholes_found = 0
     total_non_wholes_found = 0
     cell_counter = 0
+
+    #box explanation
+    # box = box in original volume, that is being processed
 
     #process blocks
     for bz in range(n_blocks_z):
@@ -389,6 +392,7 @@ def main():
                     x_min = math.floor(bx*bs_x*(1-overlap))
                     x_max = math.ceil((bx+1)*bs_x*(1+overlap))
 
+                # TODO check that this doesnt become negative
                 if overlapInPx:
                     z_min = bz*bs_z-overlap
                     z_max = (bz+1)*bs_z+overlap
@@ -403,12 +407,17 @@ def main():
                 if bx == n_blocks_x-1: x_max = box_down[5]
 
                 box_down_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
-                box_down_dyn_ext = [z_min,z_max,y_min,y_max,x_min,x_max]
+                box_dyn = [int(b*downsample)for b in box_down_dyn]
+
+
+                print("box down_dyn: " + str(box_down_dyn))
+                print("box _dyn: " + str(box_dyn))
+                # box_down_dyn_ext = [z_min,z_max,y_min,y_max,x_min,x_max]
                 # check if this is the last box (has to be enlarged)
 
                 #take only part of block
                 labels_cut_down = labels_down[box_down_dyn[0]:box_down_dyn[1],box_down_dyn[2]:box_down_dyn[3],box_down_dyn[4]:box_down_dyn[5]]
-                labels_cut = labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
+                labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
                 #compute the labels of the conencted connected components
                 labels_cut_out_down, n_comp = computeConnectedComp(labels_cut_down)
 
@@ -420,7 +429,9 @@ def main():
 
                 # fill detected wholes and visualize non_wholes
                 if len(wholes_set)!=0:
-                    labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]] = fillWholes(box_down_dyn, labels_cut, labels_cut_out_down, wholes_set, non_wholes_set, downsample)
+                    labels_cut_filled = fillWholes(box_down_dyn, labels_cut, labels_cut_out_down, wholes_set, non_wholes_set, downsample)
+                    labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_filled
+                    
                     total_wholes_found += len(wholes_set)
                     total_non_wholes_found += len(non_wholes_set)
 
