@@ -23,20 +23,30 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 box = [0,200,0,1000,0,1000]
 
 #read data from HD5, given the file path
-def readData(box, filename, downsample):
+def readData(box, filename):
     # read in data block
     data_in = ReadH5File(filename)
 
     labels = data_in[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
 
+    print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
+
+    return labels
+
+# downsample data by facter downsample
+def downsampleData(box, downsample, labels):
+
     if downsample%2!=0:
         print("Error, downsampling only possible for even integers")
 
-    print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
+
     labels = labels[::downsample,::downsample,::downsample]
     print("downsampled to: " + str(labels.shape))
 
-    return labels
+    #update box size according to samplint factor
+    box = [int(b*(1/downsample))for b in box]
+
+    return box, labels
 
 # write data to H5 file
 def writeData(filename,labels):
@@ -294,10 +304,10 @@ def fillWholes(box, labels, labels_out, wholes_set, non_wholes_set, color):
                 # assign all wholes ID 2 to be able to visualize them
                 if curr_comp in wholes_set:
                     labels[ix,iy,iz] = 2
-
-                # color different blocks in different colors
-                if curr_comp == 1:
-                    labels[ix,iy,iz] = color+10+labels[ix,iy,iz]
+                #
+                # # color different blocks in different colors
+                # if curr_comp == 1:
+                #     labels[ix,iy,iz] = color+10+labels[ix,iy,iz]
 
                 # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
                 if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
@@ -318,25 +328,25 @@ def main():
     box = [0,200,0,1000,0,1000]
 
     # factor by which to downsample input
-    downsample = 5
+    downsample = 1
 
     # read in data
-    labels = readData(box, data_path+sample_name, downsample)
+    labels = readData(box, data_path+sample_name)
 
-    #update box size according to samplint factor
-    box = [int(b*(1/downsample))for b in box]
+    # downsample data
+    box, labels = downsampleData(box, downsample, labels)
 
-    print(labels.shape)
 
     #specify block overlap
-    overlap = 0.05 #(one direction, total is twice as much)
+    overlap = 0 #(one direction, total is twice as much)
 
+    rel_b_size = 0.5
     #blocksize in z direction
-    bs_z = int(0.5*(box[1]-box[0]))
+    bs_z = int(rel_b_size*(box[1]-box[0]))
     n_blocks_z = math.floor((box[1]-box[0])/bs_z)
-    bs_y = int(0.5*(box[3]-box[2]))
+    bs_y = int(rel_b_size*(box[3]-box[2]))
     n_blocks_y = math.floor((box[3]-box[2])/bs_y)
-    bs_x = int(0.5*(box[5]-box[4]))
+    bs_x = int(rel_b_size*(box[5]-box[4]))
     n_blocks_x = math.floor((box[5]-box[4])/bs_x)
 
     print((box[5]-box[4])/bs_x)
@@ -348,6 +358,7 @@ def main():
     total_non_wholes_found = 0
     cell_counter = 0
 
+    #process blocks
     for bz in range(n_blocks_z):
         for by in range(n_blocks_y):
             for bx in range(n_blocks_x):
@@ -359,15 +370,13 @@ def main():
                 x_min = math.floor(bx*bs_x*(1-overlap))
                 x_max = math.ceil((bx+1)*bs_x*(1+overlap))
 
-                print(z_min,z_max,y_min,y_max,x_min,x_max)
-
                 # extend last block to the border (to avoid small blocks where wholes cannot be detected)
                 if bz == n_blocks_z-1: z_max = box[1]
                 if by == n_blocks_y-1: y_max = box[3]
                 if bx == n_blocks_x-1: x_max = box[5]
 
-                # box_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
-                box_dyn = [z_min,z_max,y_min,y_max,x_min,x_max]
+                box_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
+                box_dyn_ext = [z_min,z_max,y_min,y_max,x_min,x_max]
                 # check if this is the last box (has to be enlarged)
 
                 #take only part of block
