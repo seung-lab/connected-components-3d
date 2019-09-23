@@ -339,7 +339,7 @@ def processData(labels, downsample, overlap, rel_block_size):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
-
+        # z_size = labels.shape[0]
         # downsample data
         box_down, labels_down = downsampleDataClassic(box, downsample, labels)
 
