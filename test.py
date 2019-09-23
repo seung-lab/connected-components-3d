@@ -370,6 +370,8 @@ def processData(labels, downsample, overlap, rel_block_size):
             for by in range(n_blocks_y):
                 for bx in range(n_blocks_x):
 
+                    print('Bock {} ...'.format(bz), end='\r')
+
                     # compute the downsampled dynamic box
                     z_min_down_dyn = bz*bs_z
                     z_max_down_dyn = (bz+1)*bs_z if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
@@ -442,11 +444,11 @@ def main():
     n_features = 20
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
-    sample_name = "cell032_downsampled_test.h5"
-    output_name = "cell032_downsampled_test_filled"
+    sample_name = "cell032_downsampled.h5"
+    output_name = "cell032_downsampled_filled"
 
     # bos size
-    box = [0,200,0,1000,0,1000]
+    box = [0,773,0,3328,0,3328]
 
     # read in data
     labels = readData(box, data_path+sample_name)
@@ -454,6 +456,7 @@ def main():
     # process again to check success
     # labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
 
+    start_time = time.time()
     print("_________________________________________________________________")
     # process chunk of data
     # overlap in points in one direction (total is twice)
@@ -462,7 +465,7 @@ def main():
 
     labels = processData(labels, downsample=1, overlap=5, rel_block_size=0.1)
     print("_________________________________________________________________")
-
+    print("Time elapsed: " + str(time.time() - start_time))
     # process again to check success
     # labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
 
