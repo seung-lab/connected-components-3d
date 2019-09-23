@@ -67,8 +67,6 @@ def downsampleDataMax(box, downsample, labels):
 
     return box_down, labels_down
 
-
-
 # write data to H5 file
 def writeData(filename,labels):
 
@@ -314,7 +312,7 @@ def findWholesList(adjComp_sets, n_comp):
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(box_dyn_down, labels, labels_cut_out_down, wholes_set, non_wholes_set, downsample):
+def fillWholes(box_dyn_down, labels_cut, labels_cut_out_down, wholes_set, non_wholes_set, downsample):
 
     dsf = downsample
     box = box_dyn_down
@@ -327,13 +325,13 @@ def fillWholes(box_dyn_down, labels, labels_cut_out_down, wholes_set, non_wholes
 
                 # assign all wholes ID 2 to be able to visualize them
                 if curr_comp in wholes_set:
-                    labels[(ix+box[0])*dsf:(ix+box[0]+1)*dsf,(iy+box[2])*dsf:(iy+box[2]+1)*dsf,(iz+box[4])*dsf:(iz+box[4]+1)*dsf] = 2
+                    labels_cut[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = 2
 
                 # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
                 if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
-                    labels[(ix+box[0])*dsf:(ix+box[0]+1)*dsf,(iy+box[2])*dsf:(iy+box[2]+1)*dsf,(iz+box[4])*dsf:(iz+box[4]+1)*dsf] = curr_comp
+                    labels_cut[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = curr_comp
 
-    return labels
+    return labels_cut
 
 def main():
 
@@ -348,13 +346,13 @@ def main():
     box = [0,200,0,1000,0,1000]
 
     # factor by which to downsample input
-    downsample = 2
+    downsample = 7
 
     # read in data
     labels = readData(box, data_path+sample_name)
 
     # downsample data
-    box, labels_down = downsampleDataMax(box, downsample, labels)
+    box_down, labels_down = downsampleDataClassic(box, downsample, labels)
 
 
     #specify block overlap
@@ -362,15 +360,15 @@ def main():
     rel_b_size = 1
 
     #blocksize in z direction
-    bs_z = int(rel_b_size*(box[1]-box[0]))
-    n_blocks_z = math.floor((box[1]-box[0])/bs_z)
-    bs_y = int(rel_b_size*(box[3]-box[2]))
-    n_blocks_y = math.floor((box[3]-box[2])/bs_y)
-    bs_x = int(rel_b_size*(box[5]-box[4]))
-    n_blocks_x = math.floor((box[5]-box[4])/bs_x)
+    bs_z = int(rel_b_size*(box_down[1]-box_down[0]))
+    n_blocks_z = math.floor((box_down[1]-box_down[0])/bs_z)
+    bs_y = int(rel_b_size*(box_down[3]-box_down[2]))
+    n_blocks_y = math.floor((box_down[3]-box_down[2])/bs_y)
+    bs_x = int(rel_b_size*(box_down[5]-box_down[4]))
+    n_blocks_x = math.floor((box_down[5]-box_down[4])/bs_x)
 
-    print((box[5]-box[4])/bs_x)
-    print(math.floor((box[5]-box[4])/bs_x))
+    print((box_down[5]-box_down[4])/bs_x)
+    print(math.floor((box_down[5]-box_down[4])/bs_x))
 
     print("nblocks: " + str(n_blocks_z) + " " + str(n_blocks_y) + " " + str(n_blocks_x))
 
@@ -391,29 +389,29 @@ def main():
                 x_max = math.ceil((bx+1)*bs_x*(1+overlap))
 
                 # extend last block to the border (to avoid small blocks where wholes cannot be detected)
-                if bz == n_blocks_z-1: z_max = box[1]
-                if by == n_blocks_y-1: y_max = box[3]
-                if bx == n_blocks_x-1: x_max = box[5]
+                if bz == n_blocks_z-1: z_max = box_down[1]
+                if by == n_blocks_y-1: y_max = box_down[3]
+                if bx == n_blocks_x-1: x_max = box_down[5]
 
-                box_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
-                box_dyn_ext = [z_min,z_max,y_min,y_max,x_min,x_max]
+                box_down_dyn = [bz*bs_z,z_max,by*bs_y,y_max,bx*bs_x,x_max]
+                box_down_dyn_ext = [z_min,z_max,y_min,y_max,x_min,x_max]
                 # check if this is the last box (has to be enlarged)
 
                 #take only part of block
-                labels_cut_down = labels_down[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
-
+                labels_cut_down = labels_down[box_down_dyn[0]:box_down_dyn[1],box_down_dyn[2]:box_down_dyn[3],box_down_dyn[4]:box_down_dyn[5]]
+                labels_cut = labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
                 #compute the labels of the conencted connected components
                 labels_cut_out_down, n_comp = computeConnectedComp(labels_cut_down)
 
                 # compute the sets of connected components (also including boundary)
-                adjComp_sets = findAdjCompSets(box_dyn, labels_cut_out_down, n_comp)
+                adjComp_sets = findAdjCompSets(box_down_dyn, labels_cut_out_down, n_comp)
 
                 # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                 wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
 
                 # fill detected wholes and visualize non_wholes
                 if len(wholes_set)!=0:
-                    labels = fillWholes(box_dyn, labels, labels_cut_out_down, wholes_set, non_wholes_set, downsample)
+                    labels[box[0]:box[1],box[2]:box[3],box[4]:box[5]] = fillWholes(box_down_dyn, labels_cut, labels_cut_out_down, wholes_set, non_wholes_set, downsample)
                     total_wholes_found += len(wholes_set)
                     total_non_wholes_found += len(non_wholes_set)
 
