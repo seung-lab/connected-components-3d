@@ -83,7 +83,7 @@ def computeConnectedComp(labels):
 
     # You can extract individual components like so:
     n_comp = np.max(labels_out) + 1
-    print("Conntected Regions found: " + str(n_comp))
+    # print("Conntected Regions found: " + str(n_comp))
 
     # determine indices, numbers and counts for the connected regions
     # unique, counts = np.unique(labels_out, return_counts=True)
@@ -332,6 +332,101 @@ def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes
 
     return labels_cut_ext
 
+# process whole filling process for chung of data
+def processData(labels, downsample, overlap, rel_block_size):
+
+        print(labels.shape)
+        # read in chunk size
+        box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
+
+        # downsample data
+        box_down, labels_down = downsampleDataClassic(box, downsample, labels)
+
+        #specify block overlap in downsampled domain
+        overlap_d = int(overlap/downsample)
+        rel_b_size = rel_block_size
+
+        #compute number of blocks and block size
+        bs_z = int(rel_b_size*(box_down[1]-box_down[0]))
+        n_blocks_z = math.floor((box_down[1]-box_down[0])/bs_z)
+        bs_y = int(rel_b_size*(box_down[3]-box_down[2]))
+        n_blocks_y = math.floor((box_down[3]-box_down[2])/bs_y)
+        bs_x = int(rel_b_size*(box_down[5]-box_down[4]))
+        n_blocks_x = math.floor((box_down[5]-box_down[4])/bs_x)
+
+        print("nblocks: " + str(n_blocks_z) + ", " + str(n_blocks_y) + ", " + str(n_blocks_x))
+        print("block size: " + str(bs_z) + ", " + str(bs_y) + ", " + str(bs_x))
+
+        total_wholes_found = 0
+        total_non_wholes_found = 0
+        cell_counter = 0
+
+        #process blocks
+        for bz in range(n_blocks_z):
+            for by in range(n_blocks_y):
+                for bx in range(n_blocks_x):
+
+                    # TODO check that this doesnt become negative
+                    z_min_down_dyn_ext = bz*bs_z-overlap_d if (bz*bs_z-overlap_d >= 0) else 0
+                    z_max_down_dyn_ext = (bz+1)*bs_z+overlap_d if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
+                    y_min_down_dyn_ext = by*bs_y-overlap_d if (by*bs_y-overlap_d >= 0) else 0
+                    y_max_down_dyn_ext = (by+1)*bs_y+overlap_d if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
+                    x_min_down_dyn_ext = bx*bs_x-overlap_d if (bx*bs_x-overlap_d >= 0) else 0
+                    x_max_down_dyn_ext = (bx+1)*bs_x+overlap_d if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
+
+                    z_min_down_dyn = bz*bs_z
+                    z_max_down_dyn = (bz+1)*bs_z if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
+                    y_min_down_dyn = by*bs_y
+                    y_max_down_dyn = (by+1)*bs_y if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
+                    x_min_down_dyn = bx*bs_x
+                    x_max_down_dyn = (bx+1)*bs_x if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
+
+                    box_down_dyn_ext = [z_min_down_dyn_ext,z_max_down_dyn_ext,y_min_down_dyn_ext,y_max_down_dyn_ext,x_min_down_dyn_ext,x_max_down_dyn_ext]
+                    box_down_dyn = [z_min_down_dyn,z_max_down_dyn,y_min_down_dyn,y_max_down_dyn,x_min_down_dyn,x_max_down_dyn]
+                    box_dyn_ext = [int(b*downsample)for b in box_down_dyn_ext]
+                    box_dyn = [int(b*downsample)for b in box_down_dyn]
+
+                    z_start = overlap if (bz*bs_z-overlap_d >= 0) else 0
+                    z_end = -overlap if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else (box_dyn[1]-box_dyn[0]+overlap)
+                    y_start = overlap if (by*bs_y-overlap_d >= 0) else 0
+                    y_end = -overlap if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else (box_dyn[3]-box_dyn[2]+overlap)
+                    x_start = overlap if (bx*bs_x-overlap_d >= 0) else 0
+                    x_end = -overlap if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else (box_dyn[5]-box_dyn[4]+overlap)
+
+                    # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
+                    # print("box_dyn_ext: " + str(box_dyn_ext))
+                    # print("box_down_dyn: " + str(box_down_dyn))
+                    # print("box_dyn: " + str(box_dyn))
+
+                    #take only part of block
+                    labels_cut_down_ext = labels_down[box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
+                    labels_cut_ext = labels[box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
+
+                    #compute the labels of the conencted connected components
+                    labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext)
+
+                    # compute the sets of connected components (also including boundary)
+                    adjComp_sets = findAdjCompSets(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
+
+                    # compute lists of wholes and non_wholes (then saved as set for compability with njit)
+                    wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
+
+                    # fill detected wholes and visualize non_wholes
+                    if len(wholes_set)!=0:
+                        labels_cut_filled = fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes_set, non_wholes_set, downsample)
+                        labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_filled[z_start:z_end,y_start:y_end,x_start:x_end]
+                        total_wholes_found += len(wholes_set)
+                        total_non_wholes_found += len(non_wholes_set)
+
+                    cell_counter+=1
+
+        # print out total of found wholes
+        print("Cells processed: " + str(cell_counter))
+        print("Wholes filled (total): " + str(total_wholes_found))
+        print("Non wholes detected (total): " + str(total_non_wholes_found))
+
+        return labels
+
 def main():
 
     saveStatistics = False
@@ -344,101 +439,12 @@ def main():
     # bos size
     box = [0,200,0,1000,0,1000]
 
-    print("box is: " + str(box))
-
     # read in data
     labels = readData(box, data_path+sample_name)
 
-    # factor by which to downsample input
-    downsample = 2
-
-    # downsample data
-    box_down, labels_down = downsampleDataClassic(box, downsample, labels)
-
-    print("box_down is: " + str(box_down))
-
-    #specify block overlap
-    overlap = 10 #(one direction, total is twice as much)
-    overlap_d = int(overlap/downsample)
-    rel_b_size = 0.25
-
-    #compute number of blocks and block size
-    bs_z = int(rel_b_size*(box_down[1]-box_down[0]))
-    n_blocks_z = math.floor((box_down[1]-box_down[0])/bs_z)
-    bs_y = int(rel_b_size*(box_down[3]-box_down[2]))
-    n_blocks_y = math.floor((box_down[3]-box_down[2])/bs_y)
-    bs_x = int(rel_b_size*(box_down[5]-box_down[4]))
-    n_blocks_x = math.floor((box_down[5]-box_down[4])/bs_x)
-
-    print("nblocks: " + str(n_blocks_z) + ", " + str(n_blocks_y) + ", " + str(n_blocks_x))
-
-    total_wholes_found = 0
-    total_non_wholes_found = 0
-    cell_counter = 0
-
-    #process blocks
-    for bz in range(n_blocks_z):
-        for by in range(n_blocks_y):
-            for bx in range(n_blocks_x):
-
-                # TODO check that this doesnt become negative
-                z_min_down_dyn_ext = bz*bs_z-overlap_d if (bz*bs_z-overlap_d >= 0) else 0
-                z_max_down_dyn_ext = (bz+1)*bs_z+overlap_d if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
-                y_min_down_dyn_ext = by*bs_y-overlap_d if (by*bs_y-overlap_d >= 0) else 0
-                y_max_down_dyn_ext = (by+1)*bs_y+overlap_d if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
-                x_min_down_dyn_ext = bx*bs_x-overlap_d if (bx*bs_x-overlap_d >= 0) else 0
-                x_max_down_dyn_ext = (bx+1)*bs_x+overlap_d if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
-
-                z_min_down_dyn = bz*bs_z
-                z_max_down_dyn = (bz+1)*bs_z if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
-                y_min_down_dyn = by*bs_y
-                y_max_down_dyn = (by+1)*bs_y if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
-                x_min_down_dyn = bx*bs_x
-                x_max_down_dyn = (bx+1)*bs_x if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
-
-                box_down_dyn_ext = [z_min_down_dyn_ext,z_max_down_dyn_ext,y_min_down_dyn_ext,y_max_down_dyn_ext,x_min_down_dyn_ext,x_max_down_dyn_ext]
-                box_down_dyn = [z_min_down_dyn,z_max_down_dyn,y_min_down_dyn,y_max_down_dyn,x_min_down_dyn,x_max_down_dyn]
-                box_dyn_ext = [int(b*downsample)for b in box_down_dyn_ext]
-                box_dyn = [int(b*downsample)for b in box_down_dyn]
-
-                z_start = overlap if (bz*bs_z-overlap_d >= 0) else 0
-                z_end = -overlap if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else (box_dyn[1]-box_dyn[0]+overlap)
-                y_start = overlap if (by*bs_y-overlap_d >= 0) else 0
-                y_end = -overlap if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else (box_dyn[3]-box_dyn[2]+overlap)
-                x_start = overlap if (bx*bs_x-overlap_d >= 0) else 0
-                x_end = -overlap if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else (box_dyn[5]-box_dyn[4]+overlap)
-
-                # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
-                # print("box_dyn_ext: " + str(box_dyn_ext))
-                # print("box_down_dyn: " + str(box_down_dyn))
-                # print("box_dyn: " + str(box_dyn))
-
-                #take only part of block
-                labels_cut_down_ext = labels_down[box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
-                labels_cut_ext = labels[box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
-
-                #compute the labels of the conencted connected components
-                labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext)
-
-                # compute the sets of connected components (also including boundary)
-                adjComp_sets = findAdjCompSets(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
-
-                # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-                wholes_set, non_wholes_set = findWholesList(adjComp_sets, n_comp)
-
-                # fill detected wholes and visualize non_wholes
-                if len(wholes_set)!=0:
-                    labels_cut_filled = fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes_set, non_wholes_set, downsample)
-                    labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_filled[z_start:z_end,y_start:y_end,x_start:x_end]
-                    total_wholes_found += len(wholes_set)
-                    total_non_wholes_found += len(non_wholes_set)
-
-                cell_counter+=1
-
-    # print out total of found wholes
-    print("Cells processed: " + str(cell_counter))
-    print("Wholes filled (total): " + str(total_wholes_found))
-    print("Non wholes detected (total): " + str(total_non_wholes_found))
+    # process chunk of data
+    # overlap in points in one direction (total is twice)
+    labels = processData(labels, downsample=2, overlap=10, rel_block_size=0.5)
 
     # write filled data to H5
     writeData(data_path+output_name, labels)
