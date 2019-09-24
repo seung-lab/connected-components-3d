@@ -1,11 +1,23 @@
 import numpy as np
-import sys
 
-a = np.uint8(5)
-b = np.uint16(5)
+associated_comp = {}
 
-print(sizeof a)
-print(sys.getsizeof(b))
+associated_comp[1]=2
+associated_comp[5]=2
+associated_comp[8]=1
+associated_comp[9]=0
+associated_comp[2]=0
+
+print(associated_comp)
+filtered = {k: v for k, v in associated_comp.items() if v != 0}
+print(filtered)
+# import sys
+#
+# a = np.uint8(5)
+# b = np.uint16(5)
+#
+# print(sizeof a)
+# print(sys.getsizeof(b))
 
 #
 # import numpy as np
