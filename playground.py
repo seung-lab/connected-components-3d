@@ -1,10 +1,19 @@
-
 import numpy as np
-x = np.linspace(1,100,100)
+import sys
 
-print(x[::2])
-print(x[::3])
-print(x[10:40:6])
+a = np.uint8(5)
+b = np.uint16(5)
+
+print(sizeof a)
+print(sys.getsizeof(b))
+
+#
+# import numpy as np
+# x = np.linspace(1,100,100)
+#
+# print(x[::2])
+# print(x[::3])
+# print(x[10:40:6])
 
 
 # arr = [np.zeros((),dtype=np.uint8) for _ in range(5)]

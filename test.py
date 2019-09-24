@@ -24,11 +24,11 @@ warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 #read data from HD5, given the file path
 def readData(box, filename):
     # read in data block
-    data_in = ReadH5File(filename)
+    data_in = ReadH5File(filename, box)
 
-    labels = data_in[box[0]:box[1],box[2]:box[3],box[4]:box[5]]
+    labels = data_in
 
-    print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
+    print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype))
 
     return labels
 
@@ -313,7 +313,7 @@ def findWholesList(adjComp_sets, n_comp):
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes_set, non_wholes_set, downsample):
+def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes_set, non_wholes_set, downsample, color):
 
     dsf = downsample
     box = box_down_dyn_ext
@@ -326,7 +326,7 @@ def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes
 
                 # assign all wholes ID 2 to be able to visualize them
                 if curr_comp in wholes_set:
-                    labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = 1
+                    labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = color
 
                 # # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
                 # if curr_comp in non_wholes_set and curr_comp != 0 and curr_comp != 1:
@@ -361,12 +361,12 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         box_down_dyn_ext = [z_min_down_dyn_ext,z_max_down_dyn_ext,y_min_down_dyn_ext,y_max_down_dyn_ext,x_min_down_dyn_ext,x_max_down_dyn_ext]
         box_dyn_ext = [int(b*downsample)for b in box_down_dyn_ext]
 
-        z_start = overlap if (bz*bs_z-overlap_d >= 0) else 0
-        z_end = -overlap if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_dyn[1]-box_dyn[0]+overlap)
-        y_start = overlap if (by*bs_y-overlap_d >= 0) else 0
-        y_end = -overlap if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_dyn[3]-box_dyn[2]+overlap)
-        x_start = overlap if (bx*bs_x-overlap_d >= 0) else 0
-        x_end = -overlap if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_dyn[5]-box_dyn[4]+overlap)
+        z_start = overlap_d*downsample if (bz*bs_z-overlap_d >= 0) else 0
+        z_end = -overlap_d*downsample if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_dyn[1]-box_dyn[0]+overlap)
+        y_start = overlap_d*downsample if (by*bs_y-overlap_d >= 0) else 0
+        y_end = -overlap_d*downsample if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_dyn[3]-box_dyn[2]+overlap)
+        x_start = overlap_d*downsample if (bx*bs_x-overlap_d >= 0) else 0
+        x_end = -overlap_d*downsample if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_dyn[5]-box_dyn[4]+overlap)
 
         # compute the indexing to get from the extended dynamic box back to the standard size dynamic box
         box_idx = [z_start, z_end, y_start, y_end, x_start, x_end]
@@ -380,7 +380,7 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
 
 # process whole filling process for chung of data
-def processData(labels, downsample, overlap, rel_block_size):
+def processData(labels, downsample, overlap, rel_block_size, color):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
@@ -417,18 +417,18 @@ def processData(labels, downsample, overlap, rel_block_size):
 
                     print('Bock {} ...'.format(bz+1), end='\r')
 
-                    #compute boxes (description in function)
+                    # compute boxes (description in function)
                     box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx = getBoxes(
                         box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x)
 
-                    #take only part of block
+                    # take only part of block
                     labels_cut_down_ext = labels_down[
                         box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
 
                     labels_cut_ext = labels[
                         box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
 
-                    #compute the labels of the conencted connected components
+                    # compute the labels of the conencted connected components
                     labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext, printOn)
 
                     # compute the sets of connected components (also including boundary)
@@ -439,7 +439,7 @@ def processData(labels, downsample, overlap, rel_block_size):
 
                     # fill detected wholes and visualize non_wholes
                     if len(wholes_set)!=0:
-                        labels_cut_filled = fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes_set, non_wholes_set, downsample)
+                        labels_cut_filled = fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, wholes_set, non_wholes_set, downsample, color)
                         labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_filled[
                             box_idx[0]:box_idx[1],box_idx[2]:box_idx[3],box_idx[4]:box_idx[5]]
 
@@ -462,10 +462,12 @@ def main():
     statistics_path = "/home/frtim/wiring/statistics/"
     data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
     sample_name = "cell032_downsampled.h5"
-    output_name = "cell032_downsampled_filled"
+    # sample_name = "cell032_downsampled.h5"
+    # output_name = "cell032_downsampled_filled"
 
     # bos size
     box = [0,773,0,3328,0,3328]
+    # box = [0,773,0,3328,0,3328]
 
     # read in data
     labels = readData(box, data_path+sample_name)
@@ -477,17 +479,28 @@ def main():
     print("_________________________________________________________________")
     # process chunk of data
     # overlap in points in one direction (total is twice)
-    labels = processData(labels, downsample=5, overlap=0, rel_block_size=1)
+    labels_color = processData(labels, downsample=5, overlap=0, rel_block_size=1, color = 2)
     print("_________________________________________________________________")
 
-    labels = processData(labels, downsample=1, overlap=5, rel_block_size=0.1)
+    # write filled data to H5
+    output_name = "output/cell032_dsp_filled_coloringStep1inID2"
+    writeData(data_path+output_name, labels_color)
+
+    labels = processData(labels, downsample=5, overlap=0, rel_block_size=1, color = 1)
+    print("_________________________________________________________________")
+
+    labels = processData(labels, downsample=1, overlap=5, rel_block_size=0.1, color = 3)
     print("_________________________________________________________________")
     print("Time elapsed: " + str(time.time() - start_time))
+
+    # write filled data to H5
+    output_name = "output/cell032_dsp_filled_coloringStep2inID3"
+    writeData(data_path+output_name, labels)
     # process again to check success
     # labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
 
     # write filled data to H5
-    writeData(data_path+output_name, labels)
+    # writeData(data_path+output_name, labels)
 
 if __name__== "__main__":
   main()
