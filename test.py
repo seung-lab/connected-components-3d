@@ -215,7 +215,7 @@ def writeStatistics(statTable, statistics_path, sample_name):
 def findAdjCompSets(box, labels, labels_out, n_comp):
 
     neighbor_set_comp = set()
-    neighbor_set_wholes = set()
+    translation_label_comp = Dict.empty(key_type=types.uint16,value_type=types.uint16)
 
     for ix in range(0, box[1]-box[0]-1):
         for iy in range(0, box[3]-box[2]-1):
@@ -227,22 +227,22 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
                     neighbor_set_comp.add((curr_comp, labels_out[ix+1,iy,iz]))
                     neighbor_set_comp.add((labels_out[ix+1,iy,iz], curr_comp))
 
-                    neighbor_set_wholes.add((labels[ix,iy,iz], labels[ix+1,iy,iz]))
-                    neighbor_set_wholes.add((labels[ix+1,iy,iz], labels[ix,iy,iz]))
+                    translation_label_comp[curr_comp]=labels[ix,iy,iz]
+                    translation_label_comp[labels_out[ix+1,iy,iz]]=labels[ix+1,iy,iz]
 
                 if curr_comp != labels_out[ix,iy+1,iz]:
                     neighbor_set_comp.add((curr_comp, labels_out[ix,iy+1,iz]))
                     neighbor_set_comp.add((labels_out[ix,iy+1,iz], curr_comp))
 
-                    neighbor_set_wholes.add((labels[ix,iy,iz], labels[ix,iy+1,iz]))
-                    neighbor_set_wholes.add((labels[ix,iy+1,iz], labels[ix,iy,iz]))
+                    translation_label_comp[curr_comp]=labels[ix,iy,iz]
+                    translation_label_comp[labels_out[ix,iy+1,iz]]=labels[ix,iy+1,iz]
 
                 if curr_comp != labels_out[ix,iy,iz+1]:
                     neighbor_set_comp.add((curr_comp, labels_out[ix,iy,iz+1]))
                     neighbor_set_comp.add((labels_out[ix,iy,iz+1], curr_comp))
 
-                    neighbor_set_wholes.add((labels[ix,iy,iz], labels[ix,iy,iz+1]))
-                    neighbor_set_wholes.add((labels[ix,iy,iz+1], labels[ix,iy,iz]))
+                    translation_label_comp[curr_comp]=labels[ix,iy,iz]
+                    translation_label_comp[labels_out[ix,iy,iz+1]]=labels[ix,iy,iz+1]
 
     for ix in [0, box[1]-box[0]-1]:
         for iy in range(0, box[3]-box[2]):
@@ -262,9 +262,7 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
                 curr_comp = labels_out[ix,iy,iz]
                 neighbor_set_comp.add((curr_comp, -1))
 
-    print(neighbor_set_wholes)
-
-    return neighbor_set_comp, neighbor_set_wholes
+    return neighbor_set_comp, translation_label_comp
 
 # for statistics: additinallz count occurence of each component
 # @njit
@@ -314,7 +312,7 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
 #     return neighbor_sets, counts
 
 # create string of connected components that are a whole
-def findAssociatedComp(adjComp_sets, n_comp):
+def findAssociatedComp(adjComp_sets, translation_label_comp, n_comp):
 
     # find the components that each connected component is connected to
     adj_comp = [[] for _ in range(n_comp)]
@@ -329,7 +327,7 @@ def findAssociatedComp(adjComp_sets, n_comp):
     for c in range(n_comp):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
         if (len(adj_comp[c]) is 1 and adj_comp[c][0] is not -1):
-            associated_comp[c] = 2
+            associated_comp[c] = translation_label_comp[adj_comp[c][0]]
         else:
             associated_comp[c] = 0
 
@@ -453,10 +451,10 @@ def processData(labels, downsample, overlap, rel_block_size):
                     labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext, printOn)
 
                     # compute the sets of connected components (also including boundary)
-                    adjComp_sets, neighbotSetWholes = findAdjCompSets(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
+                    adjComp_sets, translation_label_comp = findAdjCompSets(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
 
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-                    associated_comp = findAssociatedComp(adjComp_sets, n_comp)
+                    associated_comp = findAssociatedComp(adjComp_sets, translation_label_comp, n_comp)
 
                     # fill detected wholes and visualize non_wholes
                     if len(associated_comp)>2:
