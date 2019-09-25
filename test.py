@@ -97,7 +97,7 @@ def writeData(filename,labels):
 #compute the connected Com ponent labels
 def computeConnectedComp(labels, printOn):
     connectivity = 6 # only 26, 18, and 6 are allowed
-    labels_out = cc3d.connected_components(labels, connectivity=connectivity)
+    labels_out = cc3d.connected_components(labels, connectivity=connectivity, max_labels=100000000)
 
     # You can extract individual components like so:
     n_comp = np.max(labels_out) + 1
@@ -264,51 +264,51 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
     return neighbor_set_comp, neighbor_label
 
 # for statistics: additinallz count occurence of each component
-# @njit
-# def findAdjCompSetsWithCount(box, labels_out, n_comp):
-#
-#     counts = np.zeros((n_comp),dtype=np.uint64)
-#
-#     neighbor_sets = set()
-#
-#     for ix in range(0, box[1]-box[0]-1):
-#         for iy in range(0, box[3]-box[2]-1):
-#             for iz in range(0, box[5]-box[4]-1):
-#
-#                 curr_comp = labels_out[ix,iy,iz]
-#
-#                 counts[curr_comp] += 1
-#
-#                 if curr_comp != labels_out[ix+1,iy,iz]:
-#                     neighbor_sets.add((curr_comp, labels_out[ix+1,iy,iz]))
-#                     neighbor_sets.add((labels_out[ix+1,iy,iz], curr_comp))
-#                 if curr_comp != labels_out[ix,iy+1,iz]:
-#                     neighbor_sets.add((curr_comp, labels_out[ix,iy+1,iz]))
-#                     neighbor_sets.add((labels_out[ix,iy+1,iz], curr_comp))
-#                 if curr_comp != labels_out[ix,iy,iz+1]:
-#                     neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
-#                     neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
-#
-#     for ix in [0, box[1]-box[0]-1]:
-#         for iy in range(0, box[3]-box[2]):
-#             for iz in range(0, box[5]-box[4]):
-#                 curr_comp = labels_out[ix,iy,iz]
-#                 neighbor_sets.add((curr_comp, -1))
-#
-#     for ix in range(0, box[1]-box[0]):
-#         for iy in [0, box[3]-box[2]-1]:
-#             for iz in range(0, box[5]-box[4]):
-#                 curr_comp = labels_out[ix,iy,iz]
-#                 neighbor_sets.add((curr_comp, -1))
-#
-#     for ix in range(0, box[1]-box[0]):
-#         for iy in range(0, box[3]-box[2]):
-#             for iz in [0, box[5]-box[4]-1]:
-#                 curr_comp = labels_out[ix,iy,iz]
-#                 neighbor_sets.add((curr_comp, -1))
-#
-#
-#     return neighbor_sets, counts
+@njit
+def findAdjCompSetsWithCount(box, labels_out, n_comp):
+
+    counts = np.zeros((n_comp),dtype=np.uint64)
+
+    neighbor_sets = set()
+
+    for ix in range(0, box[1]-box[0]-1):
+        for iy in range(0, box[3]-box[2]-1):
+            for iz in range(0, box[5]-box[4]-1):
+
+                curr_comp = labels_out[ix,iy,iz]
+
+                counts[curr_comp] += 1
+
+                if curr_comp != labels_out[ix+1,iy,iz]:
+                    neighbor_sets.add((curr_comp, labels_out[ix+1,iy,iz]))
+                    neighbor_sets.add((labels_out[ix+1,iy,iz], curr_comp))
+                if curr_comp != labels_out[ix,iy+1,iz]:
+                    neighbor_sets.add((curr_comp, labels_out[ix,iy+1,iz]))
+                    neighbor_sets.add((labels_out[ix,iy+1,iz], curr_comp))
+                if curr_comp != labels_out[ix,iy,iz+1]:
+                    neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
+                    neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
+
+    for ix in [0, box[1]-box[0]-1]:
+        for iy in range(0, box[3]-box[2]):
+            for iz in range(0, box[5]-box[4]):
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
+
+    for ix in range(0, box[1]-box[0]):
+        for iy in [0, box[3]-box[2]-1]:
+            for iz in range(0, box[5]-box[4]):
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
+
+    for ix in range(0, box[1]-box[0]):
+        for iy in range(0, box[3]-box[2]):
+            for iz in [0, box[5]-box[4]-1]:
+                curr_comp = labels_out[ix,iy,iz]
+                neighbor_sets.add((curr_comp, -1))
+
+
+    return neighbor_sets, counts
 
 # create string of connected components that are a whole
 def findAssociatedComp(adjComp_sets, neighbor_label, n_comp):
@@ -326,8 +326,8 @@ def findAssociatedComp(adjComp_sets, neighbor_label, n_comp):
     for c in range(n_comp):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
         if (len(adj_comp[c]) is 1 and adj_comp[c][0] is not -1):
-            # associated_comp[c] = neighbor_label[c]
-            associated_comp[c] = 2
+            associated_comp[c] = neighbor_label[c]
+            # associated_comp[c] = 65000
         else:
             associated_comp[c] = 0
 
@@ -402,6 +402,10 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
 # process whole filling process for chung of data
 def processData(labels, downsample, overlap, rel_block_size):
 
+        labels_check = labels.copy()
+
+        print(str(np.max(np.subtract(labels,labels_check))) +  "0")
+
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
 
@@ -471,6 +475,8 @@ def processData(labels, downsample, overlap, rel_block_size):
         print("Cells processed: " + str(cell_counter))
         print("Wholes filled (total): " + str(total_wholes_found))
 
+
+
         return labels
 
 def main():
@@ -478,13 +484,14 @@ def main():
     saveStatistics = False
     n_features = 20
     statistics_path = "/home/frtim/wiring/statistics/"
-    data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
-    sample_name = "cell032_downsampled_test"
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/test_volume/"
+    sample_name = "0000"
+    vizWholes = True
     # sample_name = "cell032_downsampled.h5"
     # output_name = "cell032_downsampled_filled"
 
     # bos size
-    box = [0,200,0,1000,0,1000]
+    box = [0,128,0,5456,0,5332]
     # box = [0,773,0,3328,0,3328]
 
     print("-----------------------------------------------------------------")
@@ -492,8 +499,10 @@ def main():
     # read in data
     labels = readData(box, data_path+sample_name+".h5")
 
-    print("max_label is: " + str(np.max(labels)))
-    print("min_label is: " + str(np.min(labels)))
+    if vizWholes: labels_inp =  labels.copy()
+
+    print("max_label is: " + str(np.max(labels_inp)))
+    print("min_label is: " + str(np.min(labels_inp)))
 
     # process again to check success
     # labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
@@ -513,6 +522,12 @@ def main():
     output_name = "output/" + sample_name
     writeData(data_path+output_name, labels)
     # process again to check success
+
+    if vizWholes:
+        wholes = np.subtract(labels, labels_inp)
+        output_name = "output/" + sample_name + "_wholes"
+        print("max_label is: " + str(np.max(wholes)))
+        writeData(data_path+output_name, wholes)
 
     # print("-----------------------------------------------------------------")
     # print("----------------------CHECK--------------------------------------")
