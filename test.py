@@ -96,9 +96,8 @@ def writeData(filename,labels):
 
 #compute the connected Com ponent labels
 def computeConnectedComp(labels, printOn):
-    lables_inverse = 1 - labels
     connectivity = 6 # only 26, 18, and 6 are allowed
-    labels_out = cc3d.connected_components(lables_inverse, connectivity=connectivity)
+    labels_out = cc3d.connected_components(labels, connectivity=connectivity)
 
     # You can extract individual components like so:
     n_comp = np.max(labels_out) + 1
@@ -452,6 +451,8 @@ def processData(labels, downsample, overlap, rel_block_size):
 
                     # compute the sets of connected components (also including boundary)
                     adjComp_sets, translation_label_comp = findAdjCompSets(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
+
+                    print(translation_label_comp)
 
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                     associated_comp = findAssociatedComp(adjComp_sets, translation_label_comp, n_comp)

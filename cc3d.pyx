@@ -87,7 +87,7 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
     raise DimensionError("Only 1D, 2D, and 3D arrays supported. Got: " + str(dims))
 
   if connectivity not in (6, 18, 26):
-    raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
+    raise ValueError("Only 6, 18, and 26 connectivities are supported! Got: " + str(connectivity))
 
   if data.size == 0:
     return np.zeros(shape=(0,), dtype=np.uint32)
@@ -222,7 +222,7 @@ cpdef set region_graph(
   Returns: set of edges
   """
   if connectivity not in (6, 18, 26):
-    raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
+    raise ValueError("Only 6, 18, and 26 connectivities are supported! Got: " + str(connectivity))
 
   cdef int64_t x = 0
   cdef int64_t y = 0

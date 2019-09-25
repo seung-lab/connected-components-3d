@@ -1,26 +1,26 @@
 /*
- * Connected Components for 3D images. 
+ * Connected Components for 3D images.
  * Implments a 3D variant of the two pass algorithim by
  * Rosenfeld and Pflatz augmented with Union-Find and a decision
  * tree influenced by the work of Wu et al.
- * 
- * Essentially, you raster scan, and every time you first encounter 
+ *
+ * Essentially, you raster scan, and every time you first encounter
  * a foreground pixel, mark it with a new label if the pixels to its
  * top and left are background. If there is a preexisting label in its
  * neighborhood, use that label instead. Whenever you see that two labels
  * are adjacent, record that we should unify them in the next pass. This
  * equivalency table can be constructed in several ways, but we've choseen
  * to use Union-Find with full path compression.
- * 
+ *
  * We also use a decision tree that aims to minimize the number of expensive
  * unify operations and replaces them with simple label copies when valid.
  *
  * In the next pass, the pixels are relabeled using the equivalency table.
- * Union-Find (disjoint sets) establishes one label as the root label of a 
+ * Union-Find (disjoint sets) establishes one label as the root label of a
  * tree, and so the root is considered the representative label. Each pixel
  * is labeled with the representative label. The representative labels
- * are themselves remapped into an increasing consecutive sequence 
- * starting from one. 
+ * are themselves remapped into an increasing consecutive sequence
+ * starting from one.
  *
  * Author: William Silversmith
  * Affiliation: Seung Lab, Princeton University
@@ -43,7 +43,7 @@
  */
 
 #ifndef CC3D_HPP
-#define CC3D_HPP 
+#define CC3D_HPP
 
 #include <algorithm>
 #include <cmath>
@@ -134,7 +134,7 @@ public:
     printf("\n");
   }
 
-  // would be easy to write remove. 
+  // would be easy to write remove.
   // Will be O(n).
 };
 
@@ -146,27 +146,27 @@ public:
 template <typename T>
 inline void unify2d(
     const int64_t loc, const T cur,
-    const int64_t x, const int64_t y, 
-    const int64_t sx, const int64_t sy, 
+    const int64_t x, const int64_t y,
+    const int64_t sx, const int64_t sy,
     const T* in_labels, const uint32_t *out_labels,
-    DisjointSet<uint32_t> &equivalences  
+    DisjointSet<uint32_t> &equivalences
   ) {
 
   if (y > 0 && cur == in_labels[loc - sx]) {
     equivalences.unify(out_labels[loc], out_labels[loc - sx]);
   }
   else if (x > 0 && cur == in_labels[loc - 1]) {
-    equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+    equivalences.unify(out_labels[loc], out_labels[loc - 1]);
 
     if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
-      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]);
     }
   }
   else if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
-    equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]); 
+    equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]);
 
     if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
-      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]);
     }
   }
   else if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
@@ -177,10 +177,10 @@ inline void unify2d(
 template <typename T>
 inline void unify2d_rt(
     const int64_t loc, const T cur,
-    const int64_t x, const int64_t y, 
-    const int64_t sx, const int64_t sy, 
+    const int64_t x, const int64_t y,
+    const int64_t sx, const int64_t sy,
     const T* in_labels, const uint32_t *out_labels,
-    DisjointSet<uint32_t> &equivalences  
+    DisjointSet<uint32_t> &equivalences
   ) {
 
   if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
@@ -191,10 +191,10 @@ inline void unify2d_rt(
 template <typename T>
 inline void unify2d_lt(
     const int64_t loc, const T cur,
-    const int64_t x, const int64_t y, 
-    const int64_t sx, const int64_t sy, 
+    const int64_t x, const int64_t y,
+    const int64_t sx, const int64_t sy,
     const T* in_labels, const uint32_t *out_labels,
-    DisjointSet<uint32_t> &equivalences  
+    DisjointSet<uint32_t> &equivalences
   ) {
 
   if (x > 0 && cur == in_labels[loc - 1]) {
@@ -206,7 +206,7 @@ inline void unify2d_lt(
 }
 
 // This is the second raster pass of the two pass algorithm family.
-// The input array (output_labels) has been assigned provisional 
+// The input array (output_labels) has been assigned provisional
 // labels and this resolves them into their final labels. We
 // modify this pass to also ensure that the output labels are
 // numbered from 1 sequentially.
@@ -224,7 +224,7 @@ uint32_t* relabel(
     if (!out_labels[loc]) {
       continue;
     }
-   
+
     label = equivalences.root(out_labels[loc]);
 
     if (renumber[label]) {
@@ -244,7 +244,7 @@ uint32_t* relabel(
 
 template <typename T>
 uint32_t* connected_components3d_26(
-    T* in_labels, 
+    T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels, uint32_t *out_labels = NULL
   ) {
@@ -259,13 +259,13 @@ uint32_t* connected_components3d_26(
   if (out_labels == NULL) {
     out_labels = new uint32_t[voxels]();
   }
-     
+
   /*
-    Layout of forward pass mask (which faces backwards). 
+    Layout of forward pass mask (which faces backwards).
     N is the current location.
 
     z = -1     z = 0
-    A B C      J K L   y = -1 
+    A B C      J K L   y = -1
     D E F      M N     y =  0
     G H I              y = +1
    -1 0 +1    -1 0   <-- x axis
@@ -285,14 +285,14 @@ uint32_t* connected_components3d_26(
   // Current Z
   const int64_t J = -1 - sx;
   const int64_t K = -sx;
-  const int64_t L = +1 - sx; 
+  const int64_t L = +1 - sx;
   const int64_t M = -1;
   // N = 0;
 
   uint32_t next_label = 0;
   int64_t loc = 0;
 
-  // Raster Scan 1: Set temporary labels and 
+  // Raster Scan 1: Set temporary labels and
   // record equivalences in a disjoint set.
   for (int32_t z = 0; z < sz; z++) {
     for (int32_t y = 0; y < sy; y++) {
@@ -317,7 +317,7 @@ uint32_t* connected_components3d_26(
           }
           else if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
-            
+
             if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
               equivalences.unify(out_labels[loc], out_labels[loc + I]);
             }
@@ -375,7 +375,7 @@ uint32_t* connected_components3d_26(
           }
           if (x > 0 && y < sy - 1 && z > 0 && cur == in_labels[loc + G]) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
-          }      
+          }
           if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
@@ -411,14 +411,14 @@ uint32_t* connected_components3d_26(
           out_labels[loc] = out_labels[loc + M];
 
           if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
           }
         }
         else if (x > 0 && y > 0 && cur == in_labels[loc + J]) {
           out_labels[loc] = out_labels[loc + J];
 
           if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
           }
         }
         else if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
@@ -438,7 +438,7 @@ uint32_t* connected_components3d_26(
 
 template <typename T>
 uint32_t* connected_components3d_18(
-    T* in_labels, 
+    T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels, uint32_t *out_labels = NULL
   ) {
@@ -453,13 +453,13 @@ uint32_t* connected_components3d_18(
   if (out_labels == NULL) {
     out_labels = new uint32_t[voxels]();
   }
-     
+
   /*
-    Layout of forward pass mask (which faces backwards). 
+    Layout of forward pass mask (which faces backwards).
     N is the current location.
 
     z = -1     z = 0
-    A B C      J K L   y = -1 
+    A B C      J K L   y = -1
     D E F      M N     y =  0
     G H I              y = +1
    -1 0 +1    -1 0   <-- x axis
@@ -475,14 +475,14 @@ uint32_t* connected_components3d_18(
   // Current Z
   const int64_t J = -1 - sx;
   const int64_t K = -sx;
-  const int64_t L = +1 - sx; 
+  const int64_t L = +1 - sx;
   const int64_t M = -1;
   // N = 0;
 
   uint32_t next_label = 0;
   int64_t loc = 0;
 
-  // Raster Scan 1: Set temporary labels and 
+  // Raster Scan 1: Set temporary labels and
   // record equivalences in a disjoint set.
   for (int64_t z = 0; z < sz; z++) {
     for (int64_t y = 0; y < sy; y++) {
@@ -501,7 +501,7 @@ uint32_t* connected_components3d_18(
             equivalences.unify(out_labels[loc], out_labels[loc + J]);
           }
           if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
           }
         }
         else if (y > 0 && z > 0 && cur == in_labels[loc + B]) {
@@ -511,21 +511,21 @@ uint32_t* connected_components3d_18(
             equivalences.unify(out_labels[loc], out_labels[loc + M]);
           }
           if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + H]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + H]);
           }
         }
         else if (x > 0 && z > 0 && cur == in_labels[loc + D]) {
           out_labels[loc] = out_labels[loc + D];
 
           if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
           }
           else {
             if (y > 0 && cur == in_labels[loc + K]) {
-              equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+              equivalences.unify(out_labels[loc], out_labels[loc + K]);
             }
             if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
-              equivalences.unify(out_labels[loc], out_labels[loc + F]); 
+              equivalences.unify(out_labels[loc], out_labels[loc + F]);
             }
           }
         }
@@ -537,11 +537,11 @@ uint32_t* connected_components3d_18(
           }
           else {
             if (x > 0 && cur == in_labels[loc + M]) {
-              equivalences.unify(out_labels[loc], out_labels[loc + M]); 
+              equivalences.unify(out_labels[loc], out_labels[loc + M]);
             }
             if (y > 0 && cur == in_labels[loc + K]) {
-              equivalences.unify(out_labels[loc], out_labels[loc + K]); 
-            }            
+              equivalences.unify(out_labels[loc], out_labels[loc + K]);
+            }
           }
         }
         else if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
@@ -556,14 +556,14 @@ uint32_t* connected_components3d_18(
           out_labels[loc] = out_labels[loc + M];
 
           if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
           }
         }
         else if (x > 0 && y > 0 && cur == in_labels[loc + J]) {
           out_labels[loc] = out_labels[loc + J];
 
           if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + L]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
           }
         }
         else if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
@@ -583,7 +583,7 @@ uint32_t* connected_components3d_18(
 
 template <typename T>
 uint32_t* connected_components3d_6(
-    T* in_labels, 
+    T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels, uint32_t *out_labels = NULL
   ) {
@@ -598,13 +598,13 @@ uint32_t* connected_components3d_6(
   if (out_labels == NULL) {
     out_labels = new uint32_t[voxels]();
   }
-    
+
   /*
-    Layout of forward pass mask (which faces backwards). 
+    Layout of forward pass mask (which faces backwards).
     N is the current location.
 
     z = -1     z = 0
-    A B C      J K L   y = -1 
+    A B C      J K L   y = -1
     D E F      M N     y =  0
     G H I              y = +1
    -1 0 +1    -1 0   <-- x axis
@@ -621,8 +621,9 @@ uint32_t* connected_components3d_6(
   int64_t loc = 0;
   uint32_t next_label = 0;
 
-  // Raster Scan 1: Set temporary labels and 
+  // Raster Scan 1: Set temporary labels and
   // record equivalences in a disjoint set.
+
 
   for (int64_t z = 0; z < sz; z++) {
     for (int64_t y = 0; y < sy; y++) {
@@ -631,7 +632,7 @@ uint32_t* connected_components3d_6(
 
         const T cur = in_labels[loc];
 
-        if (cur == 0) {
+        if (cur > 0) {
           continue;
         }
 
@@ -639,17 +640,17 @@ uint32_t* connected_components3d_6(
           out_labels[loc] = out_labels[loc + M];
 
           if (y > 0 && cur == in_labels[loc + K]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + K]);
           }
           if (z > 0 && cur == in_labels[loc + E]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + E]);
           }
         }
         else if (y > 0 && cur == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
 
           if (z > 0 && cur == in_labels[loc + E]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+            equivalences.unify(out_labels[loc], out_labels[loc + E]);
           }
         }
         else if (z > 0 && cur == in_labels[loc + E]) {
@@ -670,7 +671,7 @@ uint32_t* connected_components3d_6(
 
 template <typename T>
 uint32_t* connected_components3d(
-    T* in_labels, 
+    T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels, const int64_t connectivity,
     uint32_t *out_labels = NULL
@@ -678,30 +679,30 @@ uint32_t* connected_components3d(
 
   if (connectivity == 26) {
     return connected_components3d_26<T>(
-      in_labels, sx, sy, sz, 
+      in_labels, sx, sy, sz,
       max_labels, out_labels
     );
   }
   else if (connectivity == 18) {
     return connected_components3d_18<T>(
-      in_labels, sx, sy, sz, 
+      in_labels, sx, sy, sz,
       max_labels, out_labels
     );
   }
   else if (connectivity == 6) {
     return connected_components3d_6<T>(
-      in_labels, sx, sy, sz, 
+      in_labels, sx, sy, sz,
       max_labels, out_labels
     );
   }
   else {
-    throw "Only 6, 18, and 26 3D connectivities are supported.";
+    throw "Only 6, 18, and 26 3D connectivities are supported!";
   }
 }
 
 template <typename T>
 uint32_t* connected_components3d(
-    T* in_labels, 
+    T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
     const int64_t connectivity=26
   ) {
