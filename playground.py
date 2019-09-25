@@ -1,17 +1,32 @@
 import numpy as np
 
-associated_comp = {}
+labels_filled = np.ones((10,10,10))
+labels = np.zeros((10,10,10))
 
-associated_comp[1]=2
-associated_comp[5]=2
-associated_comp[8]=1
-associated_comp[9]=0
-associated_comp[2]=0
+new = np.zeros(labels.shape)
 
-print(associated_comp)
-filtered = {k: v for k, v in associated_comp.items() if v != 0}
-print(filtered)
-# import sys
+print(new.shape)
+
+wholes = np.subtract(labels_filled,labels)
+
+# print(wholes)
+
+print("max_label is: " + str(np.max(wholes)))
+print("min_label is: " + str(np.min(wholes)))
+
+#
+# associated_comp = {}
+#
+# associated_comp[1]=2
+# associated_comp[5]=2
+# associated_comp[8]=1
+# associated_comp[9]=0
+# associated_comp[2]=0
+#
+# print(associated_comp)
+# filtered = {k: v for k, v in associated_comp.items() if v != 0}
+# print(filtered)
+# # import sys
 #
 # a = np.uint8(5)
 # b = np.uint16(5)
