@@ -214,7 +214,7 @@ def writeStatistics(statTable, statistics_path, sample_name):
 def findAdjCompSets(box, labels, labels_out, n_comp):
 
     neighbor_set_comp = set()
-    translation_label_comp = Dict.empty(key_type=types.uint16,value_type=types.uint16)
+    neighbor_label = Dict.empty(key_type=types.uint16,value_type=types.uint16)
 
     for ix in range(0, box[1]-box[0]-1):
         for iy in range(0, box[3]-box[2]-1):
@@ -226,22 +226,22 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
                     neighbor_set_comp.add((curr_comp, labels_out[ix+1,iy,iz]))
                     neighbor_set_comp.add((labels_out[ix+1,iy,iz], curr_comp))
 
-                    translation_label_comp[curr_comp]=labels[ix,iy,iz]
-                    translation_label_comp[labels_out[ix+1,iy,iz]]=labels[ix+1,iy,iz]
+                    neighbor_label[labels_out[ix,iy,iz]]=labels[ix+1,iy,iz]
+                    neighbor_label[labels_out[ix+1,iy,iz]]=labels[ix,iy,iz]
 
                 if curr_comp != labels_out[ix,iy+1,iz]:
                     neighbor_set_comp.add((curr_comp, labels_out[ix,iy+1,iz]))
                     neighbor_set_comp.add((labels_out[ix,iy+1,iz], curr_comp))
 
-                    translation_label_comp[curr_comp]=labels[ix,iy,iz]
-                    translation_label_comp[labels_out[ix,iy+1,iz]]=labels[ix,iy+1,iz]
+                    neighbor_label[labels_out[ix,iy,iz]]=labels[ix,iy+1,iz]
+                    neighbor_label[labels_out[ix,iy+1,iz]]=labels[ix,iy,iz]
 
                 if curr_comp != labels_out[ix,iy,iz+1]:
                     neighbor_set_comp.add((curr_comp, labels_out[ix,iy,iz+1]))
                     neighbor_set_comp.add((labels_out[ix,iy,iz+1], curr_comp))
 
-                    translation_label_comp[curr_comp]=labels[ix,iy,iz]
-                    translation_label_comp[labels_out[ix,iy,iz+1]]=labels[ix,iy,iz+1]
+                    neighbor_label[labels_out[ix,iy,iz]]=labels[ix,iy,iz+1]
+                    neighbor_label[labels_out[ix,iy,iz+1]]=labels[ix,iy,iz]
 
     for ix in [0, box[1]-box[0]-1]:
         for iy in range(0, box[3]-box[2]):
@@ -261,7 +261,7 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
                 curr_comp = labels_out[ix,iy,iz]
                 neighbor_set_comp.add((curr_comp, -1))
 
-    return neighbor_set_comp, translation_label_comp
+    return neighbor_set_comp, neighbor_label
 
 # for statistics: additinallz count occurence of each component
 # @njit
@@ -311,7 +311,7 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
 #     return neighbor_sets, counts
 
 # create string of connected components that are a whole
-def findAssociatedComp(adjComp_sets, translation_label_comp, n_comp):
+def findAssociatedComp(adjComp_sets, neighbor_label, n_comp):
 
     # find the components that each connected component is connected to
     adj_comp = [[] for _ in range(n_comp)]
@@ -326,7 +326,8 @@ def findAssociatedComp(adjComp_sets, translation_label_comp, n_comp):
     for c in range(n_comp):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
         if (len(adj_comp[c]) is 1 and adj_comp[c][0] is not -1):
-            associated_comp[c] = translation_label_comp[adj_comp[c][0]]
+            # associated_comp[c] = neighbor_label[c]
+            associated_comp[c] = 2
         else:
             associated_comp[c] = 0
 
@@ -343,9 +344,10 @@ def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, associ
         for iy in range(0, box[3]-box[2]):
             for iz in range(0, box[5]-box[4]):
 
+                if np.min(labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf]) == 0:
                 # assign all wholes ID 2 to be able to visualize them
-                labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = associated_comp[labels_cut_out_down_ext[ix,iy,iz]]
-
+                # labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = associated_comp[labels_cut_out_down_ext[ix,iy,iz]]
+                    labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = associated_comp[labels_cut_out_down_ext[ix,iy,iz]]
                 # # assign non_wholes their componene ID to be able to visualize them (except background and neuron)
                 # if curr_comp in non_wholes and curr_comp != 0 and curr_comp != 1:
                 #     labels_cut_ext[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf] = curr_comp
@@ -450,12 +452,10 @@ def processData(labels, downsample, overlap, rel_block_size):
                     labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext, printOn)
 
                     # compute the sets of connected components (also including boundary)
-                    adjComp_sets, translation_label_comp = findAdjCompSets(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
-
-                    print(translation_label_comp)
+                    adjComp_sets, neighbor_label = findAdjCompSets(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
 
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-                    associated_comp = findAssociatedComp(adjComp_sets, translation_label_comp, n_comp)
+                    associated_comp = findAssociatedComp(adjComp_sets, neighbor_label, n_comp)
 
                     # fill detected wholes and visualize non_wholes
                     if len(associated_comp)>2:
@@ -491,6 +491,9 @@ def main():
 
     # read in data
     labels = readData(box, data_path+sample_name+".h5")
+
+    print("max_label is: " + str(np.max(labels)))
+    print("min_label is: " + str(np.min(labels)))
 
     # process again to check success
     # labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
