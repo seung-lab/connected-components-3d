@@ -1,18 +1,27 @@
 import numpy as np
 
-labels_filled = np.ones((10,10,10))
-labels = np.zeros((10,10,10))
+a = np.uint8(10)
+b = np.uint16(10)
+c = np.uint32(10)
 
-new = np.zeros(labels.shape)
+print(a.itemsize)
+print(b.itemsize)
+print(c.itemsize)
+print(c.nbytes)
 
-print(new.shape)
-
-wholes = np.subtract(labels_filled,labels)
+# labels_filled = np.ones((10,10,10))
+# labels = np.zeros((10,10,10))
+#
+# new = np.zeros(labels.shape)
+#
+# print(new.shape)
+#
+# wholes = np.subtract(labels_filled,labels)
 
 # print(wholes)
 
-print("max_label is: " + str(np.max(wholes)))
-print("min_label is: " + str(np.min(wholes)))
+# print("max_label is: " + str(np.max(wholes)))
+# print("min_label is: " + str(np.min(wholes)))
 
 #
 # associated_comp = {}

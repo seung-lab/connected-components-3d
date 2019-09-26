@@ -217,7 +217,7 @@ uint32_t* relabel(
 
   uint32_t label;
   printf("HOSSA4\n");
-  uint32_t* renumber = new uint32_t[num_labels + 1]();
+  uint32_t* renumber = new uint32_t[num_labels]();
   uint32_t next_label = 1;
   printf("HOSSA5\n");
   // Raster Scan 2: Write final labels based on equivalences
@@ -596,16 +596,12 @@ uint32_t* connected_components3d_6(
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
-  printf("HOSSA2.5\n");
-  printf("%ld", (long)max_labels);
-
   DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
     out_labels = new uint32_t[voxels]();
   }
 
-  printf("HOSSA3\n");
   /*
     Layout of forward pass mask (which faces backwards).
     N is the current location.
@@ -676,7 +672,6 @@ uint32_t* connected_components3d_6(
 
   return relabel(out_labels, voxels, next_label, equivalences);
 }
-
 
 template <typename T>
 uint32_t* connected_components3d(
