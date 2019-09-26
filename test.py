@@ -35,6 +35,17 @@ def readData(box, filename):
 
     return labels
 
+# get shape of data saved in H5
+def getBoxAll(filename):
+
+    # return the first h5 dataset from this file
+    with h5py.File(filename, 'r') as hf:
+        keys = [key for key in hf.keys()]
+        d = hf[keys[0]]
+        box = [0,d.shape[0],0,d.shape[1],0,d.shape[2]]
+
+    return box
+
 # downsample data by facter downsample
 def downsampleDataClassic(box, downsample, labels):
 
@@ -89,7 +100,7 @@ def downsampleDataMin(box, downsample, labels):
 # write data to H5 file
 def writeData(filename,labels):
 
-    filename_comp = filename + "_" + str(time.time())[:10] +".h5"
+    filename_comp = filename +".h5"
 
     with h5py.File(filename_comp, 'w') as hf:
         # should cover all cases of affinities/images
@@ -121,9 +132,8 @@ def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, statistic
 
     # create table that is later written to .txt
     statTable = np.hstack((numbering, isWhole, comp_counts, comp_mean, comp_var))
-    print(statTable.shape)
 
-    filename = statistics_path + sample_name.replace("/","_").replace(".","_") + "_statistics_" + str(time.time())[:10] + ".txt"
+    filename = statistics_path + sample_name.replace("/","_").replace(".","_") + "_statistics" + ".txt"
 
     header = "number,isWhole,nPoints,mean_z,mean_y,mean_x,var_z,var_y,var_x"
 
@@ -392,18 +402,14 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
 
         return labels
 
-def main():
+def processFile(data_path, sample_name, saveStatistics, vizWholes):
 
-    saveStatistics = True
-    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/test_volume/"
-    statistics_path = data_path
-    sample_name = "0000"
-    vizChange = False
-    # sample_name = "cell032_downsampled.h5"
+    output_path = data_path + sample_name + "_outp_" + str(time.time())[:10] +"/"
+    os.mkdir(output_path)
 
     # bos size
-    box = [0,128,0,1000,0,1000]
-    # box = [0,773,0,3328,0,3328]
+    # box = [0,128,0,1000,0,1000]
+    box = getBoxAll(data_path+sample_name+".h5")
 
     print("-----------------------------------------------------------------")
 
@@ -416,21 +422,39 @@ def main():
 
     # process chunk of data
     # overlap in points in one direction (total is twice)
-    labels = processData(saveStatistics, statistics_path, sample_name, labels, downsample=1, overlap=0, rel_block_size=1)
+    labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=0, rel_block_size=1)
 
     print("-----------------------------------------------------------------")
     print("Time elapsed: " + str(time.time() - start_time))
 
     # write filled data to H5
-    output_name = "output/" + sample_name
-    writeData(data_path+output_name, labels)
+    output_name = "_filled"
+    writeData(output_path+sample_name+output_name, labels)
 
     # compute negative to visualize filled wholes
-    if vizChange:
+    if vizWholes:
         labels_inp = readData(box, data_path+sample_name+".h5")
         neg = np.subtract(labels, labels_inp)
-        output_name = "output/" + sample_name + "_vizchange"
-        writeData(data_path+output_name, neg)
+        output_name = "_wholes"
+        writeData(output_path+sample_name+output_name, neg)
+
+def main():
+
+    saveStatistics = True
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/computations/"
+    sample_name = "0768"
+    vizWholes = True
+
+    names = ['1408', '2560', '1792', '5248', '4096', '2048', '2688',
+    '2304', '0512', '4480', '1152', '3840', '2944', '4608', '0128',
+    '0256', '4736', '0640', '5376', '3200', '3584', '4352', '4864', '4224',
+    '5120', '2176', '5632', '1536', '0000', '0768', '1920', '0384', '3072',
+    '0896', '4992', '3328', '1664', '3712', '3968', '2816', '3456', '5504',
+    '2432', '1280', '1024']
+
+    for name in names:
+        print("Processing file " + name)
+        processFile(data_path, name, saveStatistics, vizWholes)
 
 
 if __name__== "__main__":
