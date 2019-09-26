@@ -401,12 +401,10 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
 
 # process whole filling process for chung of data
-def processData(py, labels, downsample, overlap, rel_block_size):
+def processData(labels, downsample, overlap, rel_block_size):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
-
-        print('memory use at c:', py.memory_info()[0]/2.**30)
 
         # downsample data
         if downsample > 1:
@@ -414,8 +412,6 @@ def processData(py, labels, downsample, overlap, rel_block_size):
         else :
             box_down = box
             labels_down = labels
-
-        print('memory use at d:', py.memory_info()[0]/2.**30)
 
         #specify block overlap in downsampled domain
         overlap_d = int(overlap/downsample)
@@ -439,8 +435,6 @@ def processData(py, labels, downsample, overlap, rel_block_size):
         # print connected components only if all data processed in one
         printOn = True if n_blocks_z == 1 else False
 
-        print('memory use at e:', py.memory_info()[0]/2.**30)
-
         # process blocks by iterating over all bloks
         for bz in range(n_blocks_z):
             for by in range(n_blocks_y):
@@ -448,36 +442,22 @@ def processData(py, labels, downsample, overlap, rel_block_size):
 
                     print('Bock {} ...'.format(bz+1), end='\r')
 
-                    print('memory use at e a:', py.memory_info()[0]/2.**30)
-
                     # compute boxes (description in function)
                     box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx = getBoxes(
                         box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x)
-                    print('memory use at e b:', py.memory_info()[0]/2.**30)
                     # take only part of block
                     labels_cut_down_ext = labels_down[
                         box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
 
-                    print('memory use at e c:', py.memory_info()[0]/2.**30)
-
                     labels_cut_ext = labels[
                         box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
 
-                    print('memory use at f:', py.memory_info()[0]/2.**30)
                     # compute the labels of the conencted connected components
                     labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext, printOn)
-                    print('memory use at g:', py.memory_info()[0]/2.**30)
                     # compute the sets of connected components (also including boundary)
                     adjComp_sets, neighbor_label = findAdjCompSets(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
-
-                    print("ADJCompSets, len, nbytes:" + str(len(adjComp_sets)))
-                    print("Neighbor label, len, nbytes:" + str(len(neighbor_label)))
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                     associated_comp = findAssociatedComp(adjComp_sets, neighbor_label, n_comp)
-
-                    print("Associated Comp, len, nbytes:" + str(len(associated_comp)))
-
-                    print('memory use at h:', py.memory_info()[0]/2.**30)
                     # fill detected wholes and visualize non_wholes
                     if len(associated_comp)>2:
                         labels_cut_filled = fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, associated_comp, downsample)
@@ -487,7 +467,6 @@ def processData(py, labels, downsample, overlap, rel_block_size):
                         total_wholes_found += len({k: v for k, v in associated_comp.items() if v != 0})
 
                     cell_counter+=1
-                    print('memory use at i:', py.memory_info()[0]/2.**30)
 
         # print out total of found wholes
         print("Cells processed: " + str(cell_counter))
@@ -506,11 +485,6 @@ def main():
     sample_name = "0000"
     vizWholes = False
     # sample_name = "cell032_downsampled.h5"
-    # output_name = "cell032_downsampled_filled"
-
-    # define psutil
-    pid = os.getpid()
-    py = psutil.Process(pid)
 
     # bos size
     box = [0,128,0,2000,0,2000]
@@ -518,13 +492,9 @@ def main():
 
     print("-----------------------------------------------------------------")
 
-    print('memory use at a:', py.memory_info()[0]/2.**30)
-
     # read in data
     labels = readData(box, data_path+sample_name+".h5")
     print(labels.nbytes)
-
-    print('memory use at b:', py.memory_info()[0]/2.**30)
 
     start_time = time.time()
 
@@ -532,9 +502,7 @@ def main():
 
     # process chunk of data
     # overlap in points in one direction (total is twice)
-    labels = processData(py, labels, downsample=1, overlap=0, rel_block_size=1)
-
-    print('memory use at j:', py.memory_info()[0]/2.**30)
+    labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
 
     print("-----------------------------------------------------------------")
     print("Time elapsed: " + str(time.time() - start_time))
@@ -543,7 +511,6 @@ def main():
     output_name = "output/" + sample_name
     writeData(data_path+output_name, labels)
     # process again to check success
-    print('memory use at k:', py.memory_info()[0]/2.**30)
 
     if vizWholes:
         labels_inp = readData(box, data_path+sample_name+".h5")

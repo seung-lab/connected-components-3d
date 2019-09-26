@@ -216,10 +216,8 @@ uint32_t* relabel(
   ) {
 
   uint32_t label;
-  printf("HOSSA4\n");
   uint32_t* renumber = new uint32_t[num_labels]();
   uint32_t next_label = 1;
-  printf("HOSSA5\n");
   // Raster Scan 2: Write final labels based on equivalences
   for (int64_t loc = 0; loc < voxels; loc++) {
     if (!out_labels[loc]) {
@@ -238,7 +236,6 @@ uint32_t* relabel(
     }
   }
 
-  printf("HOSSA6\n");
 
   delete[] renumber;
 
@@ -667,8 +664,8 @@ uint32_t* connected_components3d_6(
       }
     }
   }
-  printf("HOSSA3A\n");
-  printf("%ld\n", (long)next_label);
+
+  printf("Max label in CC3D step one is: %ld\n", (long)(next_label-1));
 
   return relabel(out_labels, voxels, next_label, equivalences);
 }
