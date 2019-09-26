@@ -113,98 +113,19 @@ def computeConnectedComp(labels, printOn):
 
     return labels_out, n_comp
 
-# compute statistics for the connected conmponents that have been found
-def doStatistics(isWhole, coods, hull_coods, connectedNeuron, statTable, cnt):
-
-    # account for components starting with 1
-    cnt = cnt - 1
-
-    # First column: Check if connected component is a whole
-    if isWhole: statTable[cnt,0] = 1
-    else: statTable[cnt,1] = 0
-
-    # check if this is a 3D whole (1 if is 3D, otherwise 0)
-    if is2D(coods): statTable[cnt,1] = 0
-    else: statTable[cnt,2] = 1
-
-    # number of points
-    statTable[cnt,3] = int(coods.shape[0])
-
-    # number of hull points
-    n_hull_points = int(hull_coods.shape[0])
-    statTable[cnt,4] = n_hull_points
-
-    # intermediate step: compute pairwise distances between all hull points
-    d_table = distance.cdist(hull_coods, hull_coods, 'euclidean')
-
-    # average distance between hull points
-    avg_hull_dist = np.sum(d_table)/(n_hull_points*n_hull_points-n_hull_points)
-    statTable[cnt,5] = avg_hull_dist
-
-    # maximum distance between hull points
-    max_hull_dist = np.max(d_table)
-    statTable[cnt,6] = max_hull_dist
-
-    # intermediate step: find mid point (as the average over all points)
-    mid_point = np.mean(coods, axis=0, keepdims=True)
-
-    # intermediate step: find hull mid point (as the average over the hull points)
-    hull_mid_point = np.mean(hull_coods, axis=0, keepdims=True)
-
-    # compute mean, median and std for distance for all points from mid point
-    d_allPoints_to_mid_table = distance.cdist(mid_point, coods, 'euclidean')
-    d_allPoints_to_mid_mean = np.mean(d_allPoints_to_mid_table)
-    d_allPoints_to_mid_median = np.median(d_allPoints_to_mid_table)
-    d_allPoints_to_mid_std = np.std(d_allPoints_to_mid_table)
-    statTable[cnt,7] = d_allPoints_to_mid_mean
-    statTable[cnt,8] = d_allPoints_to_mid_median
-    statTable[cnt,9] = d_allPoints_to_mid_std
-
-    # compute mean, median and std for distance for all points from hull mid point
-    d_allPoints_to_hullmid_table = distance.cdist(hull_mid_point, coods, 'euclidean')
-    d_allPoints_to_hullmid_mean = np.mean(d_allPoints_to_hullmid_table)
-    d_allPoints_to_hullmid_median = np.median(d_allPoints_to_hullmid_table)
-    d_allPoints_to_hullmid_std = np.std(d_allPoints_to_hullmid_table)
-    statTable[cnt,10] = d_allPoints_to_hullmid_mean
-    statTable[cnt,11] = d_allPoints_to_hullmid_median
-    statTable[cnt,12] = d_allPoints_to_hullmid_std
-
-    # compute mean, median and std for distance for hull points from mid point
-    d_hullPoints_to_mid_table = distance.cdist(mid_point, hull_coods, 'euclidean')
-    d_hullPoints_to_mid_mean = np.mean(d_hullPoints_to_mid_table)
-    d_hullPoints_to_mid_median = np.median(d_hullPoints_to_mid_table)
-    d_hullPoints_to_mid_std = np.std(d_hullPoints_to_mid_table)
-    statTable[cnt,13] = d_hullPoints_to_mid_mean
-    statTable[cnt,14] = d_hullPoints_to_mid_median
-    statTable[cnt,15] = d_hullPoints_to_mid_std
-
-    # compute mean, median and std for distance for hull points from hull mid point
-    d_hullPoints_to_hullmid_table = distance.cdist(hull_mid_point, hull_coods, 'euclidean')
-    d_hullPoints_to_hullmid_mean = np.mean(d_hullPoints_to_hullmid_table)
-    d_hullPoints_to_hullmid_median = np.median(d_hullPoints_to_hullmid_table)
-    d_hullPoints_to_hullmid_std = np.std(d_hullPoints_to_hullmid_table)
-    statTable[cnt,16] = d_hullPoints_to_mid_mean
-    statTable[cnt,17] = d_hullPoints_to_mid_median
-    statTable[cnt,18] = d_hullPoints_to_mid_std
-
-    #distance between hull mid point and all points mid point
-    d_mid_to_hullmid = np.linalg.norm(hull_mid_point-mid_point)
-    statTable[cnt,19] = d_mid_to_hullmid
-
-    return statTable
-
 # write statistics to a .txt filename
-def writeStatistics(statTable, statistics_path, sample_name):
+def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, statistics_path, sample_name):
+
+    numbering = np.zeros((n_comp,1))
+    numbering[:,0] = np.linspace(1,n_comp,num=n_comp)
+
+    # create table that is later written to .txt
+    statTable = np.hstack((numbering, isWhole, comp_counts, comp_mean, comp_var))
+    print(statTable.shape)
+
     filename = statistics_path + sample_name.replace("/","_").replace(".","_") + "_statistics_" + str(time.time())[:10] + ".txt"
 
-    header_a = "number,isWhole,is3D,nPoints,nHullPoints,avgHullDist,maxHullDist,"
-    header_b = "d_allPoints_to_mid_mean,d_allPoints_to_mid_median,d_allPoints_to_mid_std,"
-    header_c = "d_allPoints_to_hullmid_mean,d_allPoints_to_hullmid_median,d_allPoints_to_hullmid_std,"
-    header_d = "d_hullPoints_to_mid_mean,d_hullPoints_to_mid_median,d_hullPoints_to_mid_std,"
-    header_e = "d_hullPoints_to_hullmid_mean,d_hullPoints_to_hullmid_median,d_hullPoints_to_hullmid_std,"
-    header_f = "d_mid_to_hullmid"
-
-    header =  header_a + header_b + header_c + header_d + header_e + header_f
+    header = "number,isWhole,nPoints,mean_z,mean_y,mean_x,var_z,var_y,var_x"
 
     if(header.count(',')!=(statTable.shape[1]-1)):
         print("Error! Header variables are not equal to number of columns in the statistics!")
@@ -212,7 +133,7 @@ def writeStatistics(statTable, statistics_path, sample_name):
 
 # find sets of adjacent components
 @njit
-def findAdjCompSets(box, labels, labels_out, n_comp):
+def findAdjLabelSet(box, labels, labels_out, n_comp):
 
     neighbor_label_set = set()
 
@@ -253,53 +174,48 @@ def findAdjCompSets(box, labels, labels_out, n_comp):
 
 # for statistics: additinallz count occurence of each component
 @njit
-def findAdjCompSetsWithCount(box, labels_out, n_comp):
+def getStat(box, labels_out, n_comp):
 
-    counts = np.zeros((n_comp),dtype=np.uint64)
+    comp_counts = np.zeros((n_comp,1),dtype=np.uint64)
+    comp_mean = np.zeros((n_comp,3),dtype=np.float64)
+    comp_var = np.zeros((n_comp,3),dtype=np.float64)
 
-    neighbor_sets = set()
-
-    for ix in range(0, box[1]-box[0]-1):
-        for iy in range(0, box[3]-box[2]-1):
-            for iz in range(0, box[5]-box[4]-1):
-
-                curr_comp = labels_out[ix,iy,iz]
-
-                counts[curr_comp] += 1
-
-                if curr_comp != labels_out[ix+1,iy,iz]:
-                    neighbor_sets.add((curr_comp, labels_out[ix+1,iy,iz]))
-                    neighbor_sets.add((labels_out[ix+1,iy,iz], curr_comp))
-                if curr_comp != labels_out[ix,iy+1,iz]:
-                    neighbor_sets.add((curr_comp, labels_out[ix,iy+1,iz]))
-                    neighbor_sets.add((labels_out[ix,iy+1,iz], curr_comp))
-                if curr_comp != labels_out[ix,iy,iz+1]:
-                    neighbor_sets.add((curr_comp, labels_out[ix,iy,iz+1]))
-                    neighbor_sets.add((labels_out[ix,iy,iz+1], curr_comp))
-
-    for ix in [0, box[1]-box[0]-1]:
+    # Compute the mean in each direction and count points for each component
+    for iz in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
-            for iz in range(0, box[5]-box[4]):
-                curr_comp = labels_out[ix,iy,iz]
-                neighbor_sets.add((curr_comp, -1))
+            for ix in range(0, box[5]-box[4]):
 
-    for ix in range(0, box[1]-box[0]):
-        for iy in [0, box[3]-box[2]-1]:
-            for iz in range(0, box[5]-box[4]):
-                curr_comp = labels_out[ix,iy,iz]
-                neighbor_sets.add((curr_comp, -1))
+                curr_comp = labels_out[iz,iy,ix]
 
-    for ix in range(0, box[1]-box[0]):
+                comp_counts[curr_comp] =  comp_counts[curr_comp] + 1
+
+                comp_mean[curr_comp, 0] = comp_mean[curr_comp, 0] + iz
+                comp_mean[curr_comp, 1] = comp_mean[curr_comp, 1] + iy
+                comp_mean[curr_comp, 2] = comp_mean[curr_comp, 2] + ix
+
+    comp_mean[:,0] = np.divide(comp_mean[:,0],comp_counts[:,0])
+    comp_mean[:,1] = np.divide(comp_mean[:,1],comp_counts[:,0])
+    comp_mean[:,2] = np.divide(comp_mean[:,2],comp_counts[:,0])
+
+    # Compute the Variance in each direction
+    for iz in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
-            for iz in [0, box[5]-box[4]-1]:
-                curr_comp = labels_out[ix,iy,iz]
-                neighbor_sets.add((curr_comp, -1))
+            for ix in range(0, box[5]-box[4]):
 
+                curr_comp = labels_out[iz,iy,ix]
 
-    return neighbor_sets, counts
+                comp_var[curr_comp, 0] = comp_var[curr_comp, 0] + (iz-comp_mean[curr_comp, 0])**2
+                comp_var[curr_comp, 1] = comp_var[curr_comp, 1] + (iy-comp_mean[curr_comp, 1])**2
+                comp_var[curr_comp, 2] = comp_var[curr_comp, 2] + (ix-comp_mean[curr_comp, 2])**2
+
+    comp_var[:,0] = np.divide(comp_var[:,0],comp_counts[:,0])
+    comp_var[:,1] = np.divide(comp_var[:,1],comp_counts[:,0])
+    comp_var[:,2] = np.divide(comp_var[:,2],comp_counts[:,0])
+
+    return comp_counts, comp_mean, comp_var
 
 # create string of connected components that are a whole
-def findAssociatedComp(neighbor_label_set, n_comp):
+def findAssociatedLabels(neighbor_label_set, n_comp):
 
     neighbor_labels = [[] for _ in range(n_comp)]
     for s in range(len(neighbor_label_set)):
@@ -309,16 +225,21 @@ def findAssociatedComp(neighbor_label_set, n_comp):
 
     #find connected components that are a whole
     associated_label = Dict.empty(key_type=types.uint16,value_type=types.uint16)
+    isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
 
     for c in range(n_comp):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
         if (len(neighbor_labels[c]) is 1 and neighbor_labels[c][0] is not -1):
-            # associated_label[c] = comp_labels[c]
-            associated_label[c] = 65000
+            associated_label[c] = neighbor_labels[c][0]
+            isWhole[c] = 1
+            # associated_label[c] = 65000
+            # associated_label[c] = 0
         else:
             associated_label[c] = 0
+            isWhole[c] = 0
+            # associated_label[c] = neighbor_labels[c][0] + 5
 
-    return associated_label
+    return associated_label, isWhole
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
@@ -382,7 +303,7 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
 
 # process whole filling process for chung of data
-def processData(labels, downsample, overlap, rel_block_size):
+def processData(saveStatistics, statistics_path, sample_name, labels, downsample, overlap, rel_block_size):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
@@ -390,7 +311,7 @@ def processData(labels, downsample, overlap, rel_block_size):
         # downsample data
         if downsample > 1:
             box_down, labels_down = downsampleDataMin(box, downsample, labels)
-        else :
+        else:
             box_down = box
             labels_down = labels
 
@@ -440,13 +361,18 @@ def processData(labels, downsample, overlap, rel_block_size):
 
                     print("Find Sets of Adjacent Components...")
                     # compute the sets of connected components (also including boundary)
-                    neighbor_label_set = findAdjCompSets(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
-
-                    print("comp label set length is: " + str(len(neighbor_label_set)))
+                    neighbor_label_set = findAdjLabelSet(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
 
                     print("Find Associated Components...")
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-                    associated_label = findAssociatedComp(neighbor_label_set, n_comp)
+                    associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp)
+
+                    if saveStatistics:
+                        print("Computing n, mean, std ...")
+                        comp_counts, comp_mean, comp_var = getStat(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
+
+                        print("Writing Statistics...")
+                        writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, statistics_path, sample_name)
 
                     print("Fill wholes...")
                     # fill detected wholes and visualize non_wholes
@@ -468,16 +394,15 @@ def processData(labels, downsample, overlap, rel_block_size):
 
 def main():
 
-    saveStatistics = False
-    n_features = 20
-    statistics_path = "/home/frtim/wiring/statistics/"
-    data_path = "/home/frtim/wiring/raw_data/segmentations/JWR/test_volume/"
-    sample_name = "cell032_downsampled_test"
-    vizWholes = False
+    saveStatistics = True
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/test_volume/"
+    statistics_path = data_path
+    sample_name = "0000"
+    vizChange = False
     # sample_name = "cell032_downsampled.h5"
 
     # bos size
-    box = [0,200,0,1000,0,1000]
+    box = [0,128,0,1000,0,1000]
     # box = [0,773,0,3328,0,3328]
 
     print("-----------------------------------------------------------------")
@@ -491,7 +416,7 @@ def main():
 
     # process chunk of data
     # overlap in points in one direction (total is twice)
-    labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
+    labels = processData(saveStatistics, statistics_path, sample_name, labels, downsample=1, overlap=0, rel_block_size=1)
 
     print("-----------------------------------------------------------------")
     print("Time elapsed: " + str(time.time() - start_time))
@@ -501,19 +426,12 @@ def main():
     writeData(data_path+output_name, labels)
 
     # compute negative to visualize filled wholes
-    if vizWholes:
+    if vizChange:
         labels_inp = readData(box, data_path+sample_name+".h5")
-        wholes = np.subtract(labels, labels_inp)
-        output_name = "output/" + sample_name + "_wholes"
-        print("max_label is: " + str(np.max(wholes)))
-        writeData(data_path+output_name, wholes)
+        neg = np.subtract(labels, labels_inp)
+        output_name = "output/" + sample_name + "_vizchange"
+        writeData(data_path+output_name, neg)
 
-    # print("-----------------------------------------------------------------")
-    # print("----------------------CHECK--------------------------------------")
-    # labels = processData(labels, downsample=1, overlap=0, rel_block_size=1)
-
-    # write filled data to H5
-    # writeData(data_path+output_name, labels)
 
 if __name__== "__main__":
   main()

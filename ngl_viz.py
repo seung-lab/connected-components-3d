@@ -14,7 +14,7 @@ def readData(filename):
     # read in data block
     data_in = ReadH5File(filename)
 
-    labels = data_in
+    labels = data_in[:128,:1000,:1000]
 
     print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
 
@@ -26,32 +26,42 @@ def ReadH5File(filename):
         keys = [key for key in hf.keys()]
         print("Data keys are: ", str(keys))
         data = np.array(hf[keys[0]])
-# ,dtype=np.dtype(np.bool_)
     return data
 
-data_path = "/home/frtim/wiring/raw_data/segmentations/"
-sample_name = "JWR/test_volume/output/cell032_downsampled_1569513764.h5"
+def loadViz(path, caption, res):
+
+    print("-----------------------------------------------------------------")
+    print ('loading ' + caption + "...")
+    gt = readData(path)
+    gt = gt.astype(np.uint16)
+
+    uniq = np.expand_dims(np.unique(gt[::2,::2,::2]),axis=1).transpose()
+    np.savetxt(sys.stdout.buffer, uniq, delimiter=',', fmt='%d')
+
+    with viewer.txn() as s:
+        s.layers.append(
+            name=caption,
+            layer=neuroglancer.LocalVolume(
+                data=gt,
+                voxel_size=res,
+                volume_type='segmentation'
+            ))
+
+data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/test_volume/keep/"
+sample_name = "0000"
+file_name_org = data_path + sample_name + "/" + sample_name + ".h5"
+file_name_filled = data_path + sample_name + "/" + sample_name + "_filled.h5"
+file_name_wholes = data_path + sample_name + "/" + sample_name + "_wholes.h5"
+file_name_nonwholes = data_path + sample_name + "/" + sample_name + "_nonwholes.h5"
+
 
 res=[20,18,18]; # resolution of the data
 
-print ('load im')
-im = readData(data_path+sample_name)
-im = im.astype(np.uint16)
+loadViz(path=file_name_org, caption="original", res=res)
+loadViz(path=file_name_filled, caption="filled", res=res)
+loadViz(path=file_name_wholes, caption="wholes", res=res)
+loadViz(path=file_name_nonwholes, caption="non_wholes", res=res)
 
-uniq = np.expand_dims(np.unique(im[::5,::5,::5]),axis=1).transpose()
-print(uniq.shape)
-np.savetxt(sys.stdout.buffer, uniq, delimiter=',', fmt='%d')
-
-print("Max label is: " + str(np.max(im)))
-print("Min label is: " + str(np.min(im)))
-
-with viewer.txn() as s:
-    s.layers.append(
-        name='labels',
-        layer=neuroglancer.LocalVolume(
-            data=im,
-            voxel_size=res,
-            volume_type='segmentation'
-        ))
-
+print("----------------------------DONE---------------------------------")
 print(viewer)
+print("-----------------------------------------------------------------")
