@@ -1,13 +1,7 @@
 import numpy as np
 
-a = np.uint8(10)
-b = np.uint16(10)
-c = np.uint32(10)
 
-print(a.itemsize)
-print(b.itemsize)
-print(c.itemsize)
-print(c.nbytes)
+print(np.divide(0,1))
 
 # labels_filled = np.ones((10,10,10))
 # labels = np.zeros((10,10,10))

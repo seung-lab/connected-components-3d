@@ -440,22 +440,29 @@ def processFile(data_path, sample_name, saveStatistics, vizWholes):
 
 def main():
 
-    saveStatistics = True
-    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/computations/"
+    # saveStatistics = True
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
+    output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
     sample_name = "0768"
-    vizWholes = True
+    # vizWholes = True
 
-    names = ['1408', '2560', '1792', '5248', '4096', '2048', '2688',
-    '2304', '0512', '4480', '1152', '3840', '2944', '4608', '0128',
-    '0256', '4736', '0640', '5376', '3200', '3584', '4352', '4864', '4224',
-    '5120', '2176', '5632', '1536', '0000', '0768', '1920', '0384', '3072',
-    '0896', '4992', '3328', '1664', '3712', '3968', '2816', '3456', '5504',
-    '2432', '1280', '1024']
+    box = [0,128,0,2000,0,2000]
 
-    for name in names:
+    for i in range(0,15):
+        name = str(i*128).zfill(4)
         print("Processing file " + name)
-        processFile(data_path, name, saveStatistics, vizWholes)
+        if i is 0:
+            labels_concat = readData(box, data_path+sample_name+".h5")
+        else:
+            labels_temp = readData(box, data_path+sample_name+".h5")
+            labels_concat = np.concatenate((labels_concat,labels_temp),axis=0)
+            del labels_temp
 
+        print("Curent shape is: ", labels_concat.shape)
+
+    print(labels_concat.nbytes)
+    output_name = "concat_0_to_14_1920_2000_2000"
+    writeData(output_path+output_name, labels_concat)
 
 if __name__== "__main__":
   main()
