@@ -14,7 +14,7 @@ def readData(filename):
     # read in data block
     data_in = ReadH5File(filename)
 
-    labels = data_in[:128,:1000,:1000]
+    labels = data_in
 
     print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype) + "; cut to: " + str(labels.shape))
 
@@ -47,8 +47,8 @@ def loadViz(path, caption, res):
                 volume_type='segmentation'
             ))
 
-data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/computations/"
-sample_name = "0768"
+data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
+sample_name = "concat_2"
 file_name_org = data_path + sample_name + "_outp/" + sample_name + ".h5"
 file_name_filled = data_path + sample_name + "_outp/" + sample_name + "_filled.h5"
 file_name_wholes = data_path + sample_name + "_outp/" + sample_name + "_wholes.h5"

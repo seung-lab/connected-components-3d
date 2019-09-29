@@ -109,7 +109,7 @@ def writeData(filename,labels):
 #compute the connected Com ponent labels
 def computeConnectedComp(labels, printOn):
     connectivity = 6 # only 26, 18, and 6 are allowed
-    labels_out = cc3d.connected_components(labels, connectivity=connectivity, max_labels=100000000)
+    labels_out = cc3d.connected_components(labels, connectivity=connectivity, max_labels=45000000)
 
     # You can extract individual components like so:
     n_comp = np.max(labels_out) + 1
@@ -234,7 +234,7 @@ def findAssociatedLabels(neighbor_label_set, n_comp):
             neighbor_labels[temp[0]].append(temp[1])
 
     #find connected components that are a whole
-    associated_label = Dict.empty(key_type=types.uint16,value_type=types.uint16)
+    associated_label = Dict.empty(key_type=types.uint64,value_type=types.uint64)
     isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
 
     for c in range(n_comp):
@@ -438,31 +438,48 @@ def processFile(data_path, sample_name, saveStatistics, vizWholes):
         output_name = "_wholes"
         writeData(output_path+sample_name+output_name, neg)
 
-def main():
+def concatFiles(box, slices, output_name, output_path, data_path):
 
-    # saveStatistics = True
-    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
-    output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
-    sample_name = "0768"
-    # vizWholes = True
-
-    box = [0,128,0,2000,0,2000]
-
-    for i in range(0,15):
-        name = str(i*128).zfill(4)
-        print("Processing file " + name)
+    for i in range(0,slices):
+        sample_name = str(i*128).zfill(4)
+        print("Processing file " + sample_name)
         if i is 0:
             labels_concat = readData(box, data_path+sample_name+".h5")
         else:
             labels_temp = readData(box, data_path+sample_name+".h5")
-            labels_concat = np.concatenate((labels_concat,labels_temp),axis=0)
+            labels_old = labels_concat.copy()
+            del labels_concat
+            labels_concat = np.concatenate((labels_old,labels_temp),axis=0)
             del labels_temp
 
-        print("Curent shape is: ", labels_concat.shape)
 
-    print(labels_concat.nbytes)
-    output_name = "concat_0_to_14_1920_2000_2000"
+    print("Concat size / shape: " + str(labels_concat.nbytes) + ' / ' + str(labels_concat.shape))
     writeData(output_path+output_name, labels_concat)
+
+def main():
+
+    import sys
+    sys.stdout = open('file', 'w')
+
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
+    output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
+    box = [0,128,0,2000,0,2000]
+    vizWholes = True
+    saveStatistics = False
+    output_name = 'concat_2'
+
+
+    slices = 12
+    labels_concat = concatFiles(box=box, slices, output_name, output_path, data_path)
+    processFile(data_path=output_path, sample_name=output_name, saveStatistics=saveStatistics, vizWholes=vizWholes)
+
+    del labels_concat
+    del slices
+
+    slices = 15
+    labels_concat = concatFiles(box=box, slices, output_name, output_path, data_path)
+    processFile(data_path=output_path, sample_name=output_name, saveStatistics=saveStatistics, vizWholes=vizWholes)
+
 
 if __name__== "__main__":
   main()
