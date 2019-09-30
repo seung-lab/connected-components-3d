@@ -108,15 +108,14 @@ def writeData(filename,labels):
         hf.create_dataset("main", data=labels, compression='gzip')
 
 #compute the connected Com ponent labels
-def computeConnectedComp(labels, printOn):
+def computeConnectedComp(labels):
     connectivity = 6 # only 26, 18, and 6 are allowed
     labels_out = cc3d.connected_components(labels, connectivity=connectivity, max_labels=45000000)
 
     # You can extract individual components like so:
     n_comp = np.max(labels_out) + 1
 
-    if printOn:
-        print("Conntected Regions found: " + str(n_comp))
+    print("Conntected Regions found: " + str(n_comp))
 
     # determine indices, numbers and counts for the connected regions
     # unique, counts = np.unique(labels_out, return_counts=True)
@@ -254,22 +253,37 @@ def findAssociatedLabels(neighbor_label_set, n_comp):
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, associated_label, downsample):
+def fillWholes(box_dyn, labels, labels_cut_out_down, associated_label, downsample):
 
     dsf = downsample
-    box = box_down_dyn_ext
+    box = box_dyn
 
-    for ix in range(0, box[1]-box[0]):
-        for iy in range(0, box[3]-box[2]):
-            for iz in range(0, box[5]-box[4]):
+    for iz in range(box[0], box[1]):
+        for iy in range(box[2], box[3]):
+            for ix in range(box[4], box[5]):
 
-                if labels_cut_ext[ix,iy,iz] == 0:
-                    labels_cut_ext[ix,iy,iz] = associated_label[labels_cut_out_down_ext[ix,iy,iz]]
+                ic = math.floor((iz - box[0])/dsf)
+                ib = math.floor((iy - box[2])/dsf)
+                ia = math.floor((ix - box[4])/dsf)
 
-    return labels_cut_ext
+                if labels[iz,iy,ix] == 0:
+                    # if np.random.rand() < 0.0001 and associated_label[labels_cut_out_down[ic,ib,ia]]!=0:
+                    #     print("Printing...")
+                    #     print(iz,iy,ix,ic,ib,ia)
+                    #     print(labels[iz-4:iz+4,iy-4:iy+4,ix])
+                    #     print(labels_cut_out_down[ic-2:ic+2,ib-2:ib+2,ia])
+                    #     printOn = True
+                    labels[iz,iy,ix] = associated_label[labels_cut_out_down[ic,ib,ia]]
+
+                # if printOn:
+                #     print(labels[iz-4:iz+4,iy-4:iy+4,ix])
+                #     print(associated_label[labels_cut_out_down[ic,ib,ia]])
+                #     printOn = False
+
+    return labels
 
 # compute extended boxes
-@njit
+# @njit
 def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x):
 
         # down refers to downsampled scale, ext to extended boxes (extended by the overlap)
@@ -295,21 +309,21 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         box_down_dyn_ext = [z_min_down_dyn_ext,z_max_down_dyn_ext,y_min_down_dyn_ext,y_max_down_dyn_ext,x_min_down_dyn_ext,x_max_down_dyn_ext]
         box_dyn_ext = [int(b*downsample)for b in box_down_dyn_ext]
 
-        z_start = overlap_d*downsample if (bz*bs_z-overlap_d >= 0) else 0
-        z_end = -overlap_d*downsample if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_dyn[1]-box_dyn[0]+overlap)
-        y_start = overlap_d*downsample if (by*bs_y-overlap_d >= 0) else 0
-        y_end = -overlap_d*downsample if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_dyn[3]-box_dyn[2]+overlap)
-        x_start = overlap_d*downsample if (bx*bs_x-overlap_d >= 0) else 0
-        x_end = -overlap_d*downsample if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_dyn[5]-box_dyn[4]+overlap)
+        z_start = overlap_d if (bz*bs_z-overlap_d >= 0) else 0
+        z_end = -overlap_d if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_down_dyn[1]-box_down_dyn[0]+overlap_d)
+        y_start = overlap_d if (by*bs_y-overlap_d >= 0) else 0
+        y_end = -overlap_d if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_down_dyn[3]-box_down_dyn[2]+overlap_d)
+        x_start = overlap_d if (bx*bs_x-overlap_d >= 0) else 0
+        x_end = -overlap_d if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_down_dyn[5]-box_down_dyn[4]+overlap_d)
 
         # compute the indexing to get from the extended dynamic box back to the standard size dynamic box
         box_idx = [z_start, z_end, y_start, y_end, x_start, x_end]
 
-        # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
-        # print("box_dyn_ext: " + str(box_dyn_ext))
-        # print("box_down_dyn: " + str(box_down_dyn))
-        # print("box_dyn: " + str(box_dyn))
-        # print(z_start,z_end,y_start,y_end,x_start,x_end)
+        print("box_down_dyn_ext: " + str(box_down_dyn_ext))
+        print("box_dyn_ext: " + str(box_dyn_ext))
+        print("box_down_dyn: " + str(box_down_dyn))
+        print("box_dyn: " + str(box_dyn))
+        print("box_idx: " + str(box_idx))
 
         return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
 
@@ -318,6 +332,7 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
+        print(labels.shape)
 
         # downsample data
         if downsample > 1:
@@ -344,9 +359,6 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
         total_wholes_found = 0
         cell_counter = 0
 
-        # print connected components only if all data processed in one
-        printOn = True if n_blocks_z < 11 else False
-
         # process blocks by iterating over all bloks
         for bz in range(n_blocks_z):
             for by in range(n_blocks_y):
@@ -368,7 +380,7 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
 
                     print("Compute connected Components...")
                     # compute the labels of the conencted connected components
-                    labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext, printOn)
+                    labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext)
 
                     print("Find Sets of Adjacent Components...")
                     # compute the sets of connected components (also including boundary)
@@ -387,12 +399,13 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
 
                     print("Fill wholes...")
                     # fill detected wholes and visualize non_wholes
-                    labels_cut_filled = fillWholes(box_down_dyn_ext, labels_cut_ext, labels_cut_out_down_ext, associated_label, downsample)
-                    labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_filled[
-                        box_idx[0]:box_idx[1],box_idx[2]:box_idx[3],box_idx[4]:box_idx[5]]
 
-                    total_wholes_found += len({k: v for k, v in associated_label.items() if v != 0})
+                    labels_cut_out_down = labels_cut_out_down_ext[box_idx[0]:box_idx[1],box_idx[2]:box_idx[3],box_idx[4]:box_idx[5]]
+                    print(labels_cut_out_down_ext.shape)
+                    print(labels_cut_out_down.shape)
+                    labels = fillWholes(box_dyn, labels, labels_cut_out_down, associated_label, downsample)
 
+                    total_wholes_found += np.count_nonzero(isWhole)
                     cell_counter+=1
 
         # print out total of found wholes
@@ -403,14 +416,13 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
 
         return labels
 
-def processFile(data_path, sample_name, saveStatistics, vizWholes, downsample, overlap, rel_block_size):
+def processFile(box, data_path, sample_name, saveStatistics, vizWholes, downsample, overlap, rel_block_size):
 
     output_path = data_path + sample_name + "_outp_" + str(time.time())[:10] +"/"
     os.mkdir(output_path)
 
     # bos size
     # box = [0,128,0,1000,0,1000]
-    box = getBoxAll(data_path+sample_name+".h5")
 
     print("-----------------------------------------------------------------")
 
@@ -423,7 +435,8 @@ def processFile(data_path, sample_name, saveStatistics, vizWholes, downsample, o
 
     # process chunk of data
     # overlap in points in one direction (total is twice)
-    labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=0, rel_block_size=1)
+    labels = processData(saveStatistics, output_path, sample_name, labels, downsample=downsample, overlap=0, rel_block_size=1)
+    labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=overlap, rel_block_size=rel_block_size)
 
     # labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=overlap, rel_block_size=rel_block_size)
 
@@ -464,13 +477,19 @@ def main():
 
     data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
-    vizWholes = False
+    vizWholes = True
     saveStatistics = False
-    sample_name = 'concat_2'
-    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_2_outp_groundtruth/concat_2_filled.h5"
-    compare_filename = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_2_outp/concat_2_filled.h5"
+    sample_name = 'concat_5_600'
+    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_5_600_gt/concat_5_600_gt_filled.h5"
 
-    labels_out = processFile(data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=4, overlap=10, rel_block_size=0.5)
+    # box = [0,128,0,600,0,600]
+    # slices = 5
+    # output_name = "concat_5_600"
+    # concatFiles(box, slices, output_name, output_path, data_path)
+
+    # box = [0,500,0,500,0,500]
+    box = getBoxAll(data_path+sample_name+".h5")
+    labels_out = processFile(box = box, data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=4, overlap=24, rel_block_size=0.5)
 
     box = getBoxAll(groundtruth_filepath)
     labels_groundtruth = readData(box, groundtruth_filepath)

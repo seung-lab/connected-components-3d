@@ -216,8 +216,9 @@ uint32_t* relabel(
   ) {
 
   uint32_t label;
-  uint32_t* renumber = new uint32_t[num_labels]();
+  uint32_t* renumber = new uint32_t[num_labels+1]();
   uint32_t next_label = 1;
+
   // Raster Scan 2: Write final labels based on equivalences
   for (int64_t loc = 0; loc < voxels; loc++) {
     if (!out_labels[loc]) {
@@ -238,6 +239,9 @@ uint32_t* relabel(
 
 
   delete[] renumber;
+
+  // double max_label = *std::max_element(out_labels, out_labels+voxels);
+  // printf("Max label labels_out is: %ld\n", (long)(*std::max_element(out_labels, out_labels+voxels)));
 
   return out_labels;
 }

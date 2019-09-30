@@ -48,18 +48,22 @@ def loadViz(path, caption, res):
             ))
 
 data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
-sample_name = "concat_2"
-file_name_org = data_path + sample_name + "_outp/" + sample_name + ".h5"
-file_name_filled = data_path + sample_name + "_outp/" + sample_name + "_filled.h5"
+sample_name= "concat_5_600"
+sample_name_gt = "concat_5_600_gt"
+
+# file_name_org = data_path + sample_name + "_outp/" + sample_name + ".h5"
+# file_name_filled = data_path + sample_name + "_outp/" + sample_name + "_filled.h5"
+# file_name_nonwholes = data_path + sample_name + "_outp/" + sample_name + "_nonwholes.h5"
 file_name_wholes = data_path + sample_name + "_outp/" + sample_name + "_wholes.h5"
-file_name_nonwholes = data_path + sample_name + "_outp/" + sample_name + "_nonwholes.h5"
+file_name_wholes_gt = data_path + sample_name_gt + "_outp/" + sample_name_gt + "_wholes.h5"
 
 
 res=[20,18,18]; # resolution of the data
 
-loadViz(path=file_name_org, caption="original", res=res)
-loadViz(path=file_name_filled, caption="filled", res=res)
+# loadViz(path=file_name_org, caption="original", res=res)
+# loadViz(path=file_name_filled, caption="filled", res=res)
 loadViz(path=file_name_wholes, caption="wholes", res=res)
+loadViz(path=file_name_wholes_gt, caption="wholes_gt", res=res)
 # loadViz(path=file_name_nonwholes, caption="non_wholes", res=res)
 
 print("----------------------------DONE---------------------------------")
