@@ -454,7 +454,7 @@ def processFile(box, data_path, sample_name, saveStatistics, vizWholes, downsamp
         output_name = "_wholes"
         writeData(output_path+sample_name+output_name, neg)
 
-    return labels
+    return labels, neg
 
 def concatFiles(box, slices, output_name, output_path, data_path):
 
@@ -480,7 +480,7 @@ def main():
     vizWholes = True
     saveStatistics = False
     sample_name = 'concat_5_600'
-    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_5_600_gt/concat_5_600_gt_filled.h5"
+    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_5_600_gt/concat_5_600_gt_wholes.h5"
 
     # box = [0,128,0,600,0,600]
     # slices = 5
@@ -489,13 +489,22 @@ def main():
 
     # box = [0,500,0,500,0,500]
     box = getBoxAll(data_path+sample_name+".h5")
-    labels_out = processFile(box = box, data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=4, overlap=24, rel_block_size=0.5)
+    labels_out, wholes_out = processFile(box = box, data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=4, overlap=12, rel_block_size=0.5)
 
     box = getBoxAll(groundtruth_filepath)
-    labels_groundtruth = readData(box, groundtruth_filepath)
+    wholes_groundtruth = readData(box, groundtruth_filepath)
 
-    diff = np.subtract(labels_out, labels_groundtruth)
+    diff = np.zeros((wholes_out.shape[0],wholes_out.shape[1],wholes_out.shape[2]))
+    diff[:,:,:] = np.subtract(wholes_groundtruth.astype(np.float),wholes_out.astype(np.float))
+    # diff = np.subtract(wholes_groundtruth,wholes_out)
+    print("Min are :" + str(np.min(wholes_groundtruth)) + "and" + str(np.min(wholes_out)))
+    print("Max are :" + str(np.max(wholes_groundtruth)) + "and" + str(np.max(wholes_out)))
+    print("Min: " + str(np.min(diff)))
+    print("Max: " + str(np.max(diff)))
     print(np.count_nonzero(diff))
+
+    output_name = 'diff_wholes'
+    writeData(output_path+output_name, diff)
 
 if __name__== "__main__":
   main()
