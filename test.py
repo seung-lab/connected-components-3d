@@ -15,6 +15,7 @@ import math
 from numba.typed import Dict
 import os
 import psutil
+import sys
 
 # set will be deprecated soon on numba, but until now an alternative has not been implemented
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
@@ -452,32 +453,23 @@ def concatFiles(box, slices, output_name, output_path, data_path):
             labels_concat = np.concatenate((labels_old,labels_temp),axis=0)
             del labels_temp
 
-
     print("Concat size / shape: " + str(labels_concat.nbytes) + ' / ' + str(labels_concat.shape))
     writeData(output_path+output_name, labels_concat)
 
 def main():
 
-    import sys
-    sys.stdout = open('file', 'w')
-
     data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
-    box = [0,128,0,2000,0,2000]
+    box = [0,128,0,2176,0,2176]
     vizWholes = True
     saveStatistics = False
     output_name = 'concat_2'
 
+    # timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
+    # sys.stdout=open(output_path + 'out' + timestr0 + '.txt','w')
 
-    slices = 12
-    labels_concat = concatFiles(box=box, slices, output_name, output_path, data_path)
-    processFile(data_path=output_path, sample_name=output_name, saveStatistics=saveStatistics, vizWholes=vizWholes)
-
-    del labels_concat
-    del slices
-
-    slices = 15
-    labels_concat = concatFiles(box=box, slices, output_name, output_path, data_path)
+    slices = 17
+    labels_concat = concatFiles(box, slices, output_name, output_path, data_path)
     processFile(data_path=output_path, sample_name=output_name, saveStatistics=saveStatistics, vizWholes=vizWholes)
 
 

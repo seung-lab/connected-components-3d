@@ -1,0 +1,35 @@
+Processing file 0000
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 0128
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 0256
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 0384
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 0512
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 0640
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 0768
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 0896
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
+data read in; shape: (128, 2000, 2000); DataType: uint16
+Processing file 1024
+Data keys are:  ['main']
+Data shape:  (128, 5456, 5332)
