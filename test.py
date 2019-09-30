@@ -403,7 +403,7 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
 
         return labels
 
-def processFile(data_path, sample_name, saveStatistics, vizWholes):
+def processFile(data_path, sample_name, saveStatistics, vizWholes, downsample, overlap, rel_block_size):
 
     output_path = data_path + sample_name + "_outp_" + str(time.time())[:10] +"/"
     os.mkdir(output_path)
@@ -425,6 +425,8 @@ def processFile(data_path, sample_name, saveStatistics, vizWholes):
     # overlap in points in one direction (total is twice)
     labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=0, rel_block_size=1)
 
+    # labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=overlap, rel_block_size=rel_block_size)
+
     print("-----------------------------------------------------------------")
     print("Time elapsed: " + str(time.time() - start_time))
 
@@ -438,6 +440,8 @@ def processFile(data_path, sample_name, saveStatistics, vizWholes):
         neg = np.subtract(labels, labels_inp)
         output_name = "_wholes"
         writeData(output_path+sample_name+output_name, neg)
+
+    return labels
 
 def concatFiles(box, slices, output_name, output_path, data_path):
 
@@ -458,20 +462,21 @@ def concatFiles(box, slices, output_name, output_path, data_path):
 
 def main():
 
-    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
-    box = [0,128,0,2176,0,2176]
-    vizWholes = True
+    vizWholes = False
     saveStatistics = False
-    output_name = 'concat_2'
+    sample_name = 'concat_2'
+    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_2_outp_groundtruth/concat_2_filled.h5"
+    compare_filename = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_2_outp/concat_2_filled.h5"
 
-    # timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
-    # sys.stdout=open(output_path + 'out' + timestr0 + '.txt','w')
+    labels_out = processFile(data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=4, overlap=10, rel_block_size=0.5)
 
-    slices = 17
-    labels_concat = concatFiles(box, slices, output_name, output_path, data_path)
-    processFile(data_path=output_path, sample_name=output_name, saveStatistics=saveStatistics, vizWholes=vizWholes)
+    box = getBoxAll(groundtruth_filepath)
+    labels_groundtruth = readData(box, groundtruth_filepath)
 
+    diff = np.subtract(labels_out, labels_groundtruth)
+    print(np.count_nonzero(diff))
 
 if __name__== "__main__":
   main()
