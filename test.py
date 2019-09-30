@@ -283,7 +283,7 @@ def fillWholes(box_dyn, labels, labels_cut_out_down, associated_label, downsampl
     return labels
 
 # compute extended boxes
-# @njit
+@njit
 def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x):
 
         # down refers to downsampled scale, ext to extended boxes (extended by the overlap)
@@ -480,7 +480,7 @@ def main():
     vizWholes = True
     saveStatistics = False
     sample_name = 'concat_5_600'
-    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_5_600_gt/concat_5_600_gt_wholes.h5"
+    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_5_600_gt_outp/concat_5_600_gt_wholes.h5"
 
     # box = [0,128,0,600,0,600]
     # slices = 5
@@ -489,7 +489,7 @@ def main():
 
     # box = [0,500,0,500,0,500]
     box = getBoxAll(data_path+sample_name+".h5")
-    labels_out, wholes_out = processFile(box = box, data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=4, overlap=12, rel_block_size=0.5)
+    labels_out, wholes_out = processFile(box = box, data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=10, overlap=12, rel_block_size=0.5)
 
     box = getBoxAll(groundtruth_filepath)
     wholes_groundtruth = readData(box, groundtruth_filepath)
