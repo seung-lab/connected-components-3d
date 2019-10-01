@@ -125,7 +125,7 @@ def computeConnectedComp(labels):
     return labels_out, n_comp
 
 # write statistics to a .txt filename
-def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, statistics_path, sample_name):
+def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path, sample_name):
 
     numbering = np.zeros((n_comp,1))
     numbering[:,0] = np.linspace(1,n_comp,num=n_comp)
@@ -133,7 +133,7 @@ def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, statistic
     # create table that is later written to .txt
     statTable = np.hstack((numbering, isWhole, comp_counts, comp_mean, comp_var))
 
-    filename = statistics_path + sample_name.replace("/","_").replace(".","_") + "_statistics" + ".txt"
+    filename = data_path + sample_name.replace("/","_").replace(".","_") + "_statistics" + ".txt"
 
     header = "number,isWhole,nPoints,mean_z,mean_y,mean_x,var_z,var_y,var_x"
 
@@ -319,16 +319,16 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         # compute the indexing to get from the extended dynamic box back to the standard size dynamic box
         box_idx = [z_start, z_end, y_start, y_end, x_start, x_end]
 
-        print("box_down_dyn_ext: " + str(box_down_dyn_ext))
-        print("box_dyn_ext: " + str(box_dyn_ext))
-        print("box_down_dyn: " + str(box_down_dyn))
-        print("box_dyn: " + str(box_dyn))
-        print("box_idx: " + str(box_idx))
+        # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
+        # print("box_dyn_ext: " + str(box_dyn_ext))
+        # print("box_down_dyn: " + str(box_down_dyn))
+        # print("box_dyn: " + str(box_dyn))
+        # print("box_idx: " + str(box_idx))
 
         return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
 
 # process whole filling process for chung of data
-def processData(saveStatistics, statistics_path, sample_name, labels, downsample, overlap, rel_block_size):
+def processData(saveStatistics, data_path, sample_name, labels, downsample, overlap, rel_block_size):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
@@ -337,6 +337,9 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
         # downsample data
         if downsample > 1:
             box_down, labels_down = downsampleDataMin(box, downsample, labels)
+            output_name = "_dsp_" + str(downsample)
+            writeData(data_path+output_name, labels_down)
+
         else:
             box_down = box
             labels_down = labels
@@ -395,7 +398,7 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
                         comp_counts, comp_mean, comp_var = getStat(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
 
                         print("Writing Statistics...")
-                        writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, statistics_path, sample_name)
+                        writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path, sample_name)
 
                     print("Fill wholes...")
                     # fill detected wholes and visualize non_wholes
@@ -416,18 +419,12 @@ def processData(saveStatistics, statistics_path, sample_name, labels, downsample
 
         return labels
 
-def processFile(box, data_path, sample_name, saveStatistics, vizWholes, downsample, overlap, rel_block_size):
-
-    output_path = data_path + sample_name + "_outp_" + str(time.time())[:10] +"/"
-    os.mkdir(output_path)
-
-    # bos size
-    # box = [0,128,0,1000,0,1000]
-
+def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size):
+    #hallo
     print("-----------------------------------------------------------------")
 
     # read in data
-    labels = readData(box, data_path+sample_name+".h5")
+    labels = readData(box, data_path+".h5")
 
     start_time = time.time()
 
@@ -435,28 +432,32 @@ def processFile(box, data_path, sample_name, saveStatistics, vizWholes, downsamp
 
     # process chunk of data
     # overlap in points in one direction (total is twice)
-    labels = processData(saveStatistics, output_path, sample_name, labels, downsample=downsample, overlap=0, rel_block_size=1)
-    labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=overlap, rel_block_size=rel_block_size)
-
-    # labels = processData(saveStatistics, output_path, sample_name, labels, downsample=1, overlap=overlap, rel_block_size=rel_block_size)
+    if steps >= 1:
+        labels = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
+                    labels=labels, downsample=downsample[0], overlap=overlap[0], rel_block_size=rel_block_size[0])
+    else:
+        print("ERROR no steps is smaller than 1")
+    if steps >= 2:
+        labels = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
+                    labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1])
 
     print("-----------------------------------------------------------------")
     print("Time elapsed: " + str(time.time() - start_time))
 
     # write filled data to H5
-    output_name = "_filled"
-    writeData(output_path+sample_name+output_name, labels)
+    output_name = "_filled_" + ID
+    writeData(data_path+output_name, labels)
 
     # compute negative to visualize filled wholes
     if vizWholes:
-        labels_inp = readData(box, data_path+sample_name+".h5")
+        labels_inp = readData(box, data_path+".h5")
         neg = np.subtract(labels, labels_inp)
-        output_name = "_wholes"
-        writeData(output_path+sample_name+output_name, neg)
+        output_name = "_wholes_" + ID
+        writeData(data_path+output_name, neg)
 
     return labels, neg
 
-def concatFiles(box, slices, output_name, output_path, data_path):
+def concatFiles(box, slices, output_path, data_path):
 
     for i in range(0,slices):
         sample_name = str(i*128).zfill(4)
@@ -471,40 +472,73 @@ def concatFiles(box, slices, output_name, output_path, data_path):
             del labels_temp
 
     print("Concat size / shape: " + str(labels_concat.nbytes) + ' / ' + str(labels_concat.shape))
-    writeData(output_path+output_name, labels_concat)
+    writeData(output_path, labels_concat)
 
 def main():
 
-    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
-    output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
+    output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
+    sample_name = "concat_5_500_test"
     vizWholes = True
     saveStatistics = False
-    sample_name = 'concat_5_600'
-    groundtruth_filepath = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/concat_5_600_gt_outp/concat_5_600_gt_wholes.h5"
 
-    # box = [0,128,0,600,0,600]
-    # slices = 5
-    # output_name = "concat_5_600"
-    # concatFiles(box, slices, output_name, output_path, data_path)
+    folder_path = output_path + sample_name + "_outp_" + str(time.time())[:10] +"/"
+    os.mkdir(folder_path)
 
-    # box = [0,500,0,500,0,500]
-    box = getBoxAll(data_path+sample_name+".h5")
-    labels_out, wholes_out = processFile(box = box, data_path=data_path, sample_name=sample_name, saveStatistics=saveStatistics, vizWholes=vizWholes, downsample=10, overlap=12, rel_block_size=0.5)
+    # concat files
+    box_concat = [0,128,0,600,0,600]
+    slices = 5
+    concatFiles(box=box_concat, slices=slices, output_path=folder_path+sample_name, data_path=data_path)
 
-    box = getBoxAll(groundtruth_filepath)
-    wholes_groundtruth = readData(box, groundtruth_filepath)
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    print(box)
+    processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
 
-    diff = np.zeros((wholes_out.shape[0],wholes_out.shape[1],wholes_out.shape[2]))
-    diff[:,:,:] = np.subtract(wholes_groundtruth.astype(np.float),wholes_out.astype(np.float))
-    # diff = np.subtract(wholes_groundtruth,wholes_out)
-    print("Min are :" + str(np.min(wholes_groundtruth)) + "and" + str(np.min(wholes_out)))
-    print("Max are :" + str(np.max(wholes_groundtruth)) + "and" + str(np.max(wholes_out)))
-    print("Min: " + str(np.min(diff)))
-    print("Max: " + str(np.max(diff)))
-    print(np.count_nonzero(diff))
+    # compute in multiple steps
+    box = getBoxAll(folder_path+sample_name+".h5")
+    print(box)
+    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.5])
 
-    output_name = 'diff_wholes'
-    writeData(output_path+output_name, diff)
+    # load gt wholes
+    gt_wholes_filepath = folder_path+sample_name+"_wholes_gt"+".h5"
+    box = getBoxAll(gt_wholes_filepath)
+    wholes_gt = readData(box, gt_wholes_filepath)
+
+    # load block wholes
+    inBlocks_wholes_filepath = folder_path+sample_name+"_wholes_inBlocks"+".h5"
+    box = getBoxAll(inBlocks_wholes_filepath)
+    wholes_inBlocks = readData(box, inBlocks_wholes_filepath)
+
+    # check that both can be converted to int16
+    if np.max(wholes_gt)>32767 or np.max(wholes_inBlocks)>32767:
+        print("ERROR cannot convert wholes to int16")
+
+    print(np.max(wholes_gt))
+    print(np.max(wholes_inBlocks))
+
+    diff = np.subtract(wholes_gt.astype(np.int16),wholes_inBlocks.astype(np.int16))
+
+    if np.min(diff)>=0:
+        print("No FP classification")
+    else:
+        print("FP calssifications!!!!!")
+
+    if np.max(diff)>0:
+        if np.min(diff)>=0:
+            FN = np.count_nonzero(diff)
+            _, n_comp = computeConnectedComp(diff)
+            FN_comp = n_comp-1
+            print("FN (points/components): " + str(FN) + "/ " +str(FN_comp))
+        else:
+            print("Both FP and FN classifications detected!!!")
+    else:
+        print("No FN calssifications")
+
+    output_name = '_diff_wholes'
+    writeData(folder_path+sample_name+output_name, diff)
 
 if __name__== "__main__":
   main()

@@ -47,26 +47,27 @@ def loadViz(path, caption, res, idRes):
                 volume_type='segmentation'
             ))
 
-idRes = 1
-data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/sample_volume/"
-sample_name= "concat_5_600"
-sample_name_gt = "concat_5_600_gt"
-
-file_name_org = data_path + sample_name + "_outp/" + sample_name + ".h5"
-file_name_filled = data_path + sample_name + "_outp/" + sample_name + "_filled.h5"
-# file_name_nonwholes = data_path + sample_name + "_outp/" + sample_name + "_nonwholes.h5"
-file_name_wholes = data_path + sample_name + "_outp/" + sample_name + "_wholes.h5"
-file_name_diffwholes = data_path + sample_name + "_outp/" + sample_name + "_diffwholes.h5"
-file_name_wholes_gt = data_path + sample_name_gt + "_outp/" + sample_name_gt + "_wholes.h5"
-
+idRes = 1 #which resolution to use to search for IDs
 res=[20,18,18]; # resolution of the data
+res_4 = [80,72,72]
+data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
+sample_name= "concat_5_500_test"
 
-loadViz(path=file_name_org, caption="original", res=res, idRes=idRes)
-loadViz(path=file_name_filled, caption="filled", res=res, idRes=idRes)
-loadViz(path=file_name_wholes, caption="wholes", res=res, idRes=idRes)
-loadViz(path=file_name_diffwholes, caption="diffwholes", res=res, idRes=idRes)
-loadViz(path=file_name_wholes_gt, caption="wholes_gt", res=res, idRes=idRes)
-# loadViz(path=file_name_nonwholes, caption="non_wholes", res=res)
+file_name_org =             data_path + sample_name + "_outp/" + sample_name + ".h5"
+file_name_filled_gt =       data_path + sample_name + "_outp/" + sample_name + "_filled_gt.h5"
+file_name_filled_inBlocks = data_path + sample_name + "_outp/" + sample_name + "_filled_inBlocks.h5"
+file_name_wholes_gt =       data_path + sample_name + "_outp/" + sample_name + "_wholes_gt.h5"
+file_name_wholes_inBlocks = data_path + sample_name + "_outp/" + sample_name + "_wholes_inBlocks.h5"
+file_name_diff_wholes =     data_path + sample_name + "_outp/" + sample_name + "_diff_wholes.h5"
+file_name_dsp =             data_path + sample_name + "_outp/" + sample_name + "_dsp_4.h5"
+
+loadViz(path=file_name_org,             caption="original",         res=res, idRes=idRes)
+# loadViz(path=file_name_filled_gt,       caption="filled_gt",        res=res, idRes=idRes)
+# loadViz(path=file_name_filled_inBlocks, caption="filled_inBlocks",  res=res, idRes=idRes)
+# loadViz(path=file_name_wholes_gt,       caption="wholes_gt",        res=res, idRes=idRes)
+# loadViz(path=file_name_wholes_inBlocks, caption="wholes_inBlocks",  res=res, idRes=idRes)
+loadViz(path=file_name_diff_wholes,     caption="diff_wholes",      res=res, idRes=idRes)
+loadViz(path=file_name_dsp,             caption="dsp",              res=res_4, idRes=idRes)
 
 print("----------------------------DONE---------------------------------")
 print(viewer)
