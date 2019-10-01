@@ -32,7 +32,7 @@ def readData(box, filename):
 
     labels = data_in
 
-    print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype))
+    # print("data read in; shape: " + str(data_in.shape) + "; DataType: " + str(data_in.dtype))
 
     return labels
 
@@ -51,8 +51,7 @@ def getBoxAll(filename):
 def downsampleDataClassic(box, downsample, labels):
 
     if downsample%2!=0 and downsample!=1:
-        print("Error, downsampling only possible for even integers")
-
+        raise ValueError("Error, downsampling only possible for even integers")
 
     labels = labels[::downsample,::downsample,::downsample]
     print("downsampled to: " + str(labels.shape))
@@ -67,7 +66,7 @@ def downsampleDataClassic(box, downsample, labels):
 def downsampleDataMax(box, downsample, labels):
 
     if downsample%2!=0 and downsample!=1:
-        print("Error, downsampling only possible for even integers")
+        raise ValueError("Error, downsampling only possible for even integers")
     box_down = [int(b*(1/downsample))for b in box]
     labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint16)
 
@@ -85,7 +84,7 @@ def downsampleDataMax(box, downsample, labels):
 def downsampleDataMin(box, downsample, labels):
 
     if downsample%2!=0 and downsample!=1:
-        print("Error, downsampling only possible for even integers")
+        raise ValueError("Error, downsampling only possible for even integers")
     box_down = [int(b*(1/downsample))for b in box]
     labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint16)
     # dsf = downsamplefactor
@@ -115,7 +114,7 @@ def computeConnectedComp(labels):
     # You can extract individual components like so:
     n_comp = np.max(labels_out) + 1
 
-    print("Conntected Regions found: " + str(n_comp))
+    # print("Conntected Regions found: " + str(n_comp))
 
     # determine indices, numbers and counts for the connected regions
     # unique, counts = np.unique(labels_out, return_counts=True)
@@ -138,7 +137,7 @@ def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path
     header = "number,isWhole,nPoints,mean_z,mean_y,mean_x,var_z,var_y,var_x"
 
     if(header.count(',')!=(statTable.shape[1]-1)):
-        print("Error! Header variables are not equal to number of columns in the statistics!")
+        raise ValueError("Error! Header variables are not equal to number of columns in the statistics!")
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
 # find sets of adjacent components
@@ -332,7 +331,6 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
-        print(labels.shape)
 
         # downsample data
         if downsample > 1:
@@ -367,8 +365,6 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
             for by in range(n_blocks_y):
                 for bx in range(n_blocks_x):
 
-                    print('Bock {} ...'.format(bz+1), end='\r')
-
                     # compute boxes (description in function)
                     box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx = getBoxes(
                         box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x)
@@ -381,31 +377,29 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
                     labels_cut_ext = labels[
                         box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
 
-                    print("Compute connected Components...")
+                    print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
                     # compute the labels of the conencted connected components
                     labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext)
 
-                    print("Find Sets of Adjacent Components...")
+                    print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
                     # compute the sets of connected components (also including boundary)
                     neighbor_label_set = findAdjLabelSet(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
 
-                    print("Find Associated Components...")
+                    print(str(str(bz+1)+":Find Associated Components......").format(bz+1), end='\r')
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                     associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp)
 
                     if saveStatistics:
-                        print("Computing n, mean, std ...")
+                        print(str(str(bz+1)+":Computing n, mean, std .........").format(bz+1), end='\r')
                         comp_counts, comp_mean, comp_var = getStat(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
 
-                        print("Writing Statistics...")
-                        writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path, sample_name)
+                        print(str(str(bz+1)+":Writing Statistics..............").format(bz+1), end='\r')
+                        writeStattistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path, sample_name)
 
-                    print("Fill wholes...")
+                    print(str(str(bz+1)+":Fill wholes..................").format(bz+1), end='\r')
                     # fill detected wholes and visualize non_wholes
 
                     labels_cut_out_down = labels_cut_out_down_ext[box_idx[0]:box_idx[1],box_idx[2]:box_idx[3],box_idx[4]:box_idx[5]]
-                    print(labels_cut_out_down_ext.shape)
-                    print(labels_cut_out_down.shape)
                     labels = fillWholes(box_dyn, labels, labels_cut_out_down, associated_label, downsample)
 
                     total_wholes_found += np.count_nonzero(isWhole)
@@ -420,7 +414,11 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
         return labels
 
 def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size):
-    #hallo
+
+    for i in range(len(overlap)):
+        if overlap[i]%downsample[i] != 0:
+            raise ValueError("Overlap must be a multiple of downsample!")
+
     print("-----------------------------------------------------------------")
 
     # read in data
@@ -436,13 +434,13 @@ def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample
         labels = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
                     labels=labels, downsample=downsample[0], overlap=overlap[0], rel_block_size=rel_block_size[0])
     else:
-        print("ERROR no steps is smaller than 1")
+        raise ValueError("Number of steps is smaller than 1")
     if steps >= 2:
         labels = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
                     labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1])
 
     print("-----------------------------------------------------------------")
-    print("Time elapsed: " + str(time.time() - start_time))
+    print("Time elapsed during " + str(steps) + " steps: " + str(time.time() - start_time))
 
     # write filled data to H5
     output_name = "_filled_" + ID
@@ -461,7 +459,7 @@ def concatFiles(box, slices, output_path, data_path):
 
     for i in range(0,slices):
         sample_name = str(i*128).zfill(4)
-        print("Processing file " + sample_name)
+        print(str("Processing file " + sample_name).format(sample_name), end='\r')
         if i is 0:
             labels_concat = readData(box, data_path+sample_name+".h5")
         else:
@@ -471,7 +469,7 @@ def concatFiles(box, slices, output_path, data_path):
             labels_concat = np.concatenate((labels_old,labels_temp),axis=0)
             del labels_temp
 
-    print("Concat size / shape: " + str(labels_concat.nbytes) + ' / ' + str(labels_concat.shape))
+    print("Concat size/ shape: " + str(labels_concat.nbytes) + '/ ' + str(labels_concat.shape))
     writeData(output_path, labels_concat)
 
 def main():
@@ -492,13 +490,11 @@ def main():
 
     # compute groundtruth (in one block)
     box = getBoxAll(folder_path+sample_name+".h5")
-    print(box)
     processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
                 steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
 
     # compute in multiple steps
     box = getBoxAll(folder_path+sample_name+".h5")
-    print(box)
     processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
                 steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.5])
 
@@ -514,10 +510,7 @@ def main():
 
     # check that both can be converted to int16
     if np.max(wholes_gt)>32767 or np.max(wholes_inBlocks)>32767:
-        print("ERROR cannot convert wholes to int16")
-
-    print(np.max(wholes_gt))
-    print(np.max(wholes_inBlocks))
+        raise ValueError("Cannot convert wholes to int16 (max is >32767)")
 
     diff = np.subtract(wholes_gt.astype(np.int16),wholes_inBlocks.astype(np.int16))
 
@@ -531,7 +524,7 @@ def main():
             FN = np.count_nonzero(diff)
             _, n_comp = computeConnectedComp(diff)
             FN_comp = n_comp-1
-            print("FN (points/components): " + str(FN) + "/ " +str(FN_comp))
+            print("FN classifications (points/components): " + str(FN) + "/ " +str(FN_comp))
         else:
             print("Both FP and FN classifications detected!!!")
     else:

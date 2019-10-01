@@ -30,9 +30,9 @@ def ReadH5File(filename,box):
     # return the first h5 dataset from this file
     with h5py.File(filename, 'r') as hf:
         keys = [key for key in hf.keys()]
-        print("Data keys are: ", str(keys))
+        # print("Data keys are: ", str(keys))
         d = hf[keys[0]]
-        print("Data shape: ", str(d.shape))
+        # print("Data shape: ", str(d.shape))
         # load selected part of data
         data = np.array(d[box[0]:box[1],box[2]:box[3],box[4]:box[5]])
 # ,dtype=np.dtype(np.bool_)
