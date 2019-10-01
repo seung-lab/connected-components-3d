@@ -411,7 +411,7 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
 
 
 
-        return labels
+        return labels, total_wholes_found
 
 def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size):
 
@@ -431,12 +431,12 @@ def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample
     # process chunk of data
     # overlap in points in one direction (total is twice)
     if steps >= 1:
-        labels = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
+        labels, n_wholes = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
                     labels=labels, downsample=downsample[0], overlap=overlap[0], rel_block_size=rel_block_size[0])
     else:
         raise ValueError("Number of steps is smaller than 1")
     if steps >= 2:
-        labels = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
+        labels, _ = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
                     labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1])
 
     print("-----------------------------------------------------------------")
@@ -453,7 +453,7 @@ def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample
         output_name = "_wholes_" + ID
         writeData(data_path+output_name, neg)
 
-    return labels, neg
+    return labels, n_wholes
 
 def concatFiles(box, slices, output_path, data_path):
 
@@ -472,32 +472,7 @@ def concatFiles(box, slices, output_path, data_path):
     print("Concat size/ shape: " + str(labels_concat.nbytes) + '/ ' + str(labels_concat.shape))
     writeData(output_path, labels_concat)
 
-def main():
-
-    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
-    output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-    sample_name = "concat_5_500_test"
-    vizWholes = True
-    saveStatistics = False
-
-    folder_path = output_path + sample_name + "_outp_" + str(time.time())[:10] +"/"
-    os.mkdir(folder_path)
-
-    # concat files
-    box_concat = [0,128,0,600,0,600]
-    slices = 5
-    concatFiles(box=box_concat, slices=slices, output_path=folder_path+sample_name, data_path=data_path)
-
-    # compute groundtruth (in one block)
-    box = getBoxAll(folder_path+sample_name+".h5")
-    processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
-
-    # compute in multiple steps
-    box = getBoxAll(folder_path+sample_name+".h5")
-    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.5])
-
+def evaluateWholes(folder_path,sample_name,n_wholes):
     # load gt wholes
     gt_wholes_filepath = folder_path+sample_name+"_wholes_gt"+".h5"
     box = getBoxAll(gt_wholes_filepath)
@@ -522,16 +497,53 @@ def main():
     if np.max(diff)>0:
         if np.min(diff)>=0:
             FN = np.count_nonzero(diff)
-            _, n_comp = computeConnectedComp(diff)
+            _, n_comp = computeConnectedComp(1-diff)
             FN_comp = n_comp-1
             print("FN classifications (points/components): " + str(FN) + "/ " +str(FN_comp))
+            print("Percentage (total is "+str(n_wholes)+"): "+str(float(FN_comp)/float(n_wholes)))
         else:
             print("Both FP and FN classifications detected!!!")
     else:
         print("No FN calssifications")
 
+    # get size of not detected wholes
+    unique_values = np.unique(diff)
+    for u in unique_values:
+        if u!=0:
+            print("Component, Size, Coods (x,y,z) ")
+            coods = np.argwhere(diff==u)
+            print(str(u)+", "+str(len(coods))+", "+str(coods[0,2])+", "+str(coods[0,1])+", "+str(coods[0,0]))
+
     output_name = '_diff_wholes'
     writeData(folder_path+sample_name+output_name, diff)
+
+def main():
+
+    data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
+    output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
+    sample_name = "concat_0_7_800"
+    vizWholes = True
+    saveStatistics = False
+
+    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") +"/"
+    os.mkdir(folder_path)
+
+    # concat files
+    box_concat = [0,128,0,800,0,800]
+    slices = 7
+    concatFiles(box=box_concat, slices=slices, output_path=folder_path+sample_name, data_path=data_path)
+
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    _, n_wholes = processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
+
+    # compute in multiple steps
+    box = getBoxAll(folder_path+sample_name+".h5")
+    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.5])
+
+    evaluateWholes(folder_path=folder_path,sample_name=sample_name,n_wholes=n_wholes)
 
 if __name__== "__main__":
   main()

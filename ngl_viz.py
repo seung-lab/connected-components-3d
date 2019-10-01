@@ -28,15 +28,23 @@ def ReadH5File(filename):
         data = np.array(hf[keys[0]])
     return data
 
-def loadViz(path, caption, res, idRes):
+def loadViz(path, caption, res, idRes, printCoods):
 
     print("-----------------------------------------------------------------")
     print ('loading ' + caption + "...")
     gt = readData(path)
     gt = gt.astype(np.uint16)
 
-    uniq = np.expand_dims(np.unique(gt[::idRes,::idRes,::idRes]),axis=1).transpose()
-    np.savetxt(sys.stdout.buffer, uniq, delimiter=',', fmt='%d')
+    unique_values = np.unique(gt[::idRes,::idRes,::idRes])
+    uniq_txt = np.expand_dims(unique_values,axis=1).transpose()
+    np.savetxt(sys.stdout.buffer, uniq_txt, delimiter=',', fmt='%d')
+
+    if printCoods:
+        for u in unique_values:
+            if u!=0:
+                print("Coordinates of component " + str(u))
+                coods = np.argwhere(gt==u)
+                print(str(coods[0,2]) + ", " + str(coods[0,1]) + ", " + str(coods[0,0]))
 
     with viewer.txn() as s:
         s.layers.append(
@@ -51,7 +59,7 @@ idRes = 1 #which resolution to use to search for IDs
 res=[20,18,18]; # resolution of the data
 res_4 = [80,72,72]
 data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-sample_name= "concat_5_500_test"
+sample_name= "concat_0_7_800_test"
 
 file_name_org =             data_path + sample_name + "_outp/" + sample_name + ".h5"
 file_name_filled_gt =       data_path + sample_name + "_outp/" + sample_name + "_filled_gt.h5"
@@ -61,13 +69,13 @@ file_name_wholes_inBlocks = data_path + sample_name + "_outp/" + sample_name + "
 file_name_diff_wholes =     data_path + sample_name + "_outp/" + sample_name + "_diff_wholes.h5"
 file_name_dsp =             data_path + sample_name + "_outp/" + sample_name + "_dsp_4.h5"
 
-loadViz(path=file_name_org,             caption="original",         res=res, idRes=idRes)
-# loadViz(path=file_name_filled_gt,       caption="filled_gt",        res=res, idRes=idRes)
-# loadViz(path=file_name_filled_inBlocks, caption="filled_inBlocks",  res=res, idRes=idRes)
-# loadViz(path=file_name_wholes_gt,       caption="wholes_gt",        res=res, idRes=idRes)
-# loadViz(path=file_name_wholes_inBlocks, caption="wholes_inBlocks",  res=res, idRes=idRes)
-loadViz(path=file_name_diff_wholes,     caption="diff_wholes",      res=res, idRes=idRes)
-loadViz(path=file_name_dsp,             caption="dsp",              res=res_4, idRes=idRes)
+loadViz(path=file_name_org,             caption="original",         res=res, idRes=idRes, printCoods=False)
+# loadViz(path=file_name_filled_gt,       caption="filled_gt",        res=res, idRes=idRes, printCoods=False)
+# loadViz(path=file_name_filled_inBlocks, caption="filled_inBlocks",  res=res, idRes=idRes, printCoods=False)
+# loadViz(path=file_name_wholes_gt,       caption="wholes_gt",        res=res, idRes=idRes, printCoods=False)
+# loadViz(path=file_name_wholes_inBlocks, caption="wholes_inBlocks",  res=res, idRes=idRes, printCoods=False)
+loadViz(path=file_name_diff_wholes,     caption="diff_wholes",      res=res, idRes=idRes, printCoods=True)
+loadViz(path=file_name_dsp,             caption="dsp",              res=res_4, idRes=idRes, printCoods=False)
 
 print("----------------------------DONE---------------------------------")
 print(viewer)
