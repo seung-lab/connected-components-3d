@@ -107,7 +107,25 @@ def writeData(filename,labels):
         hf.create_dataset("main", data=labels, compression='gzip')
 
 #compute the connected Com ponent labels
-def computeConnectedComp(labels):
+def computeConnectedComp26(labels):
+    connectivity = 26 # only 26, 18, and 6 are allowed
+    labels_out = cc3d.connected_components(labels, connectivity=connectivity, max_labels=45000000)
+
+    # You can extract individual components like so:
+    n_comp = np.max(labels_out) + 1
+
+    del labels_out
+    # print("Conntected Regions found: " + str(n_comp))
+
+    # determine indices, numbers and counts for the connected regions
+    # unique, counts = np.unique(labels_out, return_counts=True)
+    # print("Conntected regions and associated points: ")
+    # print(dict(zip(unique, counts)))
+
+    return n_comp
+
+#compute the connected Com ponent labels
+def computeConnectedComp6(labels):
     connectivity = 6 # only 26, 18, and 6 are allowed
     labels_out = cc3d.connected_components(labels, connectivity=connectivity, max_labels=45000000)
 
@@ -379,7 +397,7 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
 
                     print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
                     # compute the labels of the conencted connected components
-                    labels_cut_out_down_ext, n_comp = computeConnectedComp(labels_cut_down_ext)
+                    labels_cut_out_down_ext, n_comp = computeConnectedComp6(labels_cut_down_ext)
 
                     print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
                     # compute the sets of connected components (also including boundary)
@@ -409,7 +427,7 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
         print("Cells processed: " + str(cell_counter))
         print("Wholes filled (total): " + str(total_wholes_found))
 
-
+        del labels_cut_down_ext, labels_cut_ext, labels_cut_out_down, labels_cut_out_down_ext, labels_down, associated_label, isWhole, neighbor_label_set
 
         return labels, total_wholes_found
 
@@ -453,7 +471,8 @@ def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample
         output_name = "_wholes_" + ID
         writeData(data_path+output_name, neg)
 
-    return labels, n_wholes
+    del labels_inp, neg, labels
+    return n_wholes
 
 def concatFiles(box, slices, output_path, data_path):
 
@@ -472,7 +491,10 @@ def concatFiles(box, slices, output_path, data_path):
     print("Concat size/ shape: " + str(labels_concat.nbytes) + '/ ' + str(labels_concat.shape))
     writeData(output_path, labels_concat)
 
+    del labels_concat
+
 def evaluateWholes(folder_path,sample_name,n_wholes):
+    print("Evaluating wholes...")
     # load gt wholes
     gt_wholes_filepath = folder_path+sample_name+"_wholes_gt"+".h5"
     box = getBoxAll(gt_wholes_filepath)
@@ -487,61 +509,67 @@ def evaluateWholes(folder_path,sample_name,n_wholes):
     if np.max(wholes_gt)>32767 or np.max(wholes_inBlocks)>32767:
         raise ValueError("Cannot convert wholes to int16 (max is >32767)")
 
-    diff = np.subtract(wholes_gt.astype(np.int16),wholes_inBlocks.astype(np.int16))
+    wholes_gt = wholes_gt.astype(np.int16)
+    wholes_inBlocks = wholes_inBlocks.astype(np.int16)
+    wholes_gt = np.subtract(wholes_gt, wholes_inBlocks)
+    diff = wholes_gt
+    # free some RAM
+    del wholes_gt, wholes_inBlocks
 
-    if np.min(diff)>=0:
-        print("No FP classification")
+    print("Freed memory")
+
+    if np.min(diff)<0:
+        FP = diff[diff<0]
+        n_points_FP = np.count_nonzero(FP)
+        n_comp_FP = computeConnectedComp26(FP)-1
+        print("FP classifications (points/components): " + str(n_points_FP) + "/ " +str(n_comp_FP))
+        del FP
     else:
-        print("FP calssifications!!!!!")
+        print("No FP classification")
 
     if np.max(diff)>0:
-        if np.min(diff)>=0:
-            FN = np.count_nonzero(diff)
-            _, n_comp = computeConnectedComp(1-diff)
-            FN_comp = n_comp-1
-            print("FN classifications (points/components): " + str(FN) + "/ " +str(FN_comp))
-            print("Percentage (total is "+str(n_wholes)+"): "+str(float(FN_comp)/float(n_wholes)))
-        else:
-            print("Both FP and FN classifications detected!!!")
+        FN = diff[diff>0]
+        n_points_FN = np.count_nonzero(FN)
+        n_comp_FN = computeConnectedComp26(FN)-1
+        print("FN classifications (points/components): " + str(n_points_FN) + "/ " +str(n_comp_FN))
+        print("Percentage (total wholes is "+str(n_wholes)+"): "+str(float(n_comp_FN)/float(n_wholes)))
+        del FN
     else:
         print("No FN calssifications")
 
-    # get size of not detected wholes
-    unique_values = np.unique(diff)
-    for u in unique_values:
-        if u!=0:
-            print("Component, Size, Coods (x,y,z) ")
-            coods = np.argwhere(diff==u)
-            print(str(u)+", "+str(len(coods))+", "+str(coods[0,2])+", "+str(coods[0,1])+", "+str(coods[0,0]))
-
     output_name = '_diff_wholes'
     writeData(folder_path+sample_name+output_name, diff)
+
+    del diff
 
 def main():
 
     data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-    sample_name = "concat_0_7_800"
+    sample_name = "concat_0_14_1800"
     vizWholes = True
     saveStatistics = False
 
-    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") +"/"
-    os.mkdir(folder_path)
+    folder_path = output_path + "concat_0_14_1800_outp/"
+    n_wholes = 988137
 
-    # concat files
-    box_concat = [0,128,0,800,0,800]
-    slices = 7
-    concatFiles(box=box_concat, slices=slices, output_path=folder_path+sample_name, data_path=data_path)
-
-    # compute groundtruth (in one block)
-    box = getBoxAll(folder_path+sample_name+".h5")
-    _, n_wholes = processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
+    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") +"/"
+    # os.mkdir(folder_path)
+    #
+    # # concat files
+    # box_concat = [0,128,0,1800,0,1800]
+    # slices = 14
+    # concatFiles(box=box_concat, slices=slices, output_path=folder_path+sample_name, data_path=data_path)
+    #
+    # # compute groundtruth (in one block)
+    # box = getBoxAll(folder_path+sample_name+".h5")
+    # n_wholes = processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
+    #             steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
 
     # compute in multiple steps
     box = getBoxAll(folder_path+sample_name+".h5")
-    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.5])
+    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks25", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.2])
 
     evaluateWholes(folder_path=folder_path,sample_name=sample_name,n_wholes=n_wholes)
 
