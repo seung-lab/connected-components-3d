@@ -59,7 +59,7 @@ idRes = 1 #which resolution to use to search for IDs
 res=[20,18,18]; # resolution of the data
 res_4 = [80,72,72]
 data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-sample_name= "concat_0_7_800"
+sample_name= "concat_4_10_1800"
 
 file_name_org =             data_path + sample_name + "_outp/" + sample_name + ".h5"
 file_name_filled_gt =       data_path + sample_name + "_outp/" + sample_name + "_filled_gt.h5"
@@ -69,14 +69,18 @@ file_name_wholes_inBlocks = data_path + sample_name + "_outp/" + sample_name + "
 file_name_diff_wholes =     data_path + sample_name + "_outp/" + sample_name + "_diff_wholes.h5"
 file_name_dsp =             data_path + sample_name + "_outp/" + sample_name + "_dsp_4.h5"
 
-loadViz(path=file_name_org,             caption="original",         res=res, idRes=2*idRes, printCoods=False)
-# loadViz(path=file_name_filled_gt,       caption="filled_gt",        res=res, idRes=idRes, printCoods=False)
+print("----------------------------HOST:---------------------------------")
+print("-----------------------------------------------------------------")
+
+print(viewer)
+
+loadViz(path=file_name_org,             caption="original",         res=res, idRes=4*idRes, printCoods=False)
+# loadViz(path=file_name_filled_gt,       caption="filled_gt",        res=res, idRes=4*idRes, printCoods=False)
 # loadViz(path=file_name_filled_inBlocks, caption="filled_inBlocks",  res=res, idRes=idRes, printCoods=False)
-# loadViz(path=file_name_wholes_gt,       caption="wholes_gt",        res=res, idRes=idRes, printCoods=False)
+loadViz(path=file_name_wholes_gt,       caption="wholes_gt",        res=res, idRes=idRes, printCoods=False)
 # loadViz(path=file_name_wholes_inBlocks, caption="wholes_inBlocks",  res=res, idRes=idRes, printCoods=False)
-loadViz(path=file_name_diff_wholes,     caption="diff_wholes",      res=res, idRes=idRes, printCoods=False)
-loadViz(path=file_name_dsp,             caption="dsp",              res=res_4, idRes=idRes, printCoods=False)
+# loadViz(path=file_name_diff_wholes,     caption="diff_wholes",      res=res, idRes=idRes, printCoods=False)
+# loadViz(path=file_name_dsp,             caption="dsp",              res=res_4, idRes=idRes, printCoods=False)
 
 print("----------------------------DONE---------------------------------")
-print(viewer)
 print("-----------------------------------------------------------------")

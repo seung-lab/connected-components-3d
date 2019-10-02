@@ -47,39 +47,6 @@ def getBoxAll(filename):
 
     return box
 
-# downsample data by facter downsample
-def downsampleDataClassic(box, downsample, labels):
-
-    if downsample%2!=0 and downsample!=1:
-        raise ValueError("Error, downsampling only possible for even integers")
-
-    labels = labels[::downsample,::downsample,::downsample]
-    print("downsampled to: " + str(labels.shape))
-
-    #update box size according to samplint factor
-    box = [int(b*(1/downsample))for b in box]
-
-    return box, labels
-
-# downsample with max
-@njit
-def downsampleDataMax(box, downsample, labels):
-
-    if downsample%2!=0 and downsample!=1:
-        raise ValueError("Error, downsampling only possible for even integers")
-    box_down = [int(b*(1/downsample))for b in box]
-    labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint16)
-
-    # dsf = downsamplefactor
-    dsf = downsample
-
-    for ix in range(0, box_down[1]-box_down[0]):
-        for iy in range(0, box_down[3]-box_down[2]):
-            for iz in range(0, box_down[5]-box_down[4]):
-                labels_down[ix,iy,iz]=np.max(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
-
-    return box_down, labels_down
-
 @njit
 def downsampleDataMin(box, downsample, labels):
 
@@ -93,7 +60,27 @@ def downsampleDataMin(box, downsample, labels):
     for ix in range(0, box_down[1]-box_down[0]):
         for iy in range(0, box_down[3]-box_down[2]):
             for iz in range(0, box_down[5]-box_down[4]):
-                labels_down[ix,iy,iz]=np.min(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
+
+                temp = labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf].flat
+                if temp[0]==0:
+                    labels_down[ix,iy,iz]=0
+                else:
+                    color = temp[0]
+                    cont = True
+                    i = 1
+                    labels_down[ix,iy,iz]=color
+                    while cont and i<len(temp):
+                        if temp[i]==0:
+                            labels_down[ix,iy,iz]=0
+                            cont = False
+                        elif temp[1]!=color:
+                            labels_down[ix,iy,iz]=2000
+                            labels_down[ix-1,iy,iz]=2000
+                            labels_down[ix,iy-1,iz]=2000
+                            labels_down[ix,iy,iz-1]=2000
+                            cont=False
+                        i = i+1
+                # labels_down[ix,iy,iz]=np.min(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
 
     return box_down, labels_down
 
@@ -256,7 +243,7 @@ def findAssociatedLabels(neighbor_label_set, n_comp):
 
     for c in range(n_comp):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
-        if (len(neighbor_labels[c]) is 1 and neighbor_labels[c][0] is not -1):
+        if (len(neighbor_labels[c]) is 1 and neighbor_labels[c][0] is not -1 and neighbor_labels[c][0] is not 2000):
             associated_label[c] = neighbor_labels[c][0]
             isWhole[c] = 1
             # associated_label[c] = 65000
@@ -474,12 +461,12 @@ def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample
     del labels_inp, neg, labels
     return n_wholes
 
-def concatFiles(box, slices, output_path, data_path):
+def concatFiles(box, slices_s, slices_e, output_path, data_path):
 
-    for i in range(0,slices):
+    for i in range(slices_s,slices_e+1):
         sample_name = str(i*128).zfill(4)
         print(str("Processing file " + sample_name).format(sample_name), end='\r')
-        if i is 0:
+        if i is slices_s:
             labels_concat = readData(box, data_path+sample_name+".h5")
         else:
             labels_temp = readData(box, data_path+sample_name+".h5")
@@ -546,30 +533,31 @@ def main():
 
     data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-    sample_name = "concat_0_14_1800"
+    sample_name = "concat_4_10_1800"
     vizWholes = True
     saveStatistics = False
 
-    folder_path = output_path + "concat_0_14_1800_outp/"
-    n_wholes = 988137
+    # folder_path = output_path + "concat_0_14_1800_outp/"
+    # n_wholes = 988137
 
-    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") +"/"
-    # os.mkdir(folder_path)
-    #
-    # # concat files
-    # box_concat = [0,128,0,1800,0,1800]
-    # slices = 14
-    # concatFiles(box=box_concat, slices=slices, output_path=folder_path+sample_name, data_path=data_path)
-    #
-    # # compute groundtruth (in one block)
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-    #             steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
+    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") +"/"
+    os.mkdir(folder_path)
+
+    # concat files
+    box_concat = [0,128,0,1800,0,1800]
+    slices_start = 0
+    slices_end = 13
+    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
 
     # compute in multiple steps
     box = getBoxAll(folder_path+sample_name+".h5")
-    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks25", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.2])
+    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.5])
 
     evaluateWholes(folder_path=folder_path,sample_name=sample_name,n_wholes=n_wholes)
 
