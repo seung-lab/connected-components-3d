@@ -1,8 +1,12 @@
 import numpy as np
 
 
-print(np.divide(0,1))
-
+a = np.ones((3,3))
+a[2,2] = 2
+a[2,1]= 3
+b=a>1
+a[b]=0
+print(a)
 # labels_filled = np.ones((10,10,10))
 # labels = np.zeros((10,10,10))
 #

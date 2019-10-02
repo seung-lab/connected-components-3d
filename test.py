@@ -21,10 +21,6 @@ import sys
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
-# [z_start,z_end,y_start,y_end,x_start,x_end]
-# box = [600,728,1024,2048,1024,2048]
-# box = [0,773,1200,2600,0,3328]
-
 #read data from HD5, given the file path
 def readData(box, filename):
     # read in data block
@@ -48,7 +44,7 @@ def getBoxAll(filename):
     return box
 
 @njit
-def downsampleDataMin(box, downsample, labels):
+def downsampleDataMinBorderAware(box, downsample, labels):
 
     if downsample%2!=0 and downsample!=1:
         raise ValueError("Error, downsampling only possible for even integers")
@@ -81,6 +77,23 @@ def downsampleDataMin(box, downsample, labels):
                             cont=False
                         i = i+1
                 # labels_down[ix,iy,iz]=np.min(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
+
+    return box_down, labels_down
+
+@njit
+def downsampleDataMin(box, downsample, labels):
+
+    if downsample%2!=0 and downsample!=1:
+        raise ValueError("Error, downsampling only possible for even integers")
+    box_down = [int(b*(1/downsample))for b in box]
+    labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint16)
+    dsf = downsample
+
+    for ix in range(0, box_down[1]-box_down[0]):
+        for iy in range(0, box_down[3]-box_down[2]):
+            for iz in range(0, box_down[5]-box_down[4]):
+
+                labels_down[ix,iy,iz]=np.min(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
 
     return box_down, labels_down
 
@@ -332,7 +345,7 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
 
 # process whole filling process for chung of data
-def processData(saveStatistics, data_path, sample_name, labels, downsample, overlap, rel_block_size):
+def processData(saveStatistics, output_path, sample_name, labels, downsample, overlap, rel_block_size):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
@@ -340,8 +353,8 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
         # downsample data
         if downsample > 1:
             box_down, labels_down = downsampleDataMin(box, downsample, labels)
-            output_name = "_dsp_" + str(downsample)
-            writeData(data_path+output_name, labels_down)
+            output_name = "dsp_" + str(downsample)
+            writeData(output_path+output_name, labels_down)
 
         else:
             box_down = box
@@ -399,7 +412,7 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
                         comp_counts, comp_mean, comp_var = getStat(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
 
                         print(str(str(bz+1)+":Writing Statistics..............").format(bz+1), end='\r')
-                        writeStattistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path, sample_name)
+                        writeStattistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, output_path, sample_name)
 
                     print(str(str(bz+1)+":Fill wholes..................").format(bz+1), end='\r')
                     # fill detected wholes and visualize non_wholes
@@ -418,16 +431,23 @@ def processData(saveStatistics, data_path, sample_name, labels, downsample, over
 
         return labels, total_wholes_found
 
-def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size):
+def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size):
 
     for i in range(len(overlap)):
         if overlap[i]%downsample[i] != 0:
             raise ValueError("Overlap must be a multiple of downsample!")
 
+
+    output_path = data_path + ID + "/"
+    if os.path.exists(output_path):
+        raise ValueError("Folderpath " + data_path + " already exists!")
+    else:
+        os.mkdir(output_path)
+
     print("-----------------------------------------------------------------")
 
     # read in data
-    labels = readData(box, data_path+".h5")
+    labels = readData(box, data_path+sample_name+".h5")
 
     start_time = time.time()
 
@@ -436,27 +456,27 @@ def processFile(box, data_path, ID, saveStatistics, vizWholes, steps, downsample
     # process chunk of data
     # overlap in points in one direction (total is twice)
     if steps >= 1:
-        labels, n_wholes = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
+        labels, n_wholes = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
                     labels=labels, downsample=downsample[0], overlap=overlap[0], rel_block_size=rel_block_size[0])
     else:
         raise ValueError("Number of steps is smaller than 1")
     if steps >= 2:
-        labels, _ = processData(saveStatistics=saveStatistics, data_path=data_path, sample_name=ID,
+        labels, _ = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
                     labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1])
 
     print("-----------------------------------------------------------------")
     print("Time elapsed during " + str(steps) + " steps: " + str(time.time() - start_time))
 
     # write filled data to H5
-    output_name = "_filled_" + ID
-    writeData(data_path+output_name, labels)
+    output_name = "filled_" + ID
+    writeData(output_path+output_name, labels)
 
     # compute negative to visualize filled wholes
     if vizWholes:
-        labels_inp = readData(box, data_path+".h5")
+        labels_inp = readData(box, data_path+sample_name+".h5")
         neg = np.subtract(labels, labels_inp)
-        output_name = "_wholes_" + ID
-        writeData(data_path+output_name, neg)
+        output_name = "wholes_" + ID
+        writeData(output_path+output_name, neg)
 
     del labels_inp, neg, labels
     return n_wholes
@@ -480,22 +500,24 @@ def concatFiles(box, slices_s, slices_e, output_path, data_path):
 
     del labels_concat
 
-def evaluateWholes(folder_path,sample_name,n_wholes):
+def evaluateWholes(folder_path,ID,sample_name,n_wholes):
     print("Evaluating wholes...")
     # load gt wholes
-    gt_wholes_filepath = folder_path+sample_name+"_wholes_gt"+".h5"
+    gt_wholes_filepath = folder_path+"/gt/wholes_gt"+".h5"
     box = getBoxAll(gt_wholes_filepath)
     wholes_gt = readData(box, gt_wholes_filepath)
 
     # load block wholes
-    inBlocks_wholes_filepath = folder_path+sample_name+"_wholes_inBlocks"+".h5"
+    inBlocks_wholes_filepath = folder_path+"/"+ID+"/"+"wholes_"+ID+".h5"
     box = getBoxAll(inBlocks_wholes_filepath)
     wholes_inBlocks = readData(box, inBlocks_wholes_filepath)
 
-    # check that both can be converted to int16
+# check that both can be converted to int16
     if np.max(wholes_gt)>32767 or np.max(wholes_inBlocks)>32767:
         raise ValueError("Cannot convert wholes to int16 (max is >32767)")
 
+    wholes_gt = wholes_gt.astype(np.int16)
+    wholes_inBlocks = wholes_inBlocks.astype(np.int16)
     wholes_gt = np.subtract(wholes_gt, wholes_inBlocks)
     diff = wholes_gt
     # free some RAM
@@ -503,8 +525,10 @@ def evaluateWholes(folder_path,sample_name,n_wholes):
 
     print("Freed memory")
 
-    if np.min(diff)<32767:
-        FP = diff[diff<32767]
+    if np.min(diff)<0:
+        FP = diff.copy()
+        FP[FP>0]=0
+        print(FP.shape)
         n_points_FP = np.count_nonzero(FP)
         n_comp_FP = computeConnectedComp26(FP)-1
         print("FP classifications (points/components): " + str(n_points_FP) + "/ " +str(n_comp_FP))
@@ -512,8 +536,9 @@ def evaluateWholes(folder_path,sample_name,n_wholes):
     else:
         print("No FP classification")
 
-    if np.max(diff)>32767:
-        FN = diff[diff>32767]
+    if np.max(diff)>0:
+        FN = diff.copy()
+        FN[FN<0]=0
         n_points_FN = np.count_nonzero(FN)
         n_comp_FN = computeConnectedComp26(FN)-1
         print("FN classifications (points/components): " + str(n_points_FN) + "/ " +str(n_comp_FN))
@@ -522,8 +547,8 @@ def evaluateWholes(folder_path,sample_name,n_wholes):
     else:
         print("No FN calssifications")
 
-    output_name = '_diff_wholes'
-    writeData(folder_path+sample_name+output_name, diff)
+    output_name = 'diff_wholes_'+ID
+    writeData(folder_path+"/"+ID+"/"+output_name, diff)
 
     del diff
 
@@ -531,33 +556,36 @@ def main():
 
     data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-    sample_name = "concat_4_10_1800"
     vizWholes = True
     saveStatistics = False
-
-    # folder_path = output_path + "concat_0_14_1800_outp/"
-    # n_wholes = 988137
-
-    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") +"/"
-    os.mkdir(folder_path)
-
-    # concat files
     box_concat = [0,128,0,2048,0,2048]
     slices_start = 0
     slices_end = 15
-    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
 
-    # compute groundtruth (in one block)
-    box = getBoxAll(folder_path+sample_name+".h5")
-    n_wholes = processFile(box=box, data_path=folder_path+sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
 
-    # compute in multiple steps
-    box = getBoxAll(folder_path+sample_name+".h5")
-    processFile(box=box, data_path=folder_path+sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.5])
 
-    evaluateWholes(folder_path=folder_path,sample_name=sample_name,n_wholes=n_wholes)
+    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+    sample_name = "ZF_concat_0to15_2048_2048"
+    folder_path = output_path + sample_name + "_outp/"
+    n_wholes = 1173377
+
+    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
+    # os.mkdir(folder_path)
+    #
+    # # concat files
+    # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+    #
+    # # compute groundtruth (in one block)
+    # box = getBoxAll(folder_path+sample_name+".h5")
+    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
+    #             steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
+    #
+    # # compute in multiple steps
+    # box = getBoxAll(folder_path+sample_name+".h5")
+    # processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
+    #             steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.25])
+
+    evaluateWholes(folder_path=folder_path,ID="inBlocks",sample_name=sample_name,n_wholes=n_wholes)
 
 if __name__== "__main__":
   main()
