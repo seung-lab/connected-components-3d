@@ -496,8 +496,6 @@ def evaluateWholes(folder_path,sample_name,n_wholes):
     if np.max(wholes_gt)>32767 or np.max(wholes_inBlocks)>32767:
         raise ValueError("Cannot convert wholes to int16 (max is >32767)")
 
-    wholes_gt = wholes_gt.astype(np.int16)
-    wholes_inBlocks = wholes_inBlocks.astype(np.int16)
     wholes_gt = np.subtract(wholes_gt, wholes_inBlocks)
     diff = wholes_gt
     # free some RAM
@@ -505,8 +503,8 @@ def evaluateWholes(folder_path,sample_name,n_wholes):
 
     print("Freed memory")
 
-    if np.min(diff)<0:
-        FP = diff[diff<0]
+    if np.min(diff)<32767:
+        FP = diff[diff<32767]
         n_points_FP = np.count_nonzero(FP)
         n_comp_FP = computeConnectedComp26(FP)-1
         print("FP classifications (points/components): " + str(n_points_FP) + "/ " +str(n_comp_FP))
@@ -514,8 +512,8 @@ def evaluateWholes(folder_path,sample_name,n_wholes):
     else:
         print("No FP classification")
 
-    if np.max(diff)>0:
-        FN = diff[diff>0]
+    if np.max(diff)>32767:
+        FN = diff[diff>32767]
         n_points_FN = np.count_nonzero(FN)
         n_comp_FN = computeConnectedComp26(FN)-1
         print("FN classifications (points/components): " + str(n_points_FN) + "/ " +str(n_comp_FN))
@@ -544,9 +542,9 @@ def main():
     os.mkdir(folder_path)
 
     # concat files
-    box_concat = [0,128,0,1800,0,1800]
+    box_concat = [0,128,0,2048,0,2048]
     slices_start = 0
-    slices_end = 13
+    slices_end = 15
     concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
 
     # compute groundtruth (in one block)
