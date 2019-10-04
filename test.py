@@ -43,59 +43,6 @@ def getBoxAll(filename):
 
     return box
 
-@njit
-def downsampleDataMinBorderAware(box, downsample, labels):
-
-    if downsample%2!=0 and downsample!=1:
-        raise ValueError("Error, downsampling only possible for even integers")
-    box_down = [int(b*(1/downsample))for b in box]
-    labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint16)
-    # dsf = downsamplefactor
-    dsf = downsample
-
-    for ix in range(0, box_down[1]-box_down[0]):
-        for iy in range(0, box_down[3]-box_down[2]):
-            for iz in range(0, box_down[5]-box_down[4]):
-
-                temp = labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf].flat
-                if temp[0]==0:
-                    labels_down[ix,iy,iz]=0
-                else:
-                    color = temp[0]
-                    cont = True
-                    i = 1
-                    labels_down[ix,iy,iz]=color
-                    while cont and i<len(temp):
-                        if temp[i]==0:
-                            labels_down[ix,iy,iz]=0
-                            cont = False
-                        elif temp[1]!=color:
-                            labels_down[ix,iy,iz]=2000
-                            labels_down[ix-1,iy,iz]=2000
-                            labels_down[ix,iy-1,iz]=2000
-                            labels_down[ix,iy,iz-1]=2000
-                            cont=False
-                        i = i+1
-                # labels_down[ix,iy,iz]=np.min(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
-
-    return box_down, labels_down
-
-@njit
-def downsampleDataMin(box, downsample, labels):
-
-    if downsample%2!=0 and downsample!=1:
-        raise ValueError("Error, downsampling only possible for even integers")
-    box_down = [int(b*(1/downsample))for b in box]
-    labels_down = np.zeros((box_down[1],box_down[3],box_down[5]),dtype=np.uint16)
-    dsf = downsample
-
-    for ix in range(0, box_down[1]-box_down[0]):
-        for iy in range(0, box_down[3]-box_down[2]):
-            for iz in range(0, box_down[5]-box_down[4]):
-
-                labels_down[ix,iy,iz]=np.min(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
-    return box_down, labels_down
-
 # write data to H5 file
 def writeData(filename,labels):
 
@@ -124,19 +71,13 @@ def computeConnectedComp26(labels):
     return n_comp
 
 #compute the connected Com ponent labels
-def computeConnectedComp6(labels):
+def computeConnectedComp6(labels, start_label):
     connectivity = 6 # only 26, 18, and 6 are allowed
     labels_out = cc3d.connected_components(labels, connectivity=connectivity, max_labels=45000000)
 
-    # You can extract individual components like so:
     n_comp = (np.min(labels_out)*-1)
 
-    # print("Conntected Regions found: " + str(n_comp))
-
-    # determine indices, numbers and counts for the connected regions
-    # unique, counts = np.unique(labels_out, return_counts=True)
-    # print("Conntected regions and associated points: ")
-    # print(dict(zip(unique, counts)))
+    labels_out[labels_out<0] = labels_out[labels_out<0] + start_label
 
     return labels_out, n_comp
 
@@ -271,100 +212,50 @@ def findAssociatedLabels(neighbor_label_set, n_comp):
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(box_dyn, labels, labels_cut_out_down, associated_label, downsample):
+def fillWholes(box_dyn, labels, labels_cut_out_down, associated_label):
 
-    dsf = downsample
     box = box_dyn
 
     for iz in range(box[0], box[1]):
         for iy in range(box[2], box[3]):
             for ix in range(box[4], box[5]):
 
-                ic = math.floor((iz - box[0])/dsf)
-                ib = math.floor((iy - box[2])/dsf)
-                ia = math.floor((ix - box[4])/dsf)
-
                 if labels[iz,iy,ix] == 0:
 
-                    labels[iz,iy,ix] = associated_label[labels_cut_out_down[ic,ib,ia]]
+                    labels[iz,iy,ix] = associated_label[labels_cut_out_down[iz,iy,ix]]
 
     return labels
 
 # compute extended boxes
 @njit
-def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x):
+def getBoxDyn(box, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x):
 
         # down refers to downsampled scale, ext to extended boxes (extended by the overlap)
         # compute the downsampled dynamic box
-        z_min_down_dyn = bz*bs_z
-        z_max_down_dyn = (bz+1)*bs_z if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
-        y_min_down_dyn = by*bs_y
-        y_max_down_dyn = (by+1)*bs_y if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
-        x_min_down_dyn = bx*bs_x
-        x_max_down_dyn = (bx+1)*bs_x if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
+        z_min_dyn = bz*bs_z
+        z_max_dyn = (bz+1)*bs_z if ((bz+1)*bs_z<= box[1] and bz != n_blocks_z-1) else box[1]
+        y_min_dyn = by*bs_y
+        y_max_dyn = (by+1)*bs_y if ((by+1)*bs_y<= box[3] and by != n_blocks_y-1) else box[3]
+        x_min_dyn = bx*bs_x
+        x_max_dyn = (bx+1)*bs_x if ((bx+1)*bs_x<= box[5] and bx != n_blocks_x-1) else box[5]
 
-        box_down_dyn = [z_min_down_dyn,z_max_down_dyn,y_min_down_dyn,y_max_down_dyn,x_min_down_dyn,x_max_down_dyn]
-        box_dyn = [int(b*downsample)for b in box_down_dyn]
+        box_dyn = [z_min_dyn,z_max_dyn,y_min_dyn,y_max_dyn,x_min_dyn,x_max_dyn]
 
-        # compute the downsampled dynamic box (extended by the overlap)
-        z_min_down_dyn_ext = bz*bs_z-overlap_d if (bz*bs_z-overlap_d >= 0) else 0
-        z_max_down_dyn_ext = (bz+1)*bs_z+overlap_d if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1) else box_down[1]
-        y_min_down_dyn_ext = by*bs_y-overlap_d if (by*bs_y-overlap_d >= 0) else 0
-        y_max_down_dyn_ext = (by+1)*bs_y+overlap_d if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1) else box_down[3]
-        x_min_down_dyn_ext = bx*bs_x-overlap_d if (bx*bs_x-overlap_d >= 0) else 0
-        x_max_down_dyn_ext = (bx+1)*bs_x+overlap_d if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1) else box_down[5]
-
-        box_down_dyn_ext = [z_min_down_dyn_ext,z_max_down_dyn_ext,y_min_down_dyn_ext,y_max_down_dyn_ext,x_min_down_dyn_ext,x_max_down_dyn_ext]
-        box_dyn_ext = [int(b*downsample)for b in box_down_dyn_ext]
-
-        z_start = overlap_d if (bz*bs_z-overlap_d >= 0) else 0
-        z_end = -overlap_d if ((bz+1)*bs_z+overlap_d <= box_down[1] and bz != n_blocks_z-1 and overlap!=0) else (box_down_dyn[1]-box_down_dyn[0]+overlap_d)
-        y_start = overlap_d if (by*bs_y-overlap_d >= 0) else 0
-        y_end = -overlap_d if ((by+1)*bs_y+overlap_d <= box_down[3] and by != n_blocks_y-1 and overlap!=0) else (box_down_dyn[3]-box_down_dyn[2]+overlap_d)
-        x_start = overlap_d if (bx*bs_x-overlap_d >= 0) else 0
-        x_end = -overlap_d if ((bx+1)*bs_x+overlap_d <= box_down[5] and bx != n_blocks_x-1 and overlap!=0) else (box_down_dyn[5]-box_down_dyn[4]+overlap_d)
-
-        # compute the indexing to get from the extended dynamic box back to the standard size dynamic box
-        box_idx = [z_start, z_end, y_start, y_end, x_start, x_end]
-
-        # print("box_down_dyn_ext: " + str(box_down_dyn_ext))
-        # print("box_dyn_ext: " + str(box_dyn_ext))
-        # print("box_down_dyn: " + str(box_down_dyn))
-        # print("box_dyn: " + str(box_dyn))
-        # print("box_idx: " + str(box_idx))
-
-        return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
+        return box_dyn
 
 # process whole filling process for chung of data
-def processData(saveStatistics, output_path, sample_name, labels, downsample, overlap, rel_block_size, borderAware):
+def processData(saveStatistics, output_path, sample_name, labels, rel_block_size):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
 
-        # downsample data
-        if downsample > 1:
-            if borderAware:
-                box_down, labels_down = downsampleDataMinBorderAware(box, downsample, labels)
-                output_name = "dsp_borderAware" + str(downsample)
-                writeData(output_path+output_name, labels_down)
-            else:
-                box_down, labels_down = downsampleDataMin(box, downsample, labels)
-                output_name = "dsp_" + str(downsample)
-                writeData(output_path+output_name, labels_down)
-        else:
-            box_down = box
-            labels_down = labels
-
-        #specify block overlap in downsampled domain
-        overlap_d = int(overlap/downsample)
-
         # compute number of blocks and block size
-        bs_z = int(rel_block_size*(box_down[1]-box_down[0]))
-        n_blocks_z = math.floor((box_down[1]-box_down[0])/bs_z)
-        bs_y = int(rel_block_size*(box_down[3]-box_down[2]))
-        n_blocks_y = math.floor((box_down[3]-box_down[2])/bs_y)
-        bs_x = int(rel_block_size*(box_down[5]-box_down[4]))
-        n_blocks_x = math.floor((box_down[5]-box_down[4])/bs_x)
+        bs_z = int(rel_block_size*(box[1]-box[0]))
+        n_blocks_z = math.floor((box[1]-box[0])/bs_z)
+        bs_y = int(rel_block_size*(box[3]-box[2]))
+        n_blocks_y = math.floor((box[3]-box[2])/bs_y)
+        bs_x = int(rel_block_size*(box[5]-box[4]))
+        n_blocks_x = math.floor((box[5]-box[4])/bs_x)
 
         print("nblocks: " + str(n_blocks_z) + ", " + str(n_blocks_y) + ", " + str(n_blocks_x))
         print("block size: " + str(bs_z) + ", " + str(bs_y) + ", " + str(bs_x))
@@ -379,31 +270,24 @@ def processData(saveStatistics, output_path, sample_name, labels, downsample, ov
                 for bx in range(n_blocks_x):
 
                     # compute boxes (description in function)
-                    box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx = getBoxes(
-                        box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x)
+                    box_dyn = getBoxDyn(box, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x)
 
                     # take only part of block
-                    labels_cut_down_ext = labels_down[
-                        box_down_dyn_ext[0]:box_down_dyn_ext[1],box_down_dyn_ext[2]:box_down_dyn_ext[3],box_down_dyn_ext[4]:box_down_dyn_ext[5]]
+                    labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
 
-                    # take only part of block
-                    labels_cut_ext = labels[
-                        box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
-
-                    print("labels in max is: " + str(np.max(labels_cut_down_ext)))
-                    print("labels in min is: " + str(np.min(labels_cut_down_ext)))
-
+                    print("labels in max is: " + str(np.max(labels_cut)))
+                    print("labels in min is: " + str(np.min(labels_cut)))
 
                     # print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
                     # compute the labels of the conencted connected components
-                    labels_cut_out_down_ext, n_comp = computeConnectedComp6(labels_cut_down_ext)
+                    labels_cut_out, n_comp = computeConnectedComp6(labels_cut,0)
 
-                    print("labels out max is: " + str(np.max(labels_cut_out_down_ext)))
-                    print("labels out min is: " + str(np.min(labels_cut_out_down_ext)))
+                    print("labels out max is: " + str(np.max(labels_cut_out)))
+                    print("labels out min is: " + str(np.min(labels_cut_out)))
 
                     # print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
                     # compute the sets of connected components (also including boundary)
-                    neighbor_label_set = findAdjLabelSet(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
+                    neighbor_label_set = findAdjLabelSet(box_dyn, labels_cut, labels_cut_out, n_comp)
 
                     # print(str(str(bz+1)+":Find Associated Components......").format(bz+1), end='\r')
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
@@ -419,8 +303,7 @@ def processData(saveStatistics, output_path, sample_name, labels, downsample, ov
                     # print(str(str(bz+1)+":Fill wholes..................").format(bz+1), end='\r')
                     # fill detected wholes and visualize non_wholes
 
-                    labels_cut_out_down = labels_cut_out_down_ext[box_idx[0]:box_idx[1],box_idx[2]:box_idx[3],box_idx[4]:box_idx[5]]
-                    labels = fillWholes(box_dyn, labels, labels_cut_out_down, associated_label, downsample)
+                    labels = fillWholes(box_dyn, labels, labels_cut_out, associated_label)
 
                     total_wholes_found += np.count_nonzero(isWhole)
                     cell_counter+=1
@@ -429,16 +312,11 @@ def processData(saveStatistics, output_path, sample_name, labels, downsample, ov
         print("Cells processed: " + str(cell_counter))
         print("Wholes filled (total): " + str(total_wholes_found))
 
-        del labels_cut_down_ext, labels_cut_ext, labels_cut_out_down, labels_cut_out_down_ext, labels_down, associated_label, isWhole, neighbor_label_set
+        del labels_cut, labels_cut_out, associated_label, isWhole, neighbor_label_set
 
         return labels, total_wholes_found
 
-def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size, borderAware):
-
-    for i in range(len(overlap)):
-        if overlap[i]%downsample[i] != 0:
-            raise ValueError("Overlap must be a multiple of downsample!")
-
+def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, rel_block_size):
 
     output_path = data_path + ID + "/"
     if os.path.exists(output_path):
@@ -458,22 +336,11 @@ def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, step
     # process chunk of data
     # overlap in points in one direction (total is twice)
 
-    if steps == 3:
-        labels, _ = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
-                    labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1], borderAware=borderAware)
-
-    if steps >= 1:
-        labels, n_wholes = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
-                    labels=labels, downsample=downsample[0], overlap=overlap[0], rel_block_size=rel_block_size[0], borderAware=borderAware)
-    else:
-        raise ValueError("Number of steps is smaller than 1")
-
-    if steps >= 2:
-        labels, _ = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
-                    labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1], borderAware=borderAware)
+    labels, n_wholes = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
+                labels=labels, rel_block_size=rel_block_size)
 
     print("-----------------------------------------------------------------")
-    print("Time elapsed during " + str(steps) + " steps: " + str(time.time() - start_time))
+    print("Time elapsed: " + str(time.time() - start_time))
 
     # write filled data to H5
     output_name = "filled_" + ID
@@ -570,21 +437,21 @@ def main():
     slices_start = 4
     slices_end = 6
 
-    # sample_name = "ZF_concat_4to6_400_400_1"
-    # folder_path = output_path + sample_name + "_outp/"
-    # n_wholes = 698
+    sample_name = "ZF_concat_4to6_400_400_1"
+    folder_path = output_path + sample_name + "_outp/"
+    n_wholes = 698
 
-    sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
-    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
-    os.mkdir(folder_path)
-
-    # concat files
-    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
-
-    # compute groundtruth (in one block)
-    box = getBoxAll(folder_path+sample_name+".h5")
-    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-                steps=1, downsample=[1], overlap=[0], rel_block_size=[1], borderAware=False)
+    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
+    # os.mkdir(folder_path)
+    #
+    # # concat files
+    # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+    #
+    # # compute groundtruth (in one block)
+    # box = getBoxAll(folder_path+sample_name+".h5")
+    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing", saveStatistics=saveStatistics, vizWholes=vizWholes,
+    #                 rel_block_size=1)
 
 
     # ID = "BA_"+str(borderAware)+"_DS_"+str(downsample)+"_OL_"+str(overlap)+"_BS_"+str(block_size).replace(".","_")+"_S_" +str(steps)
@@ -598,8 +465,8 @@ def main():
     # processFile(box=box, data_path=folder_path, sample_name=sample_name, ID=ID, saveStatistics=saveStatistics, vizWholes=vizWholes,
     #             steps=steps, downsample=[downsample,1], overlap=[0,overlap*(downsample-1)], rel_block_size=[1,block_size], borderAware=borderAware)
 
-    # ID="new"
-    # evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
+    ID="testing"
+    evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
 
 
