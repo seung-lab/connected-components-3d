@@ -2,14 +2,17 @@ import numpy as np
 
 
 
+x = [0,1,2,3,4,-5]
+b = list(filter(lambda a: a > 0, x))
+print(b)
 
-a = np.ones((3,3))
-a[2,2] = -2
-a[2,1]= -3
-print(a)
-
-a[a<0] = a[a<0] - 20
-print(a)
+# a = np.ones((3,3))
+# a[2,2] = -2
+# a[2,1]= -3
+# print(a)
+#
+# a[a<0] = a[a<0] - 20
+# print(a)
 # b=a>1
 # a[b]=0
 # print(a)

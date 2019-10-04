@@ -191,7 +191,6 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
         if temp[0]<0:
             if temp[1] not in neighbor_labels[temp[0]-start_label]:
                 neighbor_labels[temp[0]-start_label].append(temp[1])
-
     #find connected components that are a whole
     associated_label = Dict.empty(key_type=types.int64,value_type=types.int64)
     isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
@@ -201,15 +200,48 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
         if len(neighbor_labels[c]) is 1:
             associated_label[c+start_label] = neighbor_labels[c][0]
             isWhole[c] = 1
-            # associated_label[c] = 65000
-            # associated_label[c] = 0
+        elif len(list(filter(lambda a: a > 0, neighbor_labels[c]))) is 1:
+            print(neighbor_labels[c])
+
+            open = set()
+            for comp in neighbor_labels[c]:
+                if comp == 100000000:
+                    neighbor_labels[c].append(son)
+                else:
+                    for son in neighbor_labels[comp]:
+                        if son not in neighbor_labels[c]:
+                            neighbor_labels[c].append(son)
+                            open.add(son)
+
+            while len(open)>0:
+                comp = open.pop()
+                if comp == 100000000:
+                    neighbor_labels[c].append(son)
+                else:
+                    for son in neighbor_labels[comp]:
+                        if son not in neighbor_labels[c]:
+                            neighbor_labels[c].append(son)
+                            open.add(son)
+
+            if len(list(filter(lambda a: a > 0, neighbor_labels[c]))) is 1:
+                associated_label[c+start_label] = np.max(neighbor_labels[c])
+                isWhole[c]=1
+
+            else:
+                associated_label[c+start_label] = 0
+                isWhole[c] = 0
+
+            print(neighbor_labels[c])
+            print(isWhole[c])
+
+
         else:
             associated_label[c+start_label] = 0
             isWhole[c] = 0
             # associated_label[c] = neighbor_labels[c][0] + 5
 
-    print(associated_label)
-    print(neighbor_labels)
+    # print(neighbor_labels)
+    # print(associated_label)
     return associated_label, isWhole
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
@@ -269,50 +301,39 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
         #counters
         total_wholes_found = 0
         cell_counter = 0
+        n_comp_total = 0
+
+        labels_out = np.zeros((box[1],box[3],box[5]),dtype=np.int64)
+        label_start = 0
 
         # process blocks by iterating over all bloks
         for bz in range(n_blocks_z):
             for by in range(n_blocks_y):
                 for bx in range(n_blocks_x):
 
-                    # compute boxes (description in function)
                     box_dyn = getBoxDyn(box, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_blocks_x)
 
-                    # take only part of block
                     labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
 
-                    print("labels in max is: " + str(np.max(labels_cut)))
-                    print("labels in min is: " + str(np.min(labels_cut)))
+                    # print("labels max is: " + str(np.max(labels_cut)))
+                    # print("labels min is: " + str(np.min(labels_cut)))
 
-                    # print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
-                    # compute the labels of the conencted connected components
-                    labels_cut_out, n_comp = computeConnectedComp6(labels_cut,-1000)
+                    labels_cut_out, n_comp = computeConnectedComp6(labels_cut,label_start)
+                    label_start = label_start-n_comp
 
-                    print("labels out max is: " + str(np.max(labels_cut_out)))
-                    print("labels out min is: " + str(np.min(labels_cut_out)))
+                    labels_out[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_out
 
-                    # print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
-                    # compute the sets of connected components (also including boundary)
-                    neighbor_label_set = findAdjLabelSet(box_dyn, labels_cut_out, n_comp)
+                    n_comp_total += n_comp
 
-                    # print(str(str(bz+1)+":Find Associated Components......").format(bz+1), end='\r')
-                    # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-                    associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp, -1000)
 
-                    if saveStatistics:
-                        # print(str(str(bz+1)+":Computing n, mean, std .........").format(bz+1), end='\r')
-                        comp_counts, comp_mean, comp_var = getStat(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
+        neighbor_label_set = findAdjLabelSet(box, labels_out, n_comp_total)
 
-                        # print(str(str(bz+1)+":Writing Statistics..............").format(bz+1), end='\r')
-                        writeStattistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, output_path, sample_name)
+        associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp_total,0)
 
-                    # print(str(str(bz+1)+":Fill wholes..................").format(bz+1), end='\r')
-                    # fill detected wholes and visualize non_wholes
+        labels = fillWholes(box, labels, labels_out, associated_label)
 
-                    labels = fillWholes(box_dyn, labels, labels_cut_out, associated_label)
-
-                    total_wholes_found += np.count_nonzero(isWhole)
-                    cell_counter+=1
+        total_wholes_found += np.count_nonzero(isWhole)
+        cell_counter+=1
 
         # print out total of found wholes
         print("Cells processed: " + str(cell_counter))
@@ -443,34 +464,27 @@ def main():
     slices_start = 4
     slices_end = 6
 
-    sample_name = "ZF_concat_4to6_400_400_1"
-    folder_path = output_path + sample_name + "_outp/"
-    n_wholes = 698
-    #
-    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
-    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
-    # os.mkdir(folder_path)
-    #
-    # # concat files
-    # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
-    #
-    # # compute groundtruth (in one block)
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
+    # sample_name = "ZF_concat_4to6_400_400_1"
+    # folder_path = output_path + sample_name + "_outp/"
+    # n_wholes = 698
+
+    sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
+    os.mkdir(folder_path)
+
+    # concat files
+    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1)
+
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing2", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
 
 
-    # ID = "BA_"+str(borderAware)+"_DS_"+str(downsample)+"_OL_"+str(overlap)+"_BS_"+str(block_size).replace(".","_")+"_S_" +str(steps)
-    #
-    # timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
-    # f = open(folder_path + ID + timestr0 + '.txt','w')
-    # sys.stdout = f
-    # print(ID)
-    #
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # processFile(box=box, data_path=folder_path, sample_name=sample_name, ID=ID, saveStatistics=saveStatistics, vizWholes=vizWholes,
-    #             steps=steps, downsample=[downsample,1], overlap=[0,overlap*(downsample-1)], rel_block_size=[1,block_size], borderAware=borderAware)
-
-    ID="testing"
+    ID="testing2"
     evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
 
