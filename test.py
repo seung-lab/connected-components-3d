@@ -263,7 +263,6 @@ def findAssociatedLabels(neighbor_label_set, n_comp):
             # associated_label[c] = 65000
             # associated_label[c] = 0
         else:
-            print(str(neighbor_labels[c]), str(len(neighbor_labels[c])))
             associated_label[c] = 0
             isWhole[c] = 0
             # associated_label[c] = neighbor_labels[c][0] + 5
@@ -571,21 +570,21 @@ def main():
     slices_start = 4
     slices_end = 6
 
-    sample_name = "ZF_concat_4to6_400_400_1"
-    folder_path = output_path + sample_name + "_outp/"
-    n_wholes = 698
+    # sample_name = "ZF_concat_4to6_400_400_1"
+    # folder_path = output_path + sample_name + "_outp/"
+    # n_wholes = 698
 
-    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
-    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
-    # os.mkdir(folder_path)
-    #
-    # # concat files
-    # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
-    #
-    # # compute groundtruth (in one block)
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-    #             steps=1, downsample=[1], overlap=[0], rel_block_size=[1], borderAware=False)
+    sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
+    os.mkdir(folder_path)
+
+    # concat files
+    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=1, downsample=[1], overlap=[0], rel_block_size=[1], borderAware=False)
 
 
     # ID = "BA_"+str(borderAware)+"_DS_"+str(downsample)+"_OL_"+str(overlap)+"_BS_"+str(block_size).replace(".","_")+"_S_" +str(steps)
@@ -599,8 +598,8 @@ def main():
     # processFile(box=box, data_path=folder_path, sample_name=sample_name, ID=ID, saveStatistics=saveStatistics, vizWholes=vizWholes,
     #             steps=steps, downsample=[downsample,1], overlap=[0,overlap*(downsample-1)], rel_block_size=[1,block_size], borderAware=borderAware)
 
-    ID="new"
-    evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
+    # ID="new"
+    # evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
 
 
