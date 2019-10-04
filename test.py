@@ -100,42 +100,42 @@ def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path
 
 # find sets of adjacent components
 @njit
-def findAdjLabelSet(box, labels, labels_out, n_comp):
+def findAdjLabelSet(box, labels_out, n_comp):
 
     neighbor_label_set = set()
 
-    for ix in range(0, box[1]-box[0]-1):
+    for iz in range(0, box[1]-box[0]-1):
         for iy in range(0, box[3]-box[2]-1):
-            for iz in range(0, box[5]-box[4]-1):
+            for ix in range(0, box[5]-box[4]-1):
 
-                curr_comp = labels_out[ix,iy,iz]
+                curr_comp = labels_out[iz,iy,ix]
 
-                if curr_comp != labels_out[ix+1,iy,iz]:
-                    neighbor_label_set.add((labels_out[ix,iy,iz],labels_out[ix+1,iy,iz]))
-                    neighbor_label_set.add((labels_out[ix+1,iy,iz],labels_out[ix,iy,iz]))
+                if curr_comp != labels_out[iz+1,iy,ix]:
+                    neighbor_label_set.add((labels_out[iz,iy,ix],labels_out[iz+1,iy,ix]))
+                    neighbor_label_set.add((labels_out[iz+1,iy,ix],labels_out[iz,iy,ix]))
 
-                if curr_comp != labels_out[ix,iy+1,iz]:
-                    neighbor_label_set.add((labels_out[ix,iy,iz],labels_out[ix,iy+1,iz]))
-                    neighbor_label_set.add((labels_out[ix,iy+1,iz],labels_out[ix,iy,iz]))
+                if curr_comp != labels_out[iz,iy+1,ix]:
+                    neighbor_label_set.add((labels_out[iz,iy,ix],labels_out[iz,iy+1,ix]))
+                    neighbor_label_set.add((labels_out[iz,iy+1,ix],labels_out[iz,iy,ix]))
 
-                if curr_comp != labels_out[ix,iy,iz+1]:
-                    neighbor_label_set.add((labels_out[ix,iy,iz],labels_out[ix,iy,iz+1]))
-                    neighbor_label_set.add((labels_out[ix,iy,iz+1],labels_out[ix,iy,iz]))
+                if curr_comp != labels_out[iz,iy,ix+1]:
+                    neighbor_label_set.add((labels_out[iz,iy,ix],labels_out[iz,iy,ix+1]))
+                    neighbor_label_set.add((labels_out[iz,iy,ix+1],labels_out[iz,iy,ix]))
 
-    for ix in [0, box[1]-box[0]-1]:
+    for iz in [0, box[1]-box[0]-1]:
         for iy in range(0, box[3]-box[2]):
-            for iz in range(0, box[5]-box[4]):
-                neighbor_label_set.add((labels_out[ix,iy,iz], 100000000))
+            for ix in range(0, box[5]-box[4]):
+                neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
 
-    for ix in range(0, box[1]-box[0]):
+    for iz in range(0, box[1]-box[0]):
         for iy in [0, box[3]-box[2]-1]:
-            for iz in range(0, box[5]-box[4]):
-                neighbor_label_set.add((labels_out[ix,iy,iz], 100000000))
+            for ix in range(0, box[5]-box[4]):
+                neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
 
-    for ix in range(0, box[1]-box[0]):
+    for iz in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
-            for iz in [0, box[5]-box[4]-1]:
-                neighbor_label_set.add((labels_out[ix,iy,iz], 100000000))
+            for ix in [0, box[5]-box[4]-1]:
+                neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
 
     return neighbor_label_set
 
@@ -196,8 +196,6 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
     associated_label = Dict.empty(key_type=types.int64,value_type=types.int64)
     isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
 
-    print(neighbor_labels)
-
     for c in range(-n_comp,0):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
         if len(neighbor_labels[c]) is 1:
@@ -209,8 +207,6 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
             associated_label[c+start_label] = 0
             isWhole[c] = 0
             # associated_label[c] = neighbor_labels[c][0] + 5
-
-    print(associated_label)
 
     return associated_label, isWhole
 
@@ -291,7 +287,7 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
                     # print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
                     # compute the sets of connected components (also including boundary)
-                    neighbor_label_set = findAdjLabelSet(box_dyn, labels_cut, labels_cut_out, n_comp)
+                    neighbor_label_set = findAdjLabelSet(box_dyn, labels_cut_out, n_comp)
 
                     # print(str(str(bz+1)+":Find Associated Components......").format(bz+1), end='\r')
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
