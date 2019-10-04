@@ -65,11 +65,17 @@ public:
 
   DisjointSet (size_t len) {
     length = len;
+    printf("HOSSA 1");
+    fflush(stdout);
+    printf("length is: %ld\n", (long)(length));
+    fflush(stdout);
     ids = new T[length]();
   }
 
   DisjointSet (const DisjointSet &cpy) {
     length = cpy.length;
+    printf("HOSSA 2");
+    fflush(stdout);
     ids = new T[length]();
 
     for (int i = 0; i < length; i++) {
@@ -216,24 +222,26 @@ int64_t* relabel(
   ) {
 
   int64_t label;
-  int64_t* renumber = new int64_t[num_labels+1]();
-  int64_t next_label = 1;
+  printf("HOSSA 3");
+  fflush(stdout);
+  int64_t* renumber = new int64_t[(num_labels*-1)+1]();
+  int64_t next_label = -1;
 
   // Raster Scan 2: Write final labels based on equivalences
   for (int64_t loc = 0; loc < voxels; loc++) {
-    if (!out_labels[loc]) {
+    if (out_labels[loc]>0) {
       continue;
     }
 
-    label = equivalences.root(out_labels[loc]);
+    label = equivalences.root(out_labels[loc]*-1)*-1;
 
-    if (renumber[label]) {
-      out_labels[loc] = renumber[label];
+    if (renumber[label*-1]) {
+      out_labels[loc] = renumber[label*-1]*-1;
     }
     else {
-      renumber[label] = next_label;
+      renumber[label*-1] = next_label*-1;
       out_labels[loc] = next_label;
-      next_label++;
+      next_label--;
     }
   }
 
@@ -597,6 +605,10 @@ int64_t* connected_components3d_6(
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
+  printf("HOSSA 0");
+  printf("max_labels is: %ld\n", (long)(max_labels));
+  fflush(stdout);
+
   DisjointSet<int64_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
@@ -623,11 +635,10 @@ int64_t* connected_components3d_6(
   // N = 0;
 
   int64_t loc = 0;
-  int64_t next_label = 0;
+  int64_t next_label = -1;
 
   // Raster Scan 1: Set temporary labels and
   // record equivalences in a disjoint set.
-
 
   for (int64_t z = 0; z < sz; z++) {
     for (int64_t y = 0; y < sy; y++) {
@@ -637,6 +648,7 @@ int64_t* connected_components3d_6(
         const T cur = in_labels[loc];
 
         if (cur > 0) {
+          out_labels[loc]=cur;
           continue;
         }
 
@@ -644,30 +656,34 @@ int64_t* connected_components3d_6(
           out_labels[loc] = out_labels[loc + M];
 
           if (y > 0 && cur == in_labels[loc + K]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + K]);
+            equivalences.unify(out_labels[loc]*-1, out_labels[loc + K]*-1);
           }
           if (z > 0 && cur == in_labels[loc + E]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]);
+            equivalences.unify(out_labels[loc]*-1, out_labels[loc + E]*-1);
           }
         }
         else if (y > 0 && cur == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
 
           if (z > 0 && cur == in_labels[loc + E]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]);
+            equivalences.unify(out_labels[loc]*-1, out_labels[loc + E]*-1);
           }
         }
         else if (z > 0 && cur == in_labels[loc + E]) {
           out_labels[loc] = out_labels[loc + E];
         }
         else {
-          next_label++;
+          next_label--;
           out_labels[loc] = next_label;
-          equivalences.add(out_labels[loc]);
+          equivalences.add(out_labels[loc]*-1);
         }
       }
     }
   }
+
+  printf("HOSSA after first run");
+  printf("Max label labels_out is: %ld\n", (long)(*std::max_element(out_labels, out_labels+max_labels)));
+  fflush(stdout);
 
   // printf("Max label in CC3D step one is: %ld\n", (long)(next_label-1));
 
@@ -695,7 +711,8 @@ int64_t* connected_components3d(
     );
   }
   else if (connectivity == 6) {
-
+    printf("HOSSA 00");
+    fflush(stdout);
     // ASDF STEP 1
     return connected_components3d_6<T>(
       in_labels, sx, sy, sz,

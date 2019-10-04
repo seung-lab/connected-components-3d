@@ -170,31 +170,31 @@ def findAdjLabelSet(box, labels, labels_out, n_comp):
                 curr_comp = labels_out[ix,iy,iz]
 
                 if curr_comp != labels_out[ix+1,iy,iz]:
-                    neighbor_label_set.add((labels_out[ix,iy,iz],labels[ix+1,iy,iz]))
-                    neighbor_label_set.add((labels_out[ix+1,iy,iz],labels[ix,iy,iz]))
+                    neighbor_label_set.add((labels_out[ix,iy,iz],labels_out[ix+1,iy,iz]))
+                    neighbor_label_set.add((labels_out[ix+1,iy,iz],labels_out[ix,iy,iz]))
 
                 if curr_comp != labels_out[ix,iy+1,iz]:
-                    neighbor_label_set.add((labels_out[ix,iy,iz],labels[ix,iy+1,iz]))
-                    neighbor_label_set.add((labels_out[ix,iy+1,iz],labels[ix,iy,iz]))
+                    neighbor_label_set.add((labels_out[ix,iy,iz],labels_out[ix,iy+1,iz]))
+                    neighbor_label_set.add((labels_out[ix,iy+1,iz],labels_out[ix,iy,iz]))
 
                 if curr_comp != labels_out[ix,iy,iz+1]:
-                    neighbor_label_set.add((labels_out[ix,iy,iz],labels[ix,iy,iz+1]))
-                    neighbor_label_set.add((labels_out[ix,iy,iz+1],labels[ix,iy,iz]))
+                    neighbor_label_set.add((labels_out[ix,iy,iz],labels_out[ix,iy,iz+1]))
+                    neighbor_label_set.add((labels_out[ix,iy,iz+1],labels_out[ix,iy,iz]))
 
     for ix in [0, box[1]-box[0]-1]:
         for iy in range(0, box[3]-box[2]):
             for iz in range(0, box[5]-box[4]):
-                neighbor_label_set.add((labels_out[ix,iy,iz], -1))
+                neighbor_label_set.add((labels_out[ix,iy,iz], 100000000))
 
     for ix in range(0, box[1]-box[0]):
         for iy in [0, box[3]-box[2]-1]:
             for iz in range(0, box[5]-box[4]):
-                neighbor_label_set.add((labels_out[ix,iy,iz], -1))
+                neighbor_label_set.add((labels_out[ix,iy,iz], 100000000))
 
     for ix in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
             for iz in [0, box[5]-box[4]-1]:
-                neighbor_label_set.add((labels_out[ix,iy,iz], -1))
+                neighbor_label_set.add((labels_out[ix,iy,iz], 100000000))
 
     return neighbor_label_set
 
@@ -398,9 +398,16 @@ def processData(saveStatistics, output_path, sample_name, labels, downsample, ov
                     labels_cut_ext = labels[
                         box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
 
+                    print("labels in max is: " + str(np.max(labels_cut_down_ext)))
+                    print("labels in min is: " + str(np.min(labels_cut_down_ext)))
+
+
                     # print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
                     # compute the labels of the conencted connected components
                     labels_cut_out_down_ext, n_comp = computeConnectedComp6(labels_cut_down_ext)
+
+                    print("labels out max is: " + str(np.max(labels_cut_out_down_ext)))
+                    print("labels out min is: " + str(np.min(labels_cut_out_down_ext)))
 
                     # print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
                     # compute the sets of connected components (also including boundary)

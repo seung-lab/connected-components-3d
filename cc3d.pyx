@@ -150,6 +150,7 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
       <int64_t*>&out_labels[0]
     )
   elif dtype == np.uint16:
+    print("Hossa 000")
     arr_memview16u = data
     labels = connected_components3d[uint16_t](
       &arr_memview16u[0,0,0],
