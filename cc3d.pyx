@@ -21,8 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ---
 
-If you received a copy of this program in binary form, you can get 
-the source code for free here: 
+If you received a copy of this program in binary form, you can get
+the source code for free here:
 
 https://github.com/seung-lab/connected-components-3d
 """
@@ -32,7 +32,7 @@ from libc.stdint cimport (
   int8_t, int16_t, int32_t, int64_t,
   uint8_t, uint16_t, uint32_t, uint64_t,
 )
-from cpython cimport array 
+from cpython cimport array
 import array
 import sys
 
@@ -43,11 +43,11 @@ import numpy as np
 __VERSION__ = '1.4.1'
 
 cdef extern from "cc3d.hpp" namespace "cc3d":
-  cdef uint32_t* connected_components3d[T](
-    T* in_labels, 
+  cdef int64_t* connected_components3d[T](
+    T* in_labels,
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity,
-    uint32_t* out_labels
+    int64_t* out_labels
   )
 
 ctypedef fused INTEGER:
@@ -68,17 +68,17 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
   """
   ndarray connected_components(data, int64_t max_labels=-1, int64_t connectivity=26)
 
-  Connected components applied to 3D images with 
+  Connected components applied to 3D images with
   handling for multiple labels.
 
   Required:
-    data: Input weights in a 2D or 3D numpy array. 
+    data: Input weights in a 2D or 3D numpy array.
   Optional:
     max_labels (int): save memory by predicting the maximum
       number of possible labels that might be output.
       Defaults to number of voxels.
     connectivity (int): 6 (voxel faces), 18 (+edges), or 26 (+corners)
-  
+
   Returns: 2D or 3D numpy array remapped to reflect
     the connected components.
   """
@@ -90,7 +90,7 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported! Got: " + str(connectivity))
 
   if data.size == 0:
-    return np.zeros(shape=(0,), dtype=np.uint32)
+    return np.zeros(shape=(0,), dtype=np.int64)
 
   order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
 
@@ -106,9 +106,9 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
   shape = list(data.shape)
 
   # The default C order of 4D numpy arrays is (channel, depth, row, col)
-  # col is the fastest changing index in the underlying buffer. 
-  # fpzip expects an XYZC orientation in the array, namely nx changes most rapidly. 
-  # Since in this case, col is the most rapidly changing index, 
+  # col is the fastest changing index in the underlying buffer.
+  # fpzip expects an XYZC orientation in the array, namely nx changes most rapidly.
+  # Since in this case, col is the most rapidly changing index,
   # the inputs to fpzip should be X=col, Y=row, Z=depth, F=channel
   # If the order is F, the default array shape is fine.
   if order == 'C':
@@ -128,68 +128,68 @@ def connected_components(data, int64_t max_labels=-1, int64_t connectivity=26):
   cdef int64_t[:,:,:] arr_memview64
 
   cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
-  cdef cnp.ndarray[uint32_t, ndim=1] out_labels = np.zeros( (voxels,), dtype=np.uint32, order='C' )
+  cdef cnp.ndarray[int64_t, ndim=1] out_labels = np.zeros( (voxels,), dtype=np.int64, order='C' )
 
   if max_labels <= 0:
     max_labels = voxels
 
   dtype = data.dtype
-  
+
   if dtype == np.uint64:
     arr_memview64u = data
     labels = connected_components3d[uint64_t](
       &arr_memview64u[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   elif dtype == np.uint32:
     arr_memview32u = data
     labels = connected_components3d[uint32_t](
       &arr_memview32u[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   elif dtype == np.uint16:
     arr_memview16u = data
     labels = connected_components3d[uint16_t](
       &arr_memview16u[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   elif dtype in (np.uint8, np.bool):
     arr_memview8u = data.astype(np.uint8)
     labels = connected_components3d[uint8_t](
       &arr_memview8u[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   elif dtype == np.int64:
     arr_memview64 = data
     labels = connected_components3d[int64_t](
       &arr_memview64[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   elif dtype == np.int32:
     arr_memview32 = data
     labels = connected_components3d[int32_t](
       &arr_memview32[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   elif dtype == np.int16:
     arr_memview16 = data
     labels = connected_components3d[int16_t](
       &arr_memview16[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   elif dtype == np.int8:
     arr_memview8 = data
     labels = connected_components3d[int8_t](
       &arr_memview8[0,0,0],
       sx, sy, sz, max_labels, connectivity,
-      <uint32_t*>&out_labels[0]
+      <int64_t*>&out_labels[0]
     )
   else:
     raise TypeError("Type {} not currently supported.".format(dtype))
@@ -256,8 +256,8 @@ cpdef set region_graph(
   return edges
 
 cdef tuple neighbors(
-    cnp.ndarray[INTEGER, ndim=3, cast=True] labels, 
-    int64_t x, int64_t y, int64_t z, 
+    cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
+    int64_t x, int64_t y, int64_t z,
     int64_t sx, int64_t sy, int64_t sz,
     int16_t connectivity
   ):
@@ -309,7 +309,3 @@ cdef tuple neighbors(
       (x > 0 and y < sy - 1 and z > 0 and labels[x - 1, y + 1, z - 1]),
       (x < sx - 1 and y <  sy - 1 and z > 0 and labels[x + 1, y + 1, z - 1]),
     )
-
-
-
-

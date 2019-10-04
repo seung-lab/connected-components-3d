@@ -567,50 +567,39 @@ def main():
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
     vizWholes = True
     saveStatistics = False
-    box_concat = [0,128,0,2048,0,2048]
-    slices_start = 0
-    slices_end = 15
+    box_concat = [0,128,0,400,0,400]
+    slices_start = 4
+    slices_end = 6
+
+    # sample_name = "ZF_concat_0to15_2048_2048"
+    # folder_path = output_path + sample_name + "_outp/"
+    # n_wholes = 1472441
+
+    sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
+    os.mkdir(folder_path)
+
+    # concat files
+    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
+                steps=1, downsample=[1], overlap=[0], rel_block_size=[1], borderAware=False)
 
 
-
-
-    sample_name = "ZF_concat_0to15_2048_2048"
-    folder_path = output_path + sample_name + "_outp/"
-    n_wholes = 1472441
-
-    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
-    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
-    # os.mkdir(folder_path)
-
-    # # concat files
-    # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+    # ID = "BA_"+str(borderAware)+"_DS_"+str(downsample)+"_OL_"+str(overlap)+"_BS_"+str(block_size).replace(".","_")+"_S_" +str(steps)
     #
-    # # compute groundtruth (in one block)
+    # timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
+    # f = open(folder_path + ID + timestr0 + '.txt','w')
+    # sys.stdout = f
+    # print(ID)
+    #
     # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-    #             steps=1, downsample=[1], overlap=[0], rel_block_size=[1], borderAware=False)
+    # processFile(box=box, data_path=folder_path, sample_name=sample_name, ID=ID, saveStatistics=saveStatistics, vizWholes=vizWholes,
+    #             steps=steps, downsample=[downsample,1], overlap=[0,overlap*(downsample-1)], rel_block_size=[1,block_size], borderAware=borderAware)
+    # evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
-
-    for borderAware in [1]:
-        for downsample in [4]:
-            for overlap in [1,2,4]:
-                for block_size in [0.1, 0.25]:
-                    for steps in [2,3]:
-
-                        ID = "BA_"+str(borderAware)+"_DS_"+str(downsample)+"_OL_"+str(overlap)+"_BS_"+str(block_size).replace(".","_")+"_S_" +str(steps)
-
-                        timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
-                        f = open(folder_path + ID + timestr0 + '.txt','w')
-                        sys.stdout = f
-                        print(ID)
-
-                        box = getBoxAll(folder_path+sample_name+".h5")
-                        processFile(box=box, data_path=folder_path, sample_name=sample_name, ID=ID, saveStatistics=saveStatistics, vizWholes=vizWholes,
-                                    steps=steps, downsample=[downsample,1], overlap=[0,overlap*(downsample-1)], rel_block_size=[1,block_size], borderAware=borderAware)
-                        evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
-
-                        f.close()
-                        del f
 
 
 if __name__== "__main__":

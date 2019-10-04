@@ -148,8 +148,8 @@ inline void unify2d(
     const int64_t loc, const T cur,
     const int64_t x, const int64_t y,
     const int64_t sx, const int64_t sy,
-    const T* in_labels, const uint32_t *out_labels,
-    DisjointSet<uint32_t> &equivalences
+    const T* in_labels, const int64_t *out_labels,
+    DisjointSet<int64_t> &equivalences
   ) {
 
   if (y > 0 && cur == in_labels[loc - sx]) {
@@ -179,8 +179,8 @@ inline void unify2d_rt(
     const int64_t loc, const T cur,
     const int64_t x, const int64_t y,
     const int64_t sx, const int64_t sy,
-    const T* in_labels, const uint32_t *out_labels,
-    DisjointSet<uint32_t> &equivalences
+    const T* in_labels, const int64_t *out_labels,
+    DisjointSet<int64_t> &equivalences
   ) {
 
   if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
@@ -193,8 +193,8 @@ inline void unify2d_lt(
     const int64_t loc, const T cur,
     const int64_t x, const int64_t y,
     const int64_t sx, const int64_t sy,
-    const T* in_labels, const uint32_t *out_labels,
-    DisjointSet<uint32_t> &equivalences
+    const T* in_labels, const int64_t *out_labels,
+    DisjointSet<int64_t> &equivalences
   ) {
 
   if (x > 0 && cur == in_labels[loc - 1]) {
@@ -210,14 +210,14 @@ inline void unify2d_lt(
 // labels and this resolves them into their final labels. We
 // modify this pass to also ensure that the output labels are
 // numbered from 1 sequentially.
-uint32_t* relabel(
-    uint32_t* out_labels, const int64_t voxels,
-    const int64_t num_labels, DisjointSet<uint32_t> &equivalences
+int64_t* relabel(
+    int64_t* out_labels, const int64_t voxels,
+    const int64_t num_labels, DisjointSet<int64_t> &equivalences
   ) {
 
-  uint32_t label;
-  uint32_t* renumber = new uint32_t[num_labels+1]();
-  uint32_t next_label = 1;
+  int64_t label;
+  int64_t* renumber = new int64_t[num_labels+1]();
+  int64_t next_label = 1;
 
   // Raster Scan 2: Write final labels based on equivalences
   for (int64_t loc = 0; loc < voxels; loc++) {
@@ -247,10 +247,10 @@ uint32_t* relabel(
 }
 
 template <typename T>
-uint32_t* connected_components3d_26(
+int64_t* connected_components3d_26(
     T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, uint32_t *out_labels = NULL
+    int64_t max_labels, int64_t *out_labels = NULL
   ) {
 
 	const int64_t sxy = sx * sy;
@@ -258,10 +258,10 @@ uint32_t* connected_components3d_26(
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  DisjointSet<int64_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
-    out_labels = new uint32_t[voxels]();
+    out_labels = new int64_t[voxels]();
   }
 
   /*
@@ -293,7 +293,7 @@ uint32_t* connected_components3d_26(
   const int64_t M = -1;
   // N = 0;
 
-  uint32_t next_label = 0;
+  int64_t next_label = 0;
   int64_t loc = 0;
 
   // Raster Scan 1: Set temporary labels and
@@ -441,10 +441,10 @@ uint32_t* connected_components3d_26(
 }
 
 template <typename T>
-uint32_t* connected_components3d_18(
+int64_t* connected_components3d_18(
     T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, uint32_t *out_labels = NULL
+    int64_t max_labels, int64_t *out_labels = NULL
   ) {
 
   const int64_t sxy = sx * sy;
@@ -452,10 +452,10 @@ uint32_t* connected_components3d_18(
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  DisjointSet<int64_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
-    out_labels = new uint32_t[voxels]();
+    out_labels = new int64_t[voxels]();
   }
 
   /*
@@ -483,7 +483,7 @@ uint32_t* connected_components3d_18(
   const int64_t M = -1;
   // N = 0;
 
-  uint32_t next_label = 0;
+  int64_t next_label = 0;
   int64_t loc = 0;
 
   // Raster Scan 1: Set temporary labels and
@@ -586,10 +586,10 @@ uint32_t* connected_components3d_18(
 }
 
 template <typename T>
-uint32_t* connected_components3d_6(
+int64_t* connected_components3d_6(
     T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, uint32_t *out_labels = NULL
+    int64_t max_labels, int64_t *out_labels = NULL
   ) {
 
   const int64_t sxy = sx * sy;
@@ -597,10 +597,10 @@ uint32_t* connected_components3d_6(
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  DisjointSet<int64_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
-    out_labels = new uint32_t[voxels]();
+    out_labels = new int64_t[voxels]();
   }
 
   /*
@@ -623,7 +623,7 @@ uint32_t* connected_components3d_6(
   // N = 0;
 
   int64_t loc = 0;
-  uint32_t next_label = 0;
+  int64_t next_label = 0;
 
   // Raster Scan 1: Set temporary labels and
   // record equivalences in a disjoint set.
@@ -675,11 +675,11 @@ uint32_t* connected_components3d_6(
 }
 
 template <typename T>
-uint32_t* connected_components3d(
+int64_t* connected_components3d(
     T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels, const int64_t connectivity,
-    uint32_t *out_labels = NULL
+    int64_t *out_labels = NULL
   ) {
 
   if (connectivity == 26) {
@@ -708,7 +708,7 @@ uint32_t* connected_components3d(
 }
 
 template <typename T>
-uint32_t* connected_components3d(
+int64_t* connected_components3d(
     T* in_labels,
     const int64_t sx, const int64_t sy, const int64_t sz,
     const int64_t connectivity=26
