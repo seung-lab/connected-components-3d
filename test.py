@@ -16,6 +16,7 @@ from numba.typed import Dict
 import os
 import psutil
 import sys
+import numba
 
 # set will be deprecated soon on numba, but until now an alternative has not been implemented
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
@@ -100,9 +101,7 @@ def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path
 
 # find sets of adjacent components
 @njit
-def findAdjLabelSet(box, labels_out, n_comp):
-
-    neighbor_label_set = set()
+def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, neighbor_label_set, labels_out, n_comp_total, border_comp):
 
     for iz in range(0, box[1]-box[0]-1):
         for iy in range(0, box[3]-box[2]-1):
@@ -125,19 +124,39 @@ def findAdjLabelSet(box, labels_out, n_comp):
     for iz in [0, box[1]-box[0]-1]:
         for iy in range(0, box[3]-box[2]):
             for ix in range(0, box[5]-box[4]):
-                neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
+                border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
+                if iz == 0 and bz > 0:
+                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4])]))
+                elif iz == 0 and bz == 0:
+                    neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
+                elif iz==(box[1]-box[0]-1) and bz==(n_blocks_z-1):
+                    neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
+
 
     for iz in range(0, box[1]-box[0]):
         for iy in [0, box[3]-box[2]-1]:
             for ix in range(0, box[5]-box[4]):
-                neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
+                border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
+                if iy == 0 and by > 0:
+                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4])]))
+                elif iy == 0 and by == 0:
+                    neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
+                elif iy==(box[3]-box[2]-1) and by==(n_blocks_y-1):
+                    neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
 
     for iz in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
             for ix in [0, box[5]-box[4]-1]:
-                neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
+                border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
+                if ix == 0 and bx > 0:
+                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4]-1)]))
+                elif ix == 0 and bx == 0:
+                    neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
+                elif ix==(box[5]-box[4]-1) and bx==(n_blocks_x-1):
+                    neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
 
-    return neighbor_label_set
+
+    return neighbor_label_set, border_comp
 
 # for statistics: additinallz count occurence of each component
 @njit
@@ -201,9 +220,10 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
             associated_label[c+start_label] = neighbor_labels[c][0]
             isWhole[c] = 1
         elif len(list(filter(lambda a: a > 0, neighbor_labels[c]))) is 1:
-            print(neighbor_labels[c])
 
+            # set of nodes to explore
             open = set()
+
             for comp in neighbor_labels[c]:
                 if comp == 100000000:
                     neighbor_labels[c].append(son)
@@ -230,10 +250,6 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
             else:
                 associated_label[c+start_label] = 0
                 isWhole[c] = 0
-
-            print(neighbor_labels[c])
-            print(isWhole[c])
-
 
         else:
             associated_label[c+start_label] = 0
@@ -306,6 +322,12 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
         labels_out = np.zeros((box[1],box[3],box[5]),dtype=np.int64)
         label_start = 0
 
+        border_comp = Dict.empty(key_type=types.int64,value_type=types.int64)
+        neighbor_label_set = {(100000000,100000000)}
+
+        # border_comp = dict()
+        # neighbor_label_set = set()
+
         # process blocks by iterating over all bloks
         for bz in range(n_blocks_z):
             for by in range(n_blocks_y):
@@ -315,18 +337,17 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
                     labels_cut = labels[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]]
 
-                    # print("labels max is: " + str(np.max(labels_cut)))
-                    # print("labels min is: " + str(np.min(labels_cut)))
-
                     labels_cut_out, n_comp = computeConnectedComp6(labels_cut,label_start)
                     label_start = label_start-n_comp
 
                     labels_out[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_out
 
+                    neighbor_label_set, border_comp = findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, neighbor_label_set, labels_out, n_comp_total, border_comp)
+
                     n_comp_total += n_comp
 
 
-        neighbor_label_set = findAdjLabelSet(box, labels_out, n_comp_total)
+        neighbor_label_set.remove((100000000,100000000))
 
         associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp_total,0)
 
@@ -454,6 +475,21 @@ def evaluateWholes(folder_path,ID,sample_name,n_wholes):
 
     del diff
 
+@njit
+def IdxToIdi(iv):
+    xres = 400
+    yres = 400
+    iz = iv // (yres * xres)
+    iy = (iv - iz * yres * xres) // xres
+    ix = iv % xres
+    return iz, iy, ix
+
+@njit
+def IdiToIdx(ix, iy, iz):
+    xres = 400
+    yres = 400
+    return iz * yres * xres + iy * xres + ix
+
 def main():
 
     data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/"
@@ -479,13 +515,13 @@ def main():
     box = getBoxAll(folder_path+sample_name+".h5")
     n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1)
 
-    # compute groundtruth (in one block)
-    box = getBoxAll(folder_path+sample_name+".h5")
-    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing2", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
+    # # compute groundtruth (in one block)
+    # box = getBoxAll(folder_path+sample_name+".h5")
+    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing2", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
 
-
-    ID="testing2"
-    evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
+    #
+    # ID="testing2"
+    # evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
 
 
