@@ -182,37 +182,41 @@ def getStat(box, labels_out, n_comp):
     return comp_counts, comp_mean, comp_var
 
 # create string of connected components that are a whole
-def findAssociatedLabels(neighbor_label_set, n_comp):
+def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
 
     # process
     neighbor_labels = [[] for _ in range(n_comp)] # extend by 1 and leave first entry empty
     for s in range(len(neighbor_label_set)):
         temp = neighbor_label_set.pop()
         if temp[0]<0:
-            if temp[1] not in neighbor_labels[temp[0]]:
-                neighbor_labels[temp[0]].append(temp[1])
+            if temp[1] not in neighbor_labels[temp[0]-start_label]:
+                neighbor_labels[temp[0]-start_label].append(temp[1])
 
     #find connected components that are a whole
     associated_label = Dict.empty(key_type=types.int64,value_type=types.int64)
     isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
 
+    print(neighbor_labels)
+
     for c in range(-n_comp,0):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
         if len(neighbor_labels[c]) is 1:
-            associated_label[c] = neighbor_labels[c][0]
+            associated_label[c+start_label] = neighbor_labels[c][0]
             isWhole[c] = 1
             # associated_label[c] = 65000
             # associated_label[c] = 0
         else:
-            associated_label[c] = 0
+            associated_label[c+start_label] = 0
             isWhole[c] = 0
             # associated_label[c] = neighbor_labels[c][0] + 5
+
+    print(associated_label)
 
     return associated_label, isWhole
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
 @njit
-def fillWholes(box_dyn, labels, labels_cut_out_down, associated_label):
+def fillWholes(box_dyn, labels, labels_cut_out, associated_label):
 
     box = box_dyn
 
@@ -222,7 +226,7 @@ def fillWholes(box_dyn, labels, labels_cut_out_down, associated_label):
 
                 if labels[iz,iy,ix] == 0:
 
-                    labels[iz,iy,ix] = associated_label[labels_cut_out_down[iz,iy,ix]]
+                    labels[iz,iy,ix] = associated_label[labels_cut_out[iz,iy,ix]]
 
     return labels
 
@@ -280,7 +284,7 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
                     # print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
                     # compute the labels of the conencted connected components
-                    labels_cut_out, n_comp = computeConnectedComp6(labels_cut,0)
+                    labels_cut_out, n_comp = computeConnectedComp6(labels_cut,-1000)
 
                     print("labels out max is: " + str(np.max(labels_cut_out)))
                     print("labels out min is: " + str(np.min(labels_cut_out)))
@@ -291,7 +295,7 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
                     # print(str(str(bz+1)+":Find Associated Components......").format(bz+1), end='\r')
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
-                    associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp)
+                    associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp, -1000)
 
                     if saveStatistics:
                         # print(str(str(bz+1)+":Computing n, mean, std .........").format(bz+1), end='\r')
@@ -437,21 +441,20 @@ def main():
     slices_start = 4
     slices_end = 6
 
-    sample_name = "ZF_concat_4to6_400_400_1"
-    folder_path = output_path + sample_name + "_outp/"
-    n_wholes = 698
+    # sample_name = "ZF_concat_4to6_400_400_1"
+    # folder_path = output_path + sample_name + "_outp/"
+    # n_wholes = 698
 
-    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
-    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
-    # os.mkdir(folder_path)
-    #
-    # # concat files
-    # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
-    #
-    # # compute groundtruth (in one block)
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing", saveStatistics=saveStatistics, vizWholes=vizWholes,
-    #                 rel_block_size=1)
+    sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
+    os.mkdir(folder_path)
+
+    # concat files
+    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+
+    # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1)
 
 
     # ID = "BA_"+str(borderAware)+"_DS_"+str(downsample)+"_OL_"+str(overlap)+"_BS_"+str(block_size).replace(".","_")+"_S_" +str(steps)
@@ -465,8 +468,8 @@ def main():
     # processFile(box=box, data_path=folder_path, sample_name=sample_name, ID=ID, saveStatistics=saveStatistics, vizWholes=vizWholes,
     #             steps=steps, downsample=[downsample,1], overlap=[0,overlap*(downsample-1)], rel_block_size=[1,block_size], borderAware=borderAware)
 
-    ID="testing"
-    evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
+    # ID="testing"
+    # evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
 
 
