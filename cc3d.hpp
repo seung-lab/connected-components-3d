@@ -237,11 +237,42 @@ int64_t* relabel(
     }
   }
 
-
   delete[] renumber;
 
   // double max_label = *std::max_element(out_labels, out_labels+voxels);
   // printf("Max label labels_out is: %ld\n", (long)(*std::max_element(out_labels, out_labels+voxels)));
+
+  return out_labels;
+}
+
+int64_t* relabel_org(
+    int64_t* out_labels, const int64_t voxels,
+    const int64_t num_labels, DisjointSet<int64_t> &equivalences
+  ) {
+
+  int64_t label;
+  int64_t* renumber = new int64_t[num_labels+1]();
+  int64_t next_label = 1;
+  // Raster Scan 2: Write final labels based on equivalences
+  for (int64_t loc = 0; loc < voxels; loc++) {
+    if (!out_labels[loc]) {
+      continue;
+    }
+
+    label = equivalences.root(out_labels[loc]);
+
+    if (renumber[label]) {
+      out_labels[loc] = renumber[label];
+    }
+    else {
+      renumber[label] = next_label;
+      out_labels[loc] = next_label;
+      next_label++;
+    }
+  }
+
+
+  delete[] renumber;
 
   return out_labels;
 }
@@ -437,7 +468,7 @@ int64_t* connected_components3d_26(
     }
   }
 
-  return relabel(out_labels, voxels, next_label, equivalences);
+  return relabel_org(out_labels, voxels, next_label, equivalences);
 }
 
 template <typename T>
