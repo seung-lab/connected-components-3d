@@ -65,17 +65,11 @@ public:
 
   DisjointSet (size_t len) {
     length = len;
-    printf("HOSSA 1");
-    fflush(stdout);
-    printf("length is: %ld\n", (long)(length));
-    fflush(stdout);
     ids = new T[length]();
   }
 
   DisjointSet (const DisjointSet &cpy) {
     length = cpy.length;
-    printf("HOSSA 2");
-    fflush(stdout);
     ids = new T[length]();
 
     for (int i = 0; i < length; i++) {
@@ -222,8 +216,6 @@ int64_t* relabel(
   ) {
 
   int64_t label;
-  printf("HOSSA 3");
-  fflush(stdout);
   int64_t* renumber = new int64_t[(num_labels*-1)+1]();
   int64_t next_label = -1;
 
@@ -605,10 +597,6 @@ int64_t* connected_components3d_6(
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
 
-  printf("HOSSA 0");
-  printf("max_labels is: %ld\n", (long)(max_labels));
-  fflush(stdout);
-
   DisjointSet<int64_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
@@ -681,10 +669,6 @@ int64_t* connected_components3d_6(
     }
   }
 
-  printf("HOSSA after first run");
-  printf("Max label labels_out is: %ld\n", (long)(*std::max_element(out_labels, out_labels+max_labels)));
-  fflush(stdout);
-
   // printf("Max label in CC3D step one is: %ld\n", (long)(next_label-1));
 
   return relabel(out_labels, voxels, next_label, equivalences);
@@ -711,8 +695,6 @@ int64_t* connected_components3d(
     );
   }
   else if (connectivity == 6) {
-    printf("HOSSA 00");
-    fflush(stdout);
     // ASDF STEP 1
     return connected_components3d_6<T>(
       in_labels, sx, sy, sz,
