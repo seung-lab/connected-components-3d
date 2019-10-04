@@ -94,7 +94,6 @@ def downsampleDataMin(box, downsample, labels):
             for iz in range(0, box_down[5]-box_down[4]):
 
                 labels_down[ix,iy,iz]=np.min(labels[ix*dsf:(ix+1)*dsf,iy*dsf:(iy+1)*dsf,iz*dsf:(iz+1)*dsf])
-
     return box_down, labels_down
 
 # write data to H5 file
@@ -345,17 +344,21 @@ def getBoxes(box_down, overlap, overlap_d, downsample, bz, bs_z, n_blocks_z, by,
         return box_down_dyn, box_dyn, box_down_dyn_ext, box_dyn_ext, box_idx
 
 # process whole filling process for chung of data
-def processData(saveStatistics, output_path, sample_name, labels, downsample, overlap, rel_block_size):
+def processData(saveStatistics, output_path, sample_name, labels, downsample, overlap, rel_block_size, borderAware):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
 
         # downsample data
         if downsample > 1:
-            box_down, labels_down = downsampleDataMin(box, downsample, labels)
-            output_name = "dsp_" + str(downsample)
-            writeData(output_path+output_name, labels_down)
-
+            if borderAware:
+                box_down, labels_down = downsampleDataMinBorderAware(box, downsample, labels)
+                output_name = "dsp_borderAware" + str(downsample)
+                writeData(output_path+output_name, labels_down)
+            else:
+                box_down, labels_down = downsampleDataMin(box, downsample, labels)
+                output_name = "dsp_" + str(downsample)
+                writeData(output_path+output_name, labels_down)
         else:
             box_down = box
             labels_down = labels
@@ -395,26 +398,26 @@ def processData(saveStatistics, output_path, sample_name, labels, downsample, ov
                     labels_cut_ext = labels[
                         box_dyn_ext[0]:box_dyn_ext[1],box_dyn_ext[2]:box_dyn_ext[3],box_dyn_ext[4]:box_dyn_ext[5]]
 
-                    print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
+                    # print(str(str(bz+1)+":Compute connected Components...").format(bz+1), end='\r')
                     # compute the labels of the conencted connected components
                     labels_cut_out_down_ext, n_comp = computeConnectedComp6(labels_cut_down_ext)
 
-                    print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
+                    # print(str(str(bz+1)+":Find Sets of Adjacent Components...").format(bz+1), end='\r')
                     # compute the sets of connected components (also including boundary)
                     neighbor_label_set = findAdjLabelSet(box_down_dyn_ext, labels_cut_down_ext, labels_cut_out_down_ext, n_comp)
 
-                    print(str(str(bz+1)+":Find Associated Components......").format(bz+1), end='\r')
+                    # print(str(str(bz+1)+":Find Associated Components......").format(bz+1), end='\r')
                     # compute lists of wholes and non_wholes (then saved as set for compability with njit)
                     associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp)
 
                     if saveStatistics:
-                        print(str(str(bz+1)+":Computing n, mean, std .........").format(bz+1), end='\r')
+                        # print(str(str(bz+1)+":Computing n, mean, std .........").format(bz+1), end='\r')
                         comp_counts, comp_mean, comp_var = getStat(box_down_dyn_ext, labels_cut_out_down_ext, n_comp)
 
-                        print(str(str(bz+1)+":Writing Statistics..............").format(bz+1), end='\r')
+                        # print(str(str(bz+1)+":Writing Statistics..............").format(bz+1), end='\r')
                         writeStattistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, output_path, sample_name)
 
-                    print(str(str(bz+1)+":Fill wholes..................").format(bz+1), end='\r')
+                    # print(str(str(bz+1)+":Fill wholes..................").format(bz+1), end='\r')
                     # fill detected wholes and visualize non_wholes
 
                     labels_cut_out_down = labels_cut_out_down_ext[box_idx[0]:box_idx[1],box_idx[2]:box_idx[3],box_idx[4]:box_idx[5]]
@@ -431,7 +434,7 @@ def processData(saveStatistics, output_path, sample_name, labels, downsample, ov
 
         return labels, total_wholes_found
 
-def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size):
+def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, steps, downsample, overlap, rel_block_size, borderAware):
 
     for i in range(len(overlap)):
         if overlap[i]%downsample[i] != 0:
@@ -455,14 +458,20 @@ def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, step
 
     # process chunk of data
     # overlap in points in one direction (total is twice)
+
+    if steps == 3:
+        labels, _ = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
+                    labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1], borderAware=borderAware)
+
     if steps >= 1:
         labels, n_wholes = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
-                    labels=labels, downsample=downsample[0], overlap=overlap[0], rel_block_size=rel_block_size[0])
+                    labels=labels, downsample=downsample[0], overlap=overlap[0], rel_block_size=rel_block_size[0], borderAware=borderAware)
     else:
         raise ValueError("Number of steps is smaller than 1")
+
     if steps >= 2:
         labels, _ = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
-                    labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1])
+                    labels=labels, downsample=downsample[1], overlap=overlap[1], rel_block_size=rel_block_size[1], borderAware=borderAware)
 
     print("-----------------------------------------------------------------")
     print("Time elapsed during " + str(steps) + " steps: " + str(time.time() - start_time))
@@ -564,28 +573,45 @@ def main():
 
 
 
-    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+
     sample_name = "ZF_concat_0to15_2048_2048"
     folder_path = output_path + sample_name + "_outp/"
-    n_wholes = 1173377
+    n_wholes = 1472441
 
+    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
     # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
     # os.mkdir(folder_path)
-    #
+
     # # concat files
     # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
     #
     # # compute groundtruth (in one block)
     # box = getBoxAll(folder_path+sample_name+".h5")
     # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes,
-    #             steps=1, downsample=[1], overlap=[0], rel_block_size=[1])
-    #
-    # # compute in multiple steps
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="inBlocks", saveStatistics=saveStatistics, vizWholes=vizWholes,
-    #             steps=2, downsample=[4,1], overlap=[0,12], rel_block_size=[1,0.25])
+    #             steps=1, downsample=[1], overlap=[0], rel_block_size=[1], borderAware=False)
 
-    evaluateWholes(folder_path=folder_path,ID="inBlocks",sample_name=sample_name,n_wholes=n_wholes)
+
+    for borderAware in [1]:
+        for downsample in [4]:
+            for overlap in [1,2,4]:
+                for block_size in [0.1, 0.25]:
+                    for steps in [2,3]:
+
+                        ID = "BA_"+str(borderAware)+"_DS_"+str(downsample)+"_OL_"+str(overlap)+"_BS_"+str(block_size).replace(".","_")+"_S_" +str(steps)
+
+                        timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
+                        f = open(folder_path + ID + timestr0 + '.txt','w')
+                        sys.stdout = f
+                        print(ID)
+
+                        box = getBoxAll(folder_path+sample_name+".h5")
+                        processFile(box=box, data_path=folder_path, sample_name=sample_name, ID=ID, saveStatistics=saveStatistics, vizWholes=vizWholes,
+                                    steps=steps, downsample=[downsample,1], overlap=[0,overlap*(downsample-1)], rel_block_size=[1,block_size], borderAware=borderAware)
+                        evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
+
+                        f.close()
+                        del f
+
 
 if __name__== "__main__":
   main()
