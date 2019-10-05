@@ -101,7 +101,9 @@ def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path
 
 # find sets of adjacent components
 @njit
-def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, neighbor_label_set, labels_out, n_comp_total, border_comp):
+def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_out, n_comp_total, border_comp):
+
+    neighbor_label_set = set()
 
     for iz in range(0, box[1]-box[0]-1):
         for iy in range(0, box[3]-box[2]-1):
@@ -131,7 +133,6 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, neighbo
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif iz==(box[1]-box[0]-1) and bz==(n_blocks_z-1):
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
-
 
     for iz in range(0, box[1]-box[0]):
         for iy in [0, box[3]-box[2]-1]:
@@ -319,11 +320,10 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
         cell_counter = 0
         n_comp_total = 0
 
-        labels_out = np.zeros((box[1],box[3],box[5]),dtype=np.int64)
         label_start = 0
 
-        border_comp = Dict.empty(key_type=types.int64,value_type=types.int64)
-        neighbor_label_set = {(100000000,100000000)}
+        border_comp_added = Dict.empty(key_type=types.int64,value_type=types.int64)
+        neighbor_label_set_added = set()
 
         # border_comp = dict()
         # neighbor_label_set = set()
@@ -340,21 +340,19 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
                     labels_cut_out, n_comp = computeConnectedComp6(labels_cut,label_start)
                     label_start = label_start-n_comp
 
-                    labels_out[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_out
-
-                    neighbor_label_set, border_comp = findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, neighbor_label_set, labels_out, n_comp_total, border_comp)
+                    neighbor_label_set, border_comp_added = findAdjLabelSet(box_dyn, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_cut_out, n_comp_total, border_comp_added)
+                    neighbor_label_set_added = neighbor_label_set_added.union(neighbor_label_set)
 
                     n_comp_total += n_comp
+                    cell_counter += 1
 
-
-        neighbor_label_set.remove((100000000,100000000))
+        print(len(neighbor_label_set_added))
 
         associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp_total,0)
 
-        labels = fillWholes(box, labels, labels_out, associated_label)
+        labels = fillWholes(box, labels, labels_cut_out, associated_label)
 
         total_wholes_found += np.count_nonzero(isWhole)
-        cell_counter+=1
 
         # print out total of found wholes
         print("Cells processed: " + str(cell_counter))
@@ -511,13 +509,13 @@ def main():
     # concat files
     concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
 
-    # compute groundtruth (in one block)
+    # # compute groundtruth (in one block)
     box = getBoxAll(folder_path+sample_name+".h5")
     n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1)
 
     # # compute groundtruth (in one block)
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing2", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing2", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
 
     #
     # ID="testing2"
