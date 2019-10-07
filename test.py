@@ -328,6 +328,8 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
         # border_comp = dict()
         # neighbor_label_set = set()
 
+        labels_out = np.zeros((labels.shape[0],labels.shape[1],labels.shape[2]),dtype=np.int64)
+
         # process blocks by iterating over all bloks
         for bz in range(n_blocks_z):
             for by in range(n_blocks_y):
@@ -340,6 +342,8 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
                     labels_cut_out, n_comp = computeConnectedComp6(labels_cut,label_start)
                     label_start = label_start-n_comp
 
+                    labels_out[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_out
+
                     neighbor_label_set, border_comp_added = findAdjLabelSet(box_dyn, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_cut_out, n_comp_total, border_comp_added)
                     neighbor_label_set_added = neighbor_label_set_added.union(neighbor_label_set)
 
@@ -348,9 +352,9 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
         print(len(neighbor_label_set_added))
 
-        associated_label, isWhole = findAssociatedLabels(neighbor_label_set, n_comp_total,0)
+        associated_label, isWhole = findAssociatedLabels(neighbor_label_set_added, n_comp_total,0)
 
-        labels = fillWholes(box, labels, labels_cut_out, associated_label)
+        labels = fillWholes(box, labels, labels_out, associated_label)
 
         total_wholes_found += np.count_nonzero(isWhole)
 
@@ -518,8 +522,8 @@ def main():
     n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing2", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
 
     #
-    # ID="testing2"
-    # evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
+    ID="testing2"
+    evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
 
 
