@@ -126,9 +126,11 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
     for iz in [0, box[1]-box[0]-1]:
         for iy in range(0, box[3]-box[2]):
             for ix in range(0, box[5]-box[4]):
+                # neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
                 if iz == 0 and bz > 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4])]))
+                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4])],labels_out[iz,iy,ix]))
                 elif iz == 0 and bz == 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif iz==(box[1]-box[0]-1) and bz==(n_blocks_z-1):
@@ -137,9 +139,12 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
     for iz in range(0, box[1]-box[0]):
         for iy in [0, box[3]-box[2]-1]:
             for ix in range(0, box[5]-box[4]):
+                # neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
                 if iy == 0 and by > 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4])]))
+                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4])],labels_out[iz,iy,ix]))
+
                 elif iy == 0 and by == 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif iy==(box[3]-box[2]-1) and by==(n_blocks_y-1):
@@ -148,9 +153,11 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
     for iz in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
             for ix in [0, box[5]-box[4]-1]:
+                # neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
                 if ix == 0 and bx > 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4]-1)]))
+                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4]-1)],labels_out[iz,iy,ix]))
                 elif ix == 0 and bx == 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif ix==(box[5]-box[4]-1) and bx==(n_blocks_x-1):
@@ -202,23 +209,23 @@ def getStat(box, labels_out, n_comp):
     return comp_counts, comp_mean, comp_var
 
 # create string of connected components that are a whole
-def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
+def findAssociatedLabels(neighbor_label_set, n_comp, ):
 
     # process
     neighbor_labels = [[] for _ in range(n_comp)] # extend by 1 and leave first entry empty
     for s in range(len(neighbor_label_set)):
         temp = neighbor_label_set.pop()
         if temp[0]<0:
-            if temp[1] not in neighbor_labels[temp[0]-start_label]:
-                neighbor_labels[temp[0]-start_label].append(temp[1])
+            if temp[1] not in neighbor_labels[temp[0]]:
+                neighbor_labels[temp[0]].append(temp[1])
     #find connected components that are a whole
     associated_label = Dict.empty(key_type=types.int64,value_type=types.int64)
     isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
 
     for c in range(-n_comp,0):
         # check that only connected to one component and that this component is not border (which is numbered as -1)
-        if len(neighbor_labels[c]) is 1:
-            associated_label[c+start_label] = neighbor_labels[c][0]
+        if len(neighbor_labels[c])==1 and neighbor_labels[c][0]!=100000000 and neighbor_labels[c][0]>0:
+            associated_label[c] = neighbor_labels[c][0]
             isWhole[c] = 1
         elif len(list(filter(lambda a: a > 0, neighbor_labels[c]))) is 1:
 
@@ -227,7 +234,8 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
 
             for comp in neighbor_labels[c]:
                 if comp == 100000000:
-                    neighbor_labels[c].append(son)
+                    if 100000000 not in neighbor_labels[c]:
+                        neighbor_labels[c].append(100000000)
                 else:
                     for son in neighbor_labels[comp]:
                         if son not in neighbor_labels[c]:
@@ -237,23 +245,24 @@ def findAssociatedLabels(neighbor_label_set, n_comp, start_label):
             while len(open)>0:
                 comp = open.pop()
                 if comp == 100000000:
-                    neighbor_labels[c].append(son)
+                    if 100000000 not in neighbor_labels[c]:
+                        neighbor_labels[c].append(100000000)
                 else:
                     for son in neighbor_labels[comp]:
                         if son not in neighbor_labels[c]:
                             neighbor_labels[c].append(son)
                             open.add(son)
 
-            if len(list(filter(lambda a: a > 0, neighbor_labels[c]))) is 1:
-                associated_label[c+start_label] = np.max(neighbor_labels[c])
+            if len(list(filter(lambda a: a > 0, neighbor_labels[c]))) and np.max(neighbor_labels[c])!=100000000:
+                associated_label[c] = np.max(neighbor_labels[c])
                 isWhole[c]=1
 
             else:
-                associated_label[c+start_label] = 0
+                associated_label[c] = 0
                 isWhole[c] = 0
 
         else:
-            associated_label[c+start_label] = 0
+            associated_label[c] = 0
             isWhole[c] = 0
             # associated_label[c] = neighbor_labels[c][0] + 5
 
@@ -352,7 +361,7 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
         print(len(neighbor_label_set_added))
 
-        associated_label, isWhole = findAssociatedLabels(neighbor_label_set_added, n_comp_total,0)
+        associated_label, isWhole = findAssociatedLabels(neighbor_label_set_added, n_comp_total)
 
         labels = fillWholes(box, labels, labels_out, associated_label)
 
@@ -500,7 +509,7 @@ def main():
     saveStatistics = False
     box_concat = [0,128,0,400,0,400]
     slices_start = 4
-    slices_end = 6
+    slices_end = 8
 
     # sample_name = "ZF_concat_4to6_400_400_1"
     # folder_path = output_path + sample_name + "_outp/"
