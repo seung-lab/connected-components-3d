@@ -144,7 +144,6 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
                 if iy == 0 and by > 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4])]))
                     neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4])],labels_out[iz,iy,ix]))
-
                 elif iy == 0 and by == 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif iy==(box[3]-box[2]-1) and by==(n_blocks_y-1):
@@ -162,7 +161,6 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif ix==(box[5]-box[4]-1) and bx==(n_blocks_x-1):
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
-
 
     return neighbor_label_set, border_comp
 
@@ -223,51 +221,87 @@ def findAssociatedLabels(neighbor_label_set, n_comp, ):
     isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
 
     for c in range(-n_comp,0):
-        # check that only connected to one component and that this component is not border (which is numbered as -1)
-        if len(neighbor_labels[c])==1 and neighbor_labels[c][0]!=100000000 and neighbor_labels[c][0]>0:
+
+        # check if this component has already been processed (if so, continue)
+        if isWhole[c]!=-1:
+            continue
+
+        # check if component has only one neighbor and this neighbor is not boundary and is a neuron
+        elif len(neighbor_labels[c])==1 and neighbor_labels[c][0]!=100000000 and neighbor_labels[c][0]>0:
             associated_label[c] = neighbor_labels[c][0]
             isWhole[c] = 1
-        elif len(list(filter(lambda a: a > 0, neighbor_labels[c]))) is 1:
 
+        # if element has only one positive neighbor, explore this in detail
+        elif len(list(filter(lambda a: a > 0, neighbor_labels[c])))==1:
             # set of nodes to explore
             open = set()
 
+            kick_out = False
+
+            # iterate over all neighbots and add them to the open set, if they are a background componente (i.e. are negative)
             for comp in neighbor_labels[c]:
                 if comp == 100000000:
-                    if 100000000 not in neighbor_labels[c]:
-                        neighbor_labels[c].append(100000000)
+                    kick_out =  True
+                    break
                 else:
                     for son in neighbor_labels[comp]:
-                        if son not in neighbor_labels[c]:
+                        if son not in neighbor_labels[c] and son > 0:
+                            kick_out =  True
+                            break
+                        elif son not in neighbor_labels[c]:
                             neighbor_labels[c].append(son)
-                            open.add(son)
-
+                            if son<0:
+                                open.add(son)
+            # appen all negative background components that are neighbors or ancestors
             while len(open)>0:
                 comp = open.pop()
                 if comp == 100000000:
-                    if 100000000 not in neighbor_labels[c]:
-                        neighbor_labels[c].append(100000000)
+                    kick_out =  True
+                    break
                 else:
                     for son in neighbor_labels[comp]:
-                        if son not in neighbor_labels[c]:
+                        if son not in neighbor_labels[c] and son > 0:
+                            kick_out =  True
+                            break
+                        elif son not in neighbor_labels[c]:
                             neighbor_labels[c].append(son)
-                            open.add(son)
+                            if son<0:
+                                open.add(son)
 
-            if len(list(filter(lambda a: a > 0, neighbor_labels[c]))) and np.max(neighbor_labels[c])!=100000000:
+            # check again if there is only one positive neighbor and that it is not boundary and it is a neuron, if so, it is a hole
+            if kick_out==False and len(list(filter(lambda a: a>0, neighbor_labels[c])))==1 and np.max(neighbor_labels[c])!=100000000 and np.max(neighbor_labels[c])>0:
                 associated_label[c] = np.max(neighbor_labels[c])
                 isWhole[c]=1
+
+                for elem in neighbor_labels[c]:
+                    if elem < 0:
+                        associated_label[c] = np.max(neighbor_labels[c])
+                        isWhole[c]=1
+
+                print("Hole:")
+                print(neighbor_labels[c])
+                print("Component, Associated label: " + str(c) + str(associated_label[c]))
+                print("-----------------------------------------------")
 
             else:
                 associated_label[c] = 0
                 isWhole[c] = 0
 
+                for elem in neighbor_labels[c]:
+                    if elem < 0:
+                        associated_label[c] = 0
+                        isWhole[c]=0
+
+                print("Nohole:")
+                print(neighbor_labels[c])
+                print("-----------------------------------------------")
+
+            del open
+
         else:
             associated_label[c] = 0
             isWhole[c] = 0
-            # associated_label[c] = neighbor_labels[c][0] + 5
 
-    # print(neighbor_labels)
-    # print(associated_label)
     return associated_label, isWhole
 
 # fill detedted wholes and give non_wholes their ID (for visualization)
@@ -358,8 +392,6 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
                     n_comp_total += n_comp
                     cell_counter += 1
-
-        print(len(neighbor_label_set_added))
 
         associated_label, isWhole = findAssociatedLabels(neighbor_label_set_added, n_comp_total)
 
@@ -507,7 +539,7 @@ def main():
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
     vizWholes = True
     saveStatistics = False
-    box_concat = [0,128,0,400,0,400]
+    box_concat = [0,128,0,1000,0,1000]
     slices_start = 4
     slices_end = 8
 
@@ -518,6 +550,10 @@ def main():
     sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
     folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
     os.mkdir(folder_path)
+
+    timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
+    f = open(folder_path + timestr0 + '.txt','w')
+    sys.stdout = f
 
     # concat files
     concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)

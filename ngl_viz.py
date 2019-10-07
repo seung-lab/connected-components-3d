@@ -65,13 +65,12 @@ idRes = 1 #which resolution to use to search for IDs
 res=[20,18,18]; # resolution of the data
 res_4 = [80,72,72]
 data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-sample_name= "ZF_concat_0to15_2048_2048_outp_20191002_18_52_51/"
-sample_name_real= "ZF_concat_0to15_2048_2048"
-compare= "BA_0_DS_4_OL_4_BS_0_25_S_3"
+sample_name= "ZF_concat_4to8_1000_1000"
+compare= "testing2"
 
-box = [0,1500,0,1500,0,1500]
+box = [0,640,0,1000,0,1000]
 
-file_name_org =             data_path + sample_name + "/" + sample_name_real + ".h5"
+file_name_org =             data_path + sample_name + "/" + sample_name + ".h5"
 file_name_filled_gt =       data_path + sample_name + "/" + "gt/" + "filled_gt.h5"
 file_name_wholes_gt =       data_path + sample_name + "/" + "gt/" + "wholes_gt.h5"
 # file_name_filled_inBlocks = data_path + sample_name + "_outp/" + sample_name + "_filled_inBlocks.h5"
@@ -84,12 +83,12 @@ print("-----------------------------------------------------------------")
 print(viewer)
 
 loadViz(box=box, path=file_name_org,             caption="original",         res=res, printIDs = True, idRes=4*idRes, printCoods=False)
-loadViz(box=box, path=file_name_filled_gt,       caption="filled_gt",        res=res, printIDs = True, idRes=4*idRes, printCoods=False)
+# loadViz(box=box, path=file_name_filled_gt,       caption="filled_gt",        res=res, printIDs = True, idRes=4*idRes, printCoods=False)
 # loadViz(box=box, path=file_name_filled_inBlocks, caption="filled_inBlocks",  res=res, idRes=idRes, printCoods=False)
 loadViz(box=box, path=file_name_wholes_gt,       caption="wholes_gt",        res=res, printIDs = True, idRes=idRes, printCoods=False)
 # loadViz(box=box, path=file_name_wholes_inBlocks, caption="wholes_inBlocks",  res=res, idRes=idRes, printCoods=False)
 loadViz(box=box, path=file_name_diff_wholes,     caption="diff_wholes",      res=res, printIDs = True, idRes=idRes, printCoods=False)
-loadViz(box=box, path=file_name_dsp,             caption="dsp_4",              res=res_4, printIDs = False, idRes=idRes, printCoods=False)
+# loadViz(box=box, path=file_name_dsp,             caption="dsp_4",              res=res_4, printIDs = False, idRes=idRes, printCoods=False)
 
 print("----------------------------DONE---------------------------------")
 print("-----------------------------------------------------------------")
