@@ -100,8 +100,8 @@ def writeStatistics(n_comp, isWhole, comp_counts, comp_mean, comp_var, data_path
     np.savetxt(filename, statTable, delimiter=',', header=header)
 
 # find sets of adjacent components
-# @njit
-def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_out, n_comp_total, border_comp):
+@njit
+def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_out, n_comp_total, border_comp, yres, xres):
 
     neighbor_label_set = set()
 
@@ -123,38 +123,34 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
                     neighbor_label_set.add((labels_out[iz,iy,ix],labels_out[iz,iy,ix+1]))
                     neighbor_label_set.add((labels_out[iz,iy,ix+1],labels_out[iz,iy,ix]))
 
+    print("----------------------------------")
+
+    print(box[0],box[1],box[2],box[3],box[4],box[5])
+
+    print("----------------------------------")
+
+    print(box[0],   box[2],     box[4])
+    print(box[0],   box[2],     box[5]-1)
+    print(box[0],   box[3]-1,   box[4])
+    print(box[0],   box[3]-1,   box[5]-1)
+    print(box[1]-1, box[2],     box[4])
+    print(box[1]-1, box[2],     box[5]-1)
+    print(box[1]-1, box[3]-1,   box[4])
+    print(box[1]-1, box[3]-1,   box[5]-1)
+
     for iz in [0, box[1]-box[0]-1]:
-        print("-----------------------------------------------")
-        print(bz,by,bx)
-        print(box[0],box[1],box[2],box[3],box[4],box[5])
-        print(iz+box[0])
         for iy in range(0, box[3]-box[2]):
             for ix in range(0, box[5]-box[4]):
-                # neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
-                # if iz==447 and iy==171 and ix==170:
-                #     print("---------------------------")
-                #     print(bz,by,bx)
-                #     print(iz,iy,ix)
-                #     print(labels_out[iz,iy,ix])
-                #     print(iz+box[0],iy+box[2],ix+box[4])
-                if IdiToIdx(iz+box[0],iy+box[2],ix+box[4]) in border_comp.keys():
-                    if border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] != labels_out[iz,iy,ix]:
-                        print("ERROR A")
-                        print(iz+box[0],iy+box[2],ix+box[4])
-                        border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
-                else:
-                    border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
-
+                # if IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres) in border_comp.keys():
+                #     if border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] != labels_out[iz,iy,ix]:
+                #         print(iz+box[0],iy+box[2],ix+box[4])
+                #         raise ValueError("ERROR A")
+                #         border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] = labels_out[iz,iy,ix]
+                # else:
+                border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] = labels_out[iz,iy,ix]
                 if iz == 0 and bz > 0:
-                    # if iz==0 and iy==171 and ix==170:
-                    #     print("---------------------------")
-                    #     print(bz,by,bx)
-                    #     print(iz,iy,ix)
-                    #     print(labels_out[iz,iy,ix])
-                    #     print(iz+box[0]-1,iy+box[2],ix+box[4])
-                    #     print(border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4])])
-                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4])]))
-                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4])],labels_out[iz,iy,ix]))
+                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4],yres,xres)]))
+                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0]-1,iy+box[2],ix+box[4],yres,xres)],labels_out[iz,iy,ix]))
                 elif iz == 0 and bz == 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif iz==(box[1]-box[0]-1) and bz==(n_blocks_z-1):
@@ -163,18 +159,16 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
     for iz in range(0, box[1]-box[0]):
         for iy in [0, box[3]-box[2]-1]:
             for ix in range(0, box[5]-box[4]):
-                # neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
-                if IdiToIdx(iz+box[0],iy+box[2],ix+box[4]) in border_comp.keys():
-                    if border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] != labels_out[iz,iy,ix]:
-                        print("ERROR B")
-                        print(iz+box[0],iy+box[2],ix+box[4])
-                        border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
-                else:
-                    border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
-
+                # if IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres) in border_comp.keys():
+                #     if border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] != labels_out[iz,iy,ix]:
+                #         print(iz+box[0],iy+box[2],ix+box[4])
+                #         raise ValueError("ERROR B")
+                #         border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] = labels_out[iz,iy,ix]
+                # else:
+                border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] = labels_out[iz,iy,ix]
                 if iy == 0 and by > 0:
-                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4])]))
-                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4])],labels_out[iz,iy,ix]))
+                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4],yres,xres)]))
+                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0],iy+box[2]-1,ix+box[4],yres,xres)],labels_out[iz,iy,ix]))
                 elif iy == 0 and by == 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif iy==(box[3]-box[2]-1) and by==(n_blocks_y-1):
@@ -183,19 +177,16 @@ def findAdjLabelSet(box, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_
     for iz in range(0, box[1]-box[0]):
         for iy in range(0, box[3]-box[2]):
             for ix in [0, box[5]-box[4]-1]:
-                # neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
-                if IdiToIdx(iz+box[0],iy+box[2],ix+box[4]) in border_comp.keys():
-                    if border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] != labels_out[iz,iy,ix]:
-                        print("ERROR C")
-                        print(iz+box[0],iy+box[2],ix+box[4])
-                        border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
-                else:
-                    border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4])] = labels_out[iz,iy,ix]
-
-
+                # if IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres) in border_comp.keys():
+                #     if border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] != labels_out[iz,iy,ix]:
+                #         print(iz+box[0],iy+box[2],ix+box[4])
+                #         raise ValueError("ERROR C")
+                #         border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] = labels_out[iz,iy,ix]
+                # else:
+                border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4],yres,xres)] = labels_out[iz,iy,ix]
                 if ix == 0 and bx > 0:
-                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4]-1)]))
-                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4]-1)],labels_out[iz,iy,ix]))
+                    neighbor_label_set.add((labels_out[iz,iy,ix], border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4]-1,yres,xres)]))
+                    neighbor_label_set.add((border_comp[IdiToIdx(iz+box[0],iy+box[2],ix+box[4]-1,yres,xres)],labels_out[iz,iy,ix]))
                 elif ix == 0 and bx == 0:
                     neighbor_label_set.add((labels_out[iz,iy,ix], 100000000))
                 elif ix==(box[5]-box[4]-1) and bx==(n_blocks_x-1):
@@ -450,7 +441,7 @@ def getBoxDyn(box, bz, bs_z, n_blocks_z, by, bs_y, n_blocks_y, bx, bs_x, n_block
         return box_dyn
 
 # process whole filling process for chung of data
-def processData(saveStatistics, output_path, sample_name, labels, rel_block_size):
+def processData(saveStatistics, output_path, sample_name, labels, rel_block_size, yres, xres):
 
         # read in chunk size
         box = [0,labels.shape[0],0,labels.shape[1],0,labels.shape[2]]
@@ -494,7 +485,8 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
                     label_start = label_start-n_comp
 
                     labels_out[box_dyn[0]:box_dyn[1],box_dyn[2]:box_dyn[3],box_dyn[4]:box_dyn[5]] = labels_cut_out
-                    neighbor_label_set, border_comp_added = findAdjLabelSet(box_dyn, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x, labels_cut_out, n_comp_total, border_comp_added)
+                    neighbor_label_set, border_comp_added = findAdjLabelSet(box_dyn, bz, by, bx, n_blocks_z, n_blocks_y, n_blocks_x,
+                                                                            labels_cut_out, n_comp_total, border_comp_added, yres, xres)
                     neighbor_label_set_added = neighbor_label_set_added.union(neighbor_label_set)
 
                     print(len(border_comp_added))
@@ -533,7 +525,7 @@ def processData(saveStatistics, output_path, sample_name, labels, rel_block_size
 
         return labels, total_wholes_found
 
-def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, rel_block_size):
+def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, rel_block_size, yres, xres):
 
     output_path = data_path + ID + "/"
     if os.path.exists(output_path):
@@ -554,7 +546,7 @@ def processFile(box, data_path, sample_name, ID, saveStatistics, vizWholes, rel_
     # overlap in points in one direction (total is twice)
 
     labels, n_wholes = processData(saveStatistics=saveStatistics, output_path=output_path, sample_name=ID,
-                labels=labels, rel_block_size=rel_block_size)
+                labels=labels, rel_block_size=rel_block_size, yres=yres, xres=xres)
 
     print("-----------------------------------------------------------------")
     print("Time elapsed: " + str(time.time() - start_time))
@@ -654,18 +646,14 @@ def evaluateWholes(folder_path,ID,sample_name,n_wholes):
     del diff
 
 @njit
-def IdxToIdi(iv):
-    xres = 800
-    yres = 800
+def IdxToIdi(iv, yres, xres):
     iz = iv // (yres * xres)
     iy = (iv - iz * yres * xres) // xres
     ix = iv % xres
     return iz, iy, ix
 
 @njit
-def IdiToIdx(ix, iy, iz):
-    xres = 800
-    yres = 800
+def IdiToIdx(ix, iy, iz, yres, xres):
     return iz * yres * xres + iy * xres + ix
 
 def main():
@@ -674,16 +662,11 @@ def main():
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
     vizWholes = True
     saveStatistics = False
-    box_concat = [0,130,0,1000,0,1000]
+    box_concat = [0,128,0,400,0,400]
     slices_start = 4
     slices_end = 6
-    # box_concat = [0,130,0,113,0,113]
-    # slices_start = 4
-    # slices_end = 4
 
-    global xres
     xres = box_concat[5]
-    global yres
     yres = box_concat[3]
 
     # sample_name = "ZF_concat_4to10_1000_1000"
@@ -701,17 +684,19 @@ def main():
     # # concat files
     concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
 
-    # # # compute groundtruth (in one block)
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1)
+    # # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt",
+                        saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1, yres=yres, xres=xres)
 
     # # compute groundtruth (in one block)
     box = getBoxAll(folder_path+sample_name+".h5")
-    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="testing12", saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5)
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="ongoing",
+                        saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=0.5, yres=yres, xres=xres)
 
     #
-    # ID="testing2"
-    # evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
+    ID="ongoing"
+    evaluateWholes(folder_path=folder_path,ID=ID,sample_name=sample_name,n_wholes=n_wholes)
 
 
 
