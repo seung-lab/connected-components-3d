@@ -662,9 +662,9 @@ def main():
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
     vizWholes = True
     saveStatistics = False
-    box_concat = [0,128,0,400,0,400]
+    box_concat = [0,128,0,1000,0,1000]
     slices_start = 4
-    slices_end = 6
+    slices_end = 8
 
     xres = box_concat[5]
     yres = box_concat[3]
