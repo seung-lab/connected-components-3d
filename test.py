@@ -269,108 +269,6 @@ def getStat(box, labels_out, n_comp):
     return comp_counts, comp_mean, comp_var
 
 # create string of connected components that are a whole
-def findAssociatedLabelsOld(neighbor_label_set, n_comp, ):
-
-    # process
-    neighbor_labels = [[] for _ in range(n_comp)] # extend by 1 and leave first entry empty
-    for s in range(len(neighbor_label_set)):
-        temp = neighbor_label_set.pop()
-        if temp[0]<0:
-            if temp[1] not in neighbor_labels[temp[0]]:
-                neighbor_labels[temp[0]].append(temp[1])
-
-    #find connected components that are a whole
-    associated_label = Dict.empty(key_type=types.int64,value_type=types.int64)
-    isWhole = np.ones((n_comp,1), dtype=np.int8)*-1
-
-    for c in range(-n_comp,0):
-
-        # check if this component has already been processed (if so, continue)
-        if isWhole[c]!=-1:
-            continue
-
-        # check if component has only one neighbor and this neighbor is not boundary and is a neuron
-        elif len(neighbor_labels[c])==1 and neighbor_labels[c][0]!=100000000 and neighbor_labels[c][0]>0:
-            associated_label[c] = neighbor_labels[c][0]
-            isWhole[c] = 1
-
-        # if element has only one .positive neighbor, explore this in detail
-        elif len(list(filter(lambda a: a > 0, neighbor_labels[c])))==1:
-            # set of nodes to explore
-            open = set()
-
-            kick_out = False
-
-            # iterate over all neighbots and add them to the open set, if they are a background componente (i.e. are negative)
-            for comp in neighbor_labels[c]:
-                if comp == 100000000:
-                    kick_out =  True
-                    neighbor_labels[c].append(100000000)
-                    break
-                elif comp < 0:
-                    for son in neighbor_labels[comp]:
-                        if son not in neighbor_labels[c] and son > 0:
-                            kick_out =  True
-                            neighbor_labels[c].append(son)
-                            break
-                        elif son not in neighbor_labels[c]:
-                            neighbor_labels[c].append(son)
-                            if son<0:
-                                open.add(son)
-            # appen all negative background components that are neighbors or ancestors
-            while len(open)>0:
-                comp = open.pop()
-                if comp == 100000000:
-                    kick_out =  True
-                    neighbor_labels[c].append(100000000)
-                    break
-                elif comp < 0:
-                    for son in neighbor_labels[comp]:
-                        if son not in neighbor_labels[c] and son > 0:
-                            kick_out =  True
-                            neighbor_labels[c].append(son)
-                            break
-                        elif son not in neighbor_labels[c]:
-                            neighbor_labels[c].append(son)
-                            if son<0:
-                                open.add(son)
-
-            # check again if there is only one positive neighbor and that it is not boundary and it is a neuron, if so, it is a hole
-            if kick_out==False and len(list(filter(lambda a: a>0, neighbor_labels[c])))==1 and np.max(neighbor_labels[c])!=100000000 and np.max(neighbor_labels[c])>0:
-                associated_label[c] = np.max(neighbor_labels[c])
-                isWhole[c]=1
-
-                for elem in neighbor_labels[c]:
-                    if elem < 0:
-                        associated_label[c] = np.max(neighbor_labels[c])
-                        isWhole[c]=1
-                print("Hole:")
-                print(neighbor_labels[c])
-                print("Component, Associated label: " + str(c) + str(associated_label[c]))
-                print("-----------------------------------------------")
-
-            else:
-                associated_label[c] = 0
-                isWhole[c] = 0
-
-                for elem in neighbor_labels[c]:
-                    if elem < 0:
-                        associated_label[c] = 0
-                        isWhole[c]=0
-
-                # print("Nohole:")
-                # print(neighbor_labels[c])
-                # print("-----------------------------------------------")
-
-            del open
-
-        else:
-            associated_label[c] = 0
-            isWhole[c] = 0
-
-    return associated_label, isWhole
-
-# create string of connected components that are a whole
 def findAssociatedLabels(neighbor_label_set, n_comp, ):
     # process
     neighbor_labels = [[] for _ in range(n_comp)] # extend by 1 and leave first entry empty
@@ -703,32 +601,32 @@ def main():
     output_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
     vizWholes = True
     saveStatistics = False
-    box_concat = [0,128,0,1000,0,1000]
-    slices_start = 4
-    slices_end = 12
+    box_concat = [0,128,0,1280,0,1280]
+    slices_start = 0
+    slices_end = 9
 
     xres = box_concat[5]
     yres = box_concat[3]
 
-    sample_name = "ZF_concat_4to12_1000_1000"
-    folder_path = output_path + sample_name + "/"
-    n_wholes = 698
+    # sample_name = "ZF_concat_4to12_1000_1000"
+    # folder_path = output_path + sample_name + "/"
+    # n_wholes = 698
 
-    # sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
-    # folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
-    # os.mkdir(folder_path)
+    sample_name = "ZF_concat_"+str(slices_start)+"to"+str(slices_end)+"_"+str(box_concat[3])+"_"+str(box_concat[5])
+    folder_path = output_path + sample_name + "_outp_" + time.strftime("%Y%m%d_%H_%M_%S") + "/"
+    os.mkdir(folder_path)
 
     # timestr0 = time.strftime("%Y%m%d_%H_%M_%S")
     # f = open(folder_path + timestr0 + '.txt','w')
     # sys.stdout = f
 
-    # # # concat files
-    # concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
+    # # concat files
+    concatFiles(box=box_concat, slices_s=slices_start, slices_e=slices_end, output_path=folder_path+sample_name, data_path=data_path)
 
-    # # # compute groundtruth (in one block)
-    # box = getBoxAll(folder_path+sample_name+".h5")
-    # n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt",
-    #                     saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1, yres=yres, xres=xres)
+    # # compute groundtruth (in one block)
+    box = getBoxAll(folder_path+sample_name+".h5")
+    n_wholes = processFile(box=box, data_path=folder_path, sample_name=sample_name, ID="gt",
+                        saveStatistics=saveStatistics, vizWholes=vizWholes, rel_block_size=1, yres=yres, xres=xres)
 
     # # compute groundtruth (in one block)
     box = getBoxAll(folder_path+sample_name+".h5")

@@ -1,10 +1,10 @@
 import numpy as np
 
+print(np.int64(10).itemsize)
 
-
-x = [0,1,2,3,4,-5]
-b = list(filter(lambda a: a > 0, x))
-print(b)
+# x = [0,1,2,3,4,-5]
+# b = list(filter(lambda a: a > 0, x))
+# print(b)
 
 # a = np.ones((3,3))
 # a[2,2] = -2
