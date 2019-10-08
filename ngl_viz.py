@@ -69,10 +69,10 @@ idRes = 1 #which resolution to use to search for IDs
 res=[20,18,18]; # resolution of the data
 res_4 = [80,72,72]
 data_path = "/home/frtim/wiring/raw_data/segmentations/Zebrafinch/stacked_volumes/"
-sample_name= "ZF_concat_4to10_1000_1000"
-compare= "testing2"
+sample_name= "ZF_concat_4to12_1000_1000"
+compare= "ongoing8"
 
-box = [0,896,0,1000,0,1000]
+box = [0,1152,0,1000,0,1000]
 
 file_name_org =             data_path + sample_name + "/" + sample_name + ".h5"
 file_name_filled_gt =       data_path + sample_name + "/" + "gt/" + "filled_gt.h5"
@@ -80,7 +80,7 @@ file_name_wholes_gt =       data_path + sample_name + "/" + "gt/" + "wholes_gt.h
 # file_name_filled_inBlocks = data_path + sample_name + "_outp/" + sample_name + "_filled_inBlocks.h5"
 # file_name_wholes_inBlocks = data_path + sample_name + "_outp/" + sample_name + "_wholes_inBlocks.h5"
 file_name_diff_wholes =     data_path + sample_name + "/" + compare + "/" + "diff_wholes_" + compare + ".h5"
-file_name_dsp =             data_path + sample_name + "/" + compare + "/" + "dsp_4.h5"
+# file_name_dsp =             data_path + sample_name + "/" + compare + "/" + "dsp_4.h5"
 file_name_cc3d =             data_path + sample_name + "/" + compare + "/" + "CC3D.h5"
 
 print("----------------------------HOST:---------------------------------")
