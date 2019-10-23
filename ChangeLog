@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+1.4.1
+-----
+
+* release(1.4.1): ensure documentation and version number are correct
+* docs: update docstring for connected\_components
+* docs: add example of connectivity argument for region\_graph
+
 1.4.0
 -----
 
