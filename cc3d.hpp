@@ -49,6 +49,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
+#include <stdexcept>
 
 namespace cc3d {
 
@@ -695,7 +696,7 @@ uint32_t* connected_components3d(
     );
   }
   else {
-    throw "Only 6, 18, and 26 3D connectivities are supported.";
+    throw std::runtime_error("Only 6, 18, and 26 3D connectivities are supported.");
   }
 }
 
