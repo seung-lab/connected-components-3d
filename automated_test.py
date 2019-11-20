@@ -8,6 +8,8 @@ TEST_TYPES = [
   np.uint8, np.uint16, np.uint32, np.uint64,
 ]
 
+OUT_TYPES = [ np.uint16, np.uint32, np.uint64 ]
+
 def gt_c2f(gt):
   f_gt = np.copy(gt)
   mx = np.max(gt) + 1
@@ -19,18 +21,19 @@ def gt_c2f(gt):
 def test_2d_square():
   def test(order, ground_truth):
     for dtype in TEST_TYPES:
-      input_labels = np.zeros( (16,16), dtype=dtype, order=order )
-      input_labels[:8,:8] = 8
-      input_labels[8:,:8] = 9
-      input_labels[:8,8:] = 10
-      input_labels[8:,8:] = 11
+      for out_dtype in OUT_TYPES:
+        input_labels = np.zeros( (16,16), dtype=dtype, order=order )
+        input_labels[:8,:8] = 8
+        input_labels[8:,:8] = 9
+        input_labels[:8,8:] = 10
+        input_labels[8:,8:] = 11
 
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      
-      print(order)
-      print(output_labels)
+        output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
+        
+        print(order)
+        print(output_labels)
 
-      assert np.all(output_labels == ground_truth.astype(dtype))
+        assert np.all(output_labels == ground_truth.astype(dtype))
 
   ground_truth = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
@@ -57,19 +60,20 @@ def test_2d_square():
 def test_2d_rectangle():
   def test(order, ground_truth):
     for dtype in TEST_TYPES:
-      input_labels = np.zeros( (16,13,1), dtype=dtype, order=order )
-      input_labels[:8,:8,:] = 8
-      input_labels[8:,:8,:] = 9
-      input_labels[:8,8:,:] = 10
-      input_labels[8:,8:,:] = 11
+      for out_dtype in OUT_TYPES:
+        input_labels = np.zeros( (16,13,1), dtype=dtype, order=order )
+        input_labels[:8,:8,:] = 8
+        input_labels[8:,:8,:] = 9
+        input_labels[:8,8:,:] = 10
+        input_labels[8:,8:,:] = 11
 
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      print(output_labels.shape)
-      output_labels = output_labels[:,:,0]
+        output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
+        print(output_labels.shape)
+        output_labels = output_labels[:,:,0]
 
-      print(output_labels)
+        print(output_labels)
 
-      assert np.all(output_labels == ground_truth.astype(dtype))
+        assert np.all(output_labels == ground_truth.astype(dtype))
 
   ground_truth = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
@@ -367,22 +371,23 @@ def test_max_labels_nonsensical():
 def test_compare_scipy_26():
   import scipy.ndimage.measurements
 
-  sx, sy, sz = 256, 256, 256
+  sx, sy, sz = 128, 128, 128
   labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
 
-  structure = [
-    [[1,1,1], [1,1,1], [1,1,1]],
-    [[1,1,1], [1,1,1], [1,1,1]],
-    [[1,1,1], [1,1,1], [1,1,1]]
-  ]
+  for out_dtype in OUT_TYPES:
+    structure = [
+      [[1,1,1], [1,1,1], [1,1,1]],
+      [[1,1,1], [1,1,1], [1,1,1]],
+      [[1,1,1], [1,1,1], [1,1,1]]
+    ]
 
-  cc3d_labels = cc3d.connected_components(labels, connectivity=26)
-  scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
+    cc3d_labels = cc3d.connected_components(labels, connectivity=26, out_dtype=out_dtype)
+    scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
 
-  print(cc3d_labels)
-  print(scipy_labels)
+    print(cc3d_labels)
+    print(scipy_labels)
 
-  assert np.all(cc3d_labels == scipy_labels)
+    assert np.all(cc3d_labels == scipy_labels)
 
 def test_compare_scipy_18():
   import scipy.ndimage.measurements

@@ -49,6 +49,11 @@ labels_out = cc3d.connected_components(labels_in) # 26-connected
 connectivity = 6 # only 26, 18, and 6 are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
+# You can adjust the bit width of the output to accomodate
+# different expected image statistics with memory usage tradeoffs.
+# uint16, uint32 (default), and uint64 are supported.
+labels_out = cc3d.connected_components(labels_in, out_dtype=np.uint16)
+
 # You can extract individual components like so:
 N = np.max(labels_out)
 for segid in range(1, N+1):
@@ -74,12 +79,35 @@ labels_out = connected_components(labels_in, max_labels=20000)
 ```cpp
 #include "cc3d.hpp"
 
+// pseudo-code definition 
+OUT_TYPE* cc_labels = cc3d::connected_components<IN_TYPE, OUT_TYPE>(
+    IN_TYPE* in_labels, 
+    const int64_t sx, const int64_t sy, const int64_t sz, // dimensions ; sx = size x
+    int64_t max_labels, // sx*sy*sz or less if you want to try saving memory
+    const int64_t connectivity, // 6, 18, or 26
+    OUT_TYPE* out_labels = NULL // provide your own output buffer if you want
+);
+
+// EXAMPLES
+
 // 3d array represented as 1d array
 int* labels = new int[512*512*512](); 
 
 uint32_t* cc_labels = cc3d::connected_components3d<int>(
   labels, /*sx=*/512, /*sy=*/512, /*sz=*/512
 );
+
+// The default template parameter for output type is uint32_t
+uint64_t* cc_labels = cc3d::connected_components3d<int, uint64_t>(
+  labels, /*sx=*/512, /*sy=*/512, /*sz=*/512
+);
+
+uint16_t* cc_labels = cc3d::connected_components3d<int, uint16_t>(
+  labels, /*sx=*/512, /*sy=*/512, /*sz=*/512, 
+  /*max_labels=*/512*512*512, // possible number of intermediate components
+  /*connectivity=*/18 // default is 26 connected
+);
+
 ```
 
 ## Algorithm Description

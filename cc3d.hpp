@@ -49,6 +49,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
+#include <stdexcept>
 
 namespace cc3d {
 
@@ -143,12 +144,12 @@ public:
 // into the z - 1 problem unified with the original 2D algorithm.
 // If literally none of the Z - 1 are filled, we can use a faster version
 // of this that uses copies.
-template <typename T>
+template <typename T, typename OUT = uint32_t>
 inline void unify2d(
     const int64_t loc, const T cur,
     const int64_t x, const int64_t y, 
     const int64_t sx, const int64_t sy, 
-    const T* in_labels, const uint32_t *out_labels,
+    const T* in_labels, const OUT* out_labels,
     DisjointSet<uint32_t> &equivalences  
   ) {
 
@@ -174,12 +175,12 @@ inline void unify2d(
   }
 }
 
-template <typename T>
+template <typename T, typename OUT = uint32_t>
 inline void unify2d_rt(
     const int64_t loc, const T cur,
     const int64_t x, const int64_t y, 
     const int64_t sx, const int64_t sy, 
-    const T* in_labels, const uint32_t *out_labels,
+    const T* in_labels, const OUT* out_labels,
     DisjointSet<uint32_t> &equivalences  
   ) {
 
@@ -188,12 +189,12 @@ inline void unify2d_rt(
   }
 }
 
-template <typename T>
+template <typename T, typename OUT = uint32_t>
 inline void unify2d_lt(
     const int64_t loc, const T cur,
     const int64_t x, const int64_t y, 
     const int64_t sx, const int64_t sy, 
-    const T* in_labels, const uint32_t *out_labels,
+    const T* in_labels, const OUT* out_labels,
     DisjointSet<uint32_t> &equivalences  
   ) {
 
@@ -210,14 +211,15 @@ inline void unify2d_lt(
 // labels and this resolves them into their final labels. We
 // modify this pass to also ensure that the output labels are
 // numbered from 1 sequentially.
-uint32_t* relabel(
-    uint32_t* out_labels, const int64_t voxels,
+template <typename OUT = uint32_t>
+OUT* relabel(
+    OUT* out_labels, const int64_t voxels,
     const int64_t num_labels, DisjointSet<uint32_t> &equivalences
   ) {
 
-  uint32_t label;
-  uint32_t* renumber = new uint32_t[num_labels + 1]();
-  uint32_t next_label = 1;
+  OUT label;
+  OUT* renumber = new OUT[num_labels + 1]();
+  OUT next_label = 1;
 
   // Raster Scan 2: Write final labels based on equivalences
   for (int64_t loc = 0; loc < voxels; loc++) {
@@ -242,11 +244,11 @@ uint32_t* relabel(
   return out_labels;
 }
 
-template <typename T>
-uint32_t* connected_components3d_26(
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components3d_26(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, uint32_t *out_labels = NULL
+    int64_t max_labels, OUT *out_labels = NULL
   ) {
 
 	const int64_t sxy = sx * sy;
@@ -257,7 +259,7 @@ uint32_t* connected_components3d_26(
   DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
-    out_labels = new uint32_t[voxels]();
+    out_labels = new OUT[voxels]();
   }
      
   /*
@@ -289,7 +291,7 @@ uint32_t* connected_components3d_26(
   const int64_t M = -1;
   // N = 0;
 
-  uint32_t next_label = 0;
+  OUT next_label = 0;
   int64_t loc = 0;
 
   // Raster Scan 1: Set temporary labels and 
@@ -433,14 +435,14 @@ uint32_t* connected_components3d_26(
     }
   }
 
-  return relabel(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
 }
 
-template <typename T>
-uint32_t* connected_components3d_18(
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components3d_18(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, uint32_t *out_labels = NULL
+    int64_t max_labels, OUT *out_labels = NULL
   ) {
 
   const int64_t sxy = sx * sy;
@@ -451,7 +453,7 @@ uint32_t* connected_components3d_18(
   DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
-    out_labels = new uint32_t[voxels]();
+    out_labels = new OUT[voxels]();
   }
      
   /*
@@ -479,7 +481,7 @@ uint32_t* connected_components3d_18(
   const int64_t M = -1;
   // N = 0;
 
-  uint32_t next_label = 0;
+  OUT next_label = 0;
   int64_t loc = 0;
 
   // Raster Scan 1: Set temporary labels and 
@@ -578,14 +580,14 @@ uint32_t* connected_components3d_18(
     }
   }
 
-  return relabel(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
 }
 
-template <typename T>
-uint32_t* connected_components3d_6(
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, uint32_t *out_labels = NULL
+    int64_t max_labels, OUT *out_labels = NULL
   ) {
 
   const int64_t sxy = sx * sy;
@@ -596,7 +598,7 @@ uint32_t* connected_components3d_6(
   DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
-    out_labels = new uint32_t[voxels]();
+    out_labels = new OUT[voxels]();
   }
     
   /*
@@ -619,7 +621,7 @@ uint32_t* connected_components3d_6(
   // N = 0;
 
   int64_t loc = 0;
-  uint32_t next_label = 0;
+  OUT next_label = 0;
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
@@ -664,49 +666,49 @@ uint32_t* connected_components3d_6(
     }
   }
 
-  return relabel(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
 }
 
 
-template <typename T>
-uint32_t* connected_components3d(
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     int64_t max_labels, const int64_t connectivity,
-    uint32_t *out_labels = NULL
+    OUT *out_labels = NULL
   ) {
 
   if (connectivity == 26) {
-    return connected_components3d_26<T>(
+    return connected_components3d_26<T, OUT>(
       in_labels, sx, sy, sz, 
       max_labels, out_labels
     );
   }
   else if (connectivity == 18) {
-    return connected_components3d_18<T>(
+    return connected_components3d_18<T, OUT>(
       in_labels, sx, sy, sz, 
       max_labels, out_labels
     );
   }
   else if (connectivity == 6) {
-    return connected_components3d_6<T>(
+    return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
       max_labels, out_labels
     );
   }
   else {
-    throw "Only 6, 18, and 26 3D connectivities are supported.";
+    throw std::runtime_error("Only 6, 18, and 26 3D connectivities are supported.");
   }
 }
 
-template <typename T>
-uint32_t* connected_components3d(
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     const int64_t connectivity=26
   ) {
   const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T>(in_labels, sx, sy, sz, voxels, connectivity);
+  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity);
 }
 
 };
