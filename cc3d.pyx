@@ -138,9 +138,9 @@ def connected_components(
   cdef uint64_t[:,:,:] arr_memview64u
 
   cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
-  cdef cnp.ndarray[uint16_t, ndim=1] out_labels16 = np.array([])
-  cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([])
-  cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([])
+  cdef cnp.ndarray[uint16_t, ndim=1] out_labels16 = np.array([], dtype=np.uint16)
+  cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
+  cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
   if out_dtype == np.uint16:
     out_labels16 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
