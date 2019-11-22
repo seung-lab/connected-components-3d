@@ -1,5 +1,6 @@
 import os
 import setuptools
+import sys
 
 join = os.path.join
 
@@ -7,6 +8,12 @@ join = os.path.join
 # cython -3 --fast-fail -v --cplus cc3d.pyx
 
 import numpy as np
+
+extra_compile_args = [
+  '-std=c++11', '-O3', '-ffast-math'
+]
+if sys.platform == 'darwin':
+  extra_compile_args += [ '-stdlib=libc++', '-mmacosx-version-min=10.9' ]
 
 setuptools.setup(
   setup_requires=['pbr', 'numpy'],
@@ -21,9 +28,7 @@ setuptools.setup(
       sources=[ 'cc3d.cpp' ],
       language='c++',
       include_dirs=[ np.get_include() ],
-      extra_compile_args=[
-        '-std=c++11', '-O3', '-ffast-math'
-      ]
+      extra_compile_args=extra_compile_args,
     )
   ],
   pbr=True)
