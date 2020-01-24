@@ -255,6 +255,7 @@ OUT* connected_components3d_26(
 	const int64_t voxels = sxy * sz;
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<int64_t>(pow(2, sizeof(OUT) * 8)));
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
@@ -449,6 +450,7 @@ OUT* connected_components3d_18(
   const int64_t voxels = sxy * sz;
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<int64_t>(pow(2, sizeof(OUT) * 8)));
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
@@ -594,6 +596,7 @@ OUT* connected_components3d_6(
   const int64_t voxels = sxy * sz;
 
   max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<int64_t>(pow(2, sizeof(OUT) * 8)));
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
