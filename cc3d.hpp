@@ -60,7 +60,7 @@ public:
   size_t length;
 
   DisjointSet () {
-    length = 65536;
+    length = 65536; // 2^16, some "reasonable" starting size
     ids = new T[length]();
   }
 
@@ -248,14 +248,15 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_26(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL
   ) {
 
 	const int64_t sxy = sx * sy;
 	const int64_t voxels = sxy * sz;
 
-  max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
-
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));  
+  
   DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
@@ -442,13 +443,14 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_18(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL
   ) {
 
   const int64_t sxy = sx * sy;
   const int64_t voxels = sxy * sz;
 
-  max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
@@ -587,13 +589,14 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL
   ) {
 
   const int64_t sxy = sx * sy;
   const int64_t voxels = sxy * sz;
 
-  max_labels = std::max(std::min(max_labels, voxels), static_cast<int64_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<uint32_t> equivalences(max_labels);
 
@@ -674,7 +677,7 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    int64_t max_labels, const int64_t connectivity,
+    size_t max_labels, const int64_t connectivity,
     OUT *out_labels = NULL
   ) {
 
