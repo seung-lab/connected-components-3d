@@ -39,6 +39,8 @@ python setup.py develop
 
 ## Python Use
 
+Important limitation: Only label values less than or equal to the size of the image in voxels (pixels) are supported currently. If you want to use larger values, consider using [fastremap.renumber](https://github.com/seung-lab/fastremap/).
+
 ```python
 import cc3d
 import numpy as np
