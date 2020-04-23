@@ -259,7 +259,7 @@ def connected_components(
   else:
     return out_labels.reshape( (sx), order=order)
 
-def region_graph_cpp(
+def region_graph(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
     int connectivity=26
   ):
