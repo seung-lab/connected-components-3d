@@ -63,8 +63,7 @@ for segid in range(1, N+1):
   process(extracted_image)
 
 # We also include a region adjacency graph function 
-# that returns a set of undirected edges. It is not optimized 
-# (70-80x slower than connected_components) but it could be improved.
+# that returns a set of undirected edges.
 graph = cc3d.region_graph(labels_out, connectivity=connectivity) 
 ```
 
@@ -98,6 +97,11 @@ uint16_t* cc_labels = cc3d::connected_components3d<int, uint16_t>(
   /*connectivity=*/18 // default is 26 connected
 );
 
+// edges is [ e11, e12, e21, e22, ... ]
+std::vector<uint64_t> edges = cc3d::extract_region_graph<uint64_t>(
+  labels, /*sx=*/512, /*sy=*/512, /*sz=*/512, 
+  /*connectivity=*/18 // default is 26 connected
+);
 ```
 
 ## Algorithm Description
