@@ -717,12 +717,6 @@ OUT* connected_components3d(
 
 // REGION GRAPH BELOW HERE
 
-void connectivity_check(int connectivity) {
-  if (connectivity != 6 && connectivity != 18 && connectivity != 26) {
-    throw std::runtime_error("Only 6, 18, and 26 connectivities are supported.");
-  }
-}
-
 inline void compute_neighborhood(
   int *neighborhood, 
   const int x, const int y, const int z,
@@ -763,9 +757,14 @@ inline void compute_neighborhood(
   neighborhood[9] = (connectivity > 18) * (minus_x + minus_y + minus_z) * (minus_y && minus_z);
   neighborhood[10] = (connectivity > 18) * (plus_x + minus_y + minus_z) * (minus_y && minus_z);
   neighborhood[11] = (connectivity > 18) * (minus_x + plus_y + minus_z) * (plus_y && minus_z);
-  neighborhood[12] = (connectivity > 18) * (plus_y + plus_y + minus_z) * (plus_y && minus_z);
+  neighborhood[12] = (connectivity > 18) * (plus_x + plus_y + minus_z) * (plus_y && minus_z);
 }
 
+struct pair_hash {
+  inline std::size_t operator()(const std::pair<int,int> & v) const {
+    return v.first * 31 + v.second; // arbitrary hash fn
+  }
+};
 
 template <typename T>
 std::vector<T> extract_region_graph(
@@ -773,6 +772,10 @@ std::vector<T> extract_region_graph(
     const int64_t sx, const int64_t sy, const int64_t sz,
     const int64_t connectivity=26
   ) {
+
+  if (connectivity != 6 && connectivity != 18 && connectivity != 26) {
+    throw std::runtime_error("Only 6, 18, and 26 connectivities are supported.");
+  }
 
   const int64_t sxy = sx * sy;
 
@@ -782,19 +785,23 @@ std::vector<T> extract_region_graph(
   T label = 0;
   T last_label = 0;
 
-  std::unordered_set<std::pair<T,T>> edges;
+  std::unordered_set<std::pair<T,T>, pair_hash> edges;
 
   for (int64_t z = 0; z < sz; z++) {
     for (int64_t y = 0; y < sy; y++) {
       for (int64_t x = 0; x < sx; x++) {
-        
         int64_t loc = x + sx * y + sxy * z;
+        cur = labels[loc];
+
+        if (cur == 0) {
+          continue;
+        }
+
         compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
         
-        cur = labels[loc];
         last_label = cur;
 
-        for (int i = 0; i < 13; i++) {
+        for (int i = 0; i < connectivity / 2; i++) {
           int64_t neighboridx = loc + neighborhood[i];
           label = labels[neighboridx];
 
@@ -808,6 +815,7 @@ std::vector<T> extract_region_graph(
             else {
               edges.emplace(std::pair<T,T>(cur, label)); 
             }
+            last_label = label;
           }
         }
       }
@@ -823,6 +831,10 @@ std::vector<T> extract_region_graph(
   }
 
   return output;
+}
+
 };
+
+
 
 #endif
