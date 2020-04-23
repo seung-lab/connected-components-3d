@@ -50,6 +50,12 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     U* out_labels
   )
 
+  cdef vector[T] extract_region_graph[T](
+    T* labels,
+    int64_t sx, int64_t sy, int64_t sz,
+    int64_t connectivity,
+  )
+
 ctypedef fused INTEGER:
   uint8_t
   uint16_t
@@ -253,7 +259,40 @@ def connected_components(
   else:
     return out_labels.reshape( (sx), order=order)
 
-cpdef set region_graph(
+def region_graph_cpp(
+    cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
+    int connectivity=26
+  ):
+  """
+  Get the N-connected region adjacancy graph of a 3D image.
+
+  Supports 26, 18, and 6 connectivities.
+
+  labels: 3D numpy array of integer segmentation labels
+  connectivity: 6, 16, or 26 (default)
+
+  Returns: set of edges
+  """
+  if connectivity not in (6, 18, 26):
+    raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
+
+  cdef vector[INTEGER] res = extract_region_graph(
+    <INTEGER*>&labels[0,0,0],
+    labels.shape[0], labels.shape[1], labels.shape[2],
+    connectivity
+  )
+
+  output = set()
+  cdef size_t i = 0
+
+  for i in range(res.size() // 2):
+    output.add(
+      (res[i * 2], res[i*2 + 1])
+    )
+
+  return output
+
+cpdef set region_graph_py(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
     int8_t connectivity=26
   ):
@@ -282,6 +321,7 @@ cpdef set region_graph(
 
   cdef INTEGER cur = 0
   cdef INTEGER label = 0
+  cdef INTEGER last_label = 0
 
   for z in range(sz):
     for y in range(sy):
@@ -290,14 +330,18 @@ cpdef set region_graph(
         if cur == 0:
           continue
 
+        last_label = cur
         for label in neighbors(labels, x,y,z, sx,sy,sz, connectivity):
           if label == 0:
+            continue
+          elif last_label == label:
             continue
           elif cur != label:
             if cur > label:
               edges.add( (label, cur) )
             else:
               edges.add( (cur, label) )
+            last_label = label
 
   return edges
 
