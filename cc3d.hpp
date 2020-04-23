@@ -50,6 +50,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace cc3d {
 
@@ -714,6 +715,126 @@ OUT* connected_components3d(
   return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity);
 }
 
+// REGION GRAPH BELOW HERE
+
+inline void compute_neighborhood(
+  int *neighborhood, 
+  const int x, const int y, const int z,
+  const uint64_t sx, const uint64_t sy, const uint64_t sz,
+  const int connectivity = 26
+) {
+
+  const int sxy = sx * sy;
+
+  const int plus_x = (x < (static_cast<int>(sx) - 1)); // +x
+  const int minus_x = -1 * (x > 0); // -x
+  const int plus_y = static_cast<int>(sx) * (y < static_cast<int>(sy) - 1); // +y
+  const int minus_y = -static_cast<int>(sx) * (y > 0); // -y
+  const int minus_z = -sxy * static_cast<int>(z > 0); // -z
+
+  // 6-hood
+  neighborhood[0] = minus_x;
+  neighborhood[1] = minus_y;
+  neighborhood[2] = minus_z;
+  
+  // 18-hood
+
+  // xy diagonals
+  neighborhood[3] = (connectivity > 6) * (minus_x + minus_y) * (minus_x && minus_y); // up-left
+  neighborhood[4] = (connectivity > 6) * (plus_x + minus_y) * (plus_x && minus_y); // up-right
+
+  // yz diagonals
+  neighborhood[5] = (connectivity > 6) * (minus_x + minus_z) * (minus_x && minus_z); // down-left
+  neighborhood[6] = (connectivity > 6) * (plus_x + minus_z) * (plus_x && minus_z); // down-right
+
+  // xz diagonals
+  neighborhood[7] = (connectivity > 6) * (minus_y + minus_z) * (minus_y && minus_z); // down-left
+  neighborhood[8] = (connectivity > 6) * (plus_y + minus_z) * (plus_y && minus_z); // down-right
+
+  // 26-hood
+
+  // Now the eight corners of the cube
+  neighborhood[9] = (connectivity > 18) * (minus_x + minus_y + minus_z) * (minus_y && minus_z);
+  neighborhood[10] = (connectivity > 18) * (plus_x + minus_y + minus_z) * (minus_y && minus_z);
+  neighborhood[11] = (connectivity > 18) * (minus_x + plus_y + minus_z) * (plus_y && minus_z);
+  neighborhood[12] = (connectivity > 18) * (plus_x + plus_y + minus_z) * (plus_y && minus_z);
+}
+
+struct pair_hash {
+  inline std::size_t operator()(const std::pair<int,int> & v) const {
+    return v.first * 31 + v.second; // arbitrary hash fn
+  }
 };
+
+template <typename T>
+std::vector<T> extract_region_graph(
+    T* labels, 
+    const int64_t sx, const int64_t sy, const int64_t sz,
+    const int64_t connectivity=26
+  ) {
+
+  if (connectivity != 6 && connectivity != 18 && connectivity != 26) {
+    throw std::runtime_error("Only 6, 18, and 26 connectivities are supported.");
+  }
+
+  const int64_t sxy = sx * sy;
+
+  int neighborhood[13];
+
+  T cur = 0;
+  T label = 0;
+  T last_label = 0;
+
+  std::unordered_set<std::pair<T,T>, pair_hash> edges;
+
+  for (int64_t z = 0; z < sz; z++) {
+    for (int64_t y = 0; y < sy; y++) {
+      for (int64_t x = 0; x < sx; x++) {
+        int64_t loc = x + sx * y + sxy * z;
+        cur = labels[loc];
+
+        if (cur == 0) {
+          continue;
+        }
+
+        compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
+        
+        last_label = cur;
+
+        for (int i = 0; i < connectivity / 2; i++) {
+          int64_t neighboridx = loc + neighborhood[i];
+          label = labels[neighboridx];
+
+          if (label == 0 || label == last_label) {
+            continue;
+          }
+          else if (label != cur) {
+            if (cur > label) {
+              edges.emplace(std::pair<T,T>(label, cur));
+            }
+            else {
+              edges.emplace(std::pair<T,T>(cur, label)); 
+            }
+            last_label = label;
+          }
+        }
+      }
+    }
+  }
+
+  std::vector<T> output;
+  output.reserve(edges.size() * 2);
+
+  for (std::pair<T,T> edge : edges) {
+    output.push_back(edge.first);
+    output.push_back(edge.second);
+  }
+
+  return output;
+}
+
+};
+
+
 
 #endif

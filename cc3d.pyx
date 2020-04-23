@@ -50,6 +50,12 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     U* out_labels
   )
 
+  cdef vector[T] extract_region_graph[T](
+    T* labels,
+    int64_t sx, int64_t sy, int64_t sz,
+    int64_t connectivity,
+  )
+
 ctypedef fused INTEGER:
   uint8_t
   uint16_t
@@ -253,9 +259,9 @@ def connected_components(
   else:
     return out_labels.reshape( (sx), order=order)
 
-cpdef set region_graph(
+def region_graph(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
-    int8_t connectivity=26
+    int connectivity=26
   ):
   """
   Get the N-connected region adjacancy graph of a 3D image.
@@ -270,92 +276,22 @@ cpdef set region_graph(
   if connectivity not in (6, 18, 26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
 
-  cdef int64_t x = 0
-  cdef int64_t y = 0
-  cdef int64_t z = 0
+  labels = np.asfortranarray(labels)
 
-  cdef int64_t sx = labels.shape[0]
-  cdef int64_t sy = labels.shape[1]
-  cdef int64_t sz = labels.shape[2]
+  cdef vector[INTEGER] res = extract_region_graph(
+    <INTEGER*>&labels[0,0,0],
+    labels.shape[0], labels.shape[1], labels.shape[2],
+    connectivity
+  )
 
-  cdef set edges = set()
+  output = set()
+  cdef size_t i = 0
 
-  cdef INTEGER cur = 0
-  cdef INTEGER label = 0
-
-  for z in range(sz):
-    for y in range(sy):
-      for x in range(sx):
-        cur = labels[x,y,z]
-        if cur == 0:
-          continue
-
-        for label in neighbors(labels, x,y,z, sx,sy,sz, connectivity):
-          if label == 0:
-            continue
-          elif cur != label:
-            if cur > label:
-              edges.add( (label, cur) )
-            else:
-              edges.add( (cur, label) )
-
-  return edges
-
-cdef tuple neighbors(
-    cnp.ndarray[INTEGER, ndim=3, cast=True] labels, 
-    int64_t x, int64_t y, int64_t z, 
-    int64_t sx, int64_t sy, int64_t sz,
-    int16_t connectivity
-  ):
-
-  if connectivity == 6:
-    return (
-      # N=6
-      (x > 0 and labels[x - 1, y, z]),
-      (y > 0 and labels[x, y - 1, z]),
-      (z > 0 and labels[x, y, z - 1]),
-    )
-  elif connectivity == 18:
-    return (
-      # N=6
-      (x > 0 and labels[x - 1, y, z]),
-      (y > 0 and labels[x, y - 1, z]),
-      (z > 0 and labels[x, y, z - 1]),
-
-      # N=18
-      (x > 0 and y > 0 and labels[x - 1, y - 1, z]),
-      (x < sx - 1 and y > 0 and labels[x + 1, y - 1, z]),
-
-      (x > 0 and z > 0 and labels[x - 1, y, z - 1]),
-      (x < sx - 1 and z > 0 and labels[x + 1, y, z - 1]),
-
-      (y > 0 and z > 0 and labels[x, y - 1, z - 1]),
-      (y < sy - 1 and z > 0 and labels[x, y + 1, z - 1]),
-    )
-  else:
-    return (
-      # N=6
-      (x > 0 and labels[x - 1, y, z]),
-      (y > 0 and labels[x, y - 1, z]),
-      (z > 0 and labels[x, y, z - 1]),
-
-      # N=18
-      (x > 0 and y > 0 and labels[x - 1, y - 1, z]),
-      (x < sx - 1 and y > 0 and labels[x + 1, y - 1, z]),
-
-      (x > 0 and z > 0 and labels[x - 1, y, z - 1]),
-      (x < sx - 1 and z > 0 and labels[x + 1, y, z - 1]),
-
-      (y > 0 and z > 0 and labels[x, y - 1, z - 1]),
-      (y < sy - 1 and z > 0 and labels[x, y + 1, z - 1]),
-
-      # N=26
-      (x > 0 and y > 0 and z > 0 and labels[x - 1, y - 1, z - 1]),
-      (x < sx - 1 and y > 0 and z > 0 and labels[x + 1, y - 1, z - 1]),
-      (x > 0 and y < sy - 1 and z > 0 and labels[x - 1, y + 1, z - 1]),
-      (x < sx - 1 and y <  sy - 1 and z > 0 and labels[x + 1, y + 1, z - 1]),
+  for i in range(res.size() // 2):
+    output.add(
+      (res[i * 2], res[i*2 + 1])
     )
 
-
+  return output
 
 
