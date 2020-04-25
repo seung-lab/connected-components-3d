@@ -22,7 +22,7 @@ test_script:
   # Note that you must use the environment variable %PYTHON% to refer to
   # the interpreter you're using - Appveyor does not do anything special
   # to put the Python version you want to use on PATH.
-  - "%PYTHON%\\python.exe -m pip install -r requirements.txt pytest"
+  - "%PYTHON%\\python.exe -m pip install -r requirements.txt -r requirements_dev.txt"
   - "%PYTHON%\\python.exe -m pip install -e ."
   - "%PYTHON%\\python.exe -m pytest -v -x automated_test.py"
 
