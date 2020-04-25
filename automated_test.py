@@ -355,7 +355,8 @@ def test_3d_cross_asymmetrical():
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
-def test_512_cube_no_segfault_no_jitsu():
+@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
+def test_512_cube_no_segfault_no_jitsu(): 
   input_labels = np.arange(0, 512 ** 3).astype(np.uint64).reshape((512,512,512))
   output_labels = cc3d.connected_components(input_labels)
 
