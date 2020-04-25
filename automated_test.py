@@ -18,22 +18,22 @@ def gt_c2f(gt):
   f_gt[ f_gt == mx ] = 3
   return f_gt
 
-def test_2d_square():
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("out_dtype", OUT_TYPES)
+def test_2d_square(out_dtype, dtype):
   def test(order, ground_truth):
-    for dtype in TEST_TYPES:
-      for out_dtype in OUT_TYPES:
-        input_labels = np.zeros( (16,16), dtype=dtype, order=order )
-        input_labels[:8,:8] = 8
-        input_labels[8:,:8] = 9
-        input_labels[:8,8:] = 10
-        input_labels[8:,8:] = 11
+    input_labels = np.zeros( (16,16), dtype=dtype, order=order )
+    input_labels[:8,:8] = 8
+    input_labels[8:,:8] = 9
+    input_labels[:8,8:] = 10
+    input_labels[8:,8:] = 11
 
-        output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
-        
-        print(order)
-        print(output_labels)
+    output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
+    
+    print(order)
+    print(output_labels)
 
-        assert np.all(output_labels == ground_truth.astype(dtype))
+    assert np.all(output_labels == ground_truth.astype(dtype))
 
   ground_truth = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
@@ -57,23 +57,23 @@ def test_2d_square():
   test('C', ground_truth)
   test('F', ground_truth.T)
 
-def test_2d_rectangle():
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("out_dtype", OUT_TYPES)
+def test_2d_rectangle(out_dtype, dtype):
   def test(order, ground_truth):
-    for dtype in TEST_TYPES:
-      for out_dtype in OUT_TYPES:
-        input_labels = np.zeros( (16,13,1), dtype=dtype, order=order )
-        input_labels[:8,:8,:] = 8
-        input_labels[8:,:8,:] = 9
-        input_labels[:8,8:,:] = 10
-        input_labels[8:,8:,:] = 11
+    input_labels = np.zeros( (16,13,1), dtype=dtype, order=order )
+    input_labels[:8,:8,:] = 8
+    input_labels[8:,:8,:] = 9
+    input_labels[:8,8:,:] = 10
+    input_labels[8:,8:,:] = 11
 
-        output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
-        print(output_labels.shape)
-        output_labels = output_labels[:,:,0]
+    output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
+    print(output_labels.shape)
+    output_labels = output_labels[:,:,0]
 
-        print(output_labels)
+    print(output_labels)
 
-        assert np.all(output_labels == ground_truth.astype(dtype))
+    assert np.all(output_labels == ground_truth.astype(dtype))
 
   ground_truth = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
@@ -97,23 +97,23 @@ def test_2d_rectangle():
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
-def test_2d_cross():
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+def test_2d_cross(dtype):
   def test(order, ground_truth):
-    for dtype in TEST_TYPES:
-      input_labels = np.zeros( (17,17), dtype=dtype, order=order)
-      input_labels[:] = 1
-      input_labels[:,8] = 0
-      input_labels[8,:] = 0
+    input_labels = np.zeros( (17,17), dtype=dtype, order=order)
+    input_labels[:] = 1
+    input_labels[:,8] = 0
+    input_labels[8,:] = 0
 
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      print(output_labels)
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    print(output_labels)
 
-      assert np.all(output_labels == ground_truth)
+    assert np.all(output_labels == ground_truth)
 
-      input_labels[9:,9:] = 2
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      output_labels = output_labels[:,:]
-      assert np.all(output_labels == ground_truth)
+    input_labels[9:,9:] = 2
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    output_labels = output_labels[:,:]
+    assert np.all(output_labels == ground_truth)
 
   ground_truth = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 2, 2, 2, 2, 2, 2],
@@ -187,15 +187,15 @@ def test_2d_cross_with_intruder():
   test("C", ground_truth)
   test("F", gt_c2f(ground_truth))
 
-def test_3d_all_different():
-  for order in ("C", "F"):
-    input_labels = np.arange(0, 100 * 99 * 98).astype(np.uint32)
-    input_labels = input_labels.reshape((100,99,98), order=order)
+@pytest.mark.parametrize("order", ('C', 'F'))
+def test_3d_all_different(order):
+  input_labels = np.arange(0, 100 * 99 * 98).astype(np.uint32)
+  input_labels = input_labels.reshape((100,99,98), order=order)
 
-    output_labels = cc3d.connected_components(input_labels)
+  output_labels = cc3d.connected_components(input_labels)
 
-    assert np.unique(output_labels).shape[0] == 100*99*98
-    assert output_labels.shape == (100, 99, 98)
+  assert np.unique(output_labels).shape[0] == 100*99*98
+  assert output_labels.shape == (100, 99, 98)
 
 def test_3d_cross():
   def test(order, ground_truth):
@@ -369,26 +369,26 @@ def test_max_labels_nonsensical():
   assert np.all(real_labels == zero_labels)
   assert np.all(real_labels == negative_labels)
 
-def test_compare_scipy_26():
+@pytest.mark.parametrize("out_dtype", OUT_TYPES)
+def test_compare_scipy_26(out_dtype):
   import scipy.ndimage.measurements
 
   sx, sy, sz = 128, 128, 128
   labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
 
-  for out_dtype in OUT_TYPES:
-    structure = [
-      [[1,1,1], [1,1,1], [1,1,1]],
-      [[1,1,1], [1,1,1], [1,1,1]],
-      [[1,1,1], [1,1,1], [1,1,1]]
-    ]
+  structure = [
+    [[1,1,1], [1,1,1], [1,1,1]],
+    [[1,1,1], [1,1,1], [1,1,1]],
+    [[1,1,1], [1,1,1], [1,1,1]]
+  ]
 
-    cc3d_labels = cc3d.connected_components(labels, connectivity=26, out_dtype=out_dtype)
-    scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
+  cc3d_labels = cc3d.connected_components(labels, connectivity=26, out_dtype=out_dtype)
+  scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
 
-    print(cc3d_labels)
-    print(scipy_labels)
+  print(cc3d_labels)
+  print(scipy_labels)
 
-    assert np.all(cc3d_labels == scipy_labels)
+  assert np.all(cc3d_labels == scipy_labels)
 
 def test_compare_scipy_18():
   import scipy.ndimage.measurements
