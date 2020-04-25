@@ -40,7 +40,7 @@ from libcpp.vector cimport vector
 cimport numpy as cnp
 import numpy as np
 
-__VERSION__ = '1.6.0'
+__VERSION__ = '1.7.0'
 
 cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef uint32_t* connected_components3d[T,U](
