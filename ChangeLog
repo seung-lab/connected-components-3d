@@ -1,6 +1,25 @@
 CHANGES
 =======
 
+1.7.0
+-----
+
+* release(1.7.0): much faster region graph function
+* test: skip high mem test if it's likely to be on AppVeyor
+* chore: ensure appveyor installs all testing dependencies
+* test: expose some parameterizations of tests
+* test: allow small instances to fail running 512 segmentation
+* chore: add appveyor for building windows binaries
+* perf: faster region graph function (#36)
+* docs: mention size of label limitation and fastremap
+
+1.6.0
+-----
+
+* release(1.6.0): lower memory usage for 16-bit output type
+* perf: limit union-find allocation by maximum representation size (#35)
+* install: help old python versions compile cc3d on mac
+
 1.5.0
 -----
 
