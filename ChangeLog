@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+1.8.0
+-----
+
+* release(1.8.0): performance specialization for 2D 8-connected images
+* perf: specialization for 8-connected (#39)
+* chore: update Dockerfile for py38 and add tox.ini to speed up macOS builds
+
 1.7.0
 -----
 
