@@ -109,16 +109,11 @@ def connected_components(
       supported through the python interface (C++ can handle any integer type)."""
     )
 
-  if dims == 2 and connectivity not in (4, 8, 6, 18, 26):
-    raise ValueError("Only 4, 8, and 6, 18, 26 connectivities are supported for 2D images. Got: " + str(connectivity))
-  if dims != 2 and connectivity not in (6, 18, 26):
+  if (dims == 2 or (dims == 3 and data.shape[2] == 1)):
+    if connectivity not in (4, 8, 6, 18, 26):
+      raise ValueError("Only 4, 8, and 6, 18, 26 connectivities are supported for 2D images. Got: " + str(connectivity))
+  elif dims != 2 and connectivity not in (6, 18, 26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported for 3D images. Got: " + str(connectivity))
-  
-  if dims == 2:
-    if connectivity == 4:
-      connectivity = 6
-    elif connectivity == 8:
-      connectivity = 18 # or 26 but 18 might be faster
 
   if data.size == 0:
     return np.zeros(shape=(0,), dtype=np.uint32)
@@ -136,12 +131,6 @@ def connected_components(
 
   shape = list(data.shape)
 
-  # The default C order of 4D numpy arrays is (channel, depth, row, col)
-  # col is the fastest changing index in the underlying buffer. 
-  # fpzip expects an XYZC orientation in the array, namely nx changes most rapidly. 
-  # Since in this case, col is the most rapidly changing index, 
-  # the inputs to fpzip should be X=col, Y=row, Z=depth, F=channel
-  # If the order is F, the default array shape is fine.
   if order == 'C':
     shape.reverse()
 

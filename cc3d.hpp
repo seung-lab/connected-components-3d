@@ -673,6 +673,168 @@ OUT* connected_components3d_6(
   return relabel<OUT>(out_labels, voxels, next_label, equivalences);
 }
 
+// For this 2D specialization, using an algorithm influenced by Grana, 
+// Borghesani, and Cucchiara's 2009 Block Based Decision Tree paper. The 
+// big difference from Wu et al 2005 is they exploit the 2x2 block's inherent 
+// connectedness to reduce the number of unifications.
+// The paper alleges ~10-20% performance improvements compared to 
+// competitors at the time (such as He 2007, which in turn is supposedly 
+// ~10-20% better than Wu).
+
+// ... actually let's just start with ordinary Wu so we have a baseline 
+// compared to the more complex decision tree in 26.
+// template <typename T, typename OUT = uint32_t>
+// OUT* connected_components2d_8(
+//     T* in_labels, 
+//     const int64_t sx, const int64_t sy,
+//     size_t max_labels, OUT *out_labels = NULL
+//   ) {
+
+//   const int64_t voxels = sx * sy;
+
+//   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+//   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+//   DisjointSet<uint32_t> equivalences(max_labels);
+
+//   if (out_labels == NULL) {
+//     out_labels = new OUT[voxels]();
+//   }
+    
+//   /*
+//     Layout of mask taken from BBDT paper.
+//     xyzw is the current block. We start from y.
+//     P    Q    R
+//     . .  . .  . .   -y
+//     . c  d e  f .   ^
+//                     |
+//     . a  y z        |
+//     . b  x w        +y
+//     S    X 
+//     -x <----------> +x
+//   */
+
+//   // P
+//   const int64_t C = -1 - sx;
+//   // Q
+//   const int64_t D = -sx;
+//   const int64_t E = 1 - sx;
+//   // R
+//   const int64_t F = 2 - sx;
+//   // S
+//   const int64_t A = -1;
+//   const int64_t B = -1 + sx;
+//   // X
+//   const int64_t X = sx;
+//   const int64_t Y = 0;
+//   const int64_t Z = 1;
+//   const int64_t W = 1 + sx;
+
+
+//   int64_t loc = 0;
+//   OUT next_label = 0;
+
+//   // Raster Scan 1: Set temporary labels and 
+//   // record equivalences in a disjoint set.
+//   for (int64_t y = 0; y < sy; y += 2) {
+//     for (int64_t x = 0; x < sx; x += 2) {
+//       loc = x + sx * y;
+
+//       const T cur = in_labels[loc];
+
+//       if (y > 0 && cur == in_labels[D]) {
+//         out_labels[Y] = out_labels[D];
+
+
+//       }
+//       else {
+//         next_label++;
+//         out_labels[loc] = next_label;
+//         equivalences.add(out_labels[loc]);        
+//       }
+
+
+
+
+//     }
+//   }
+
+//   return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+// }
+
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components2d_8_wu_2005(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy,
+    size_t max_labels, OUT *out_labels = NULL
+  ) {
+
+  const int64_t voxels = sx * sy;
+
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+    
+  /*
+    Layout of mask. We start from e.
+
+    a | b | c
+    d | e 
+  */
+
+  const int64_t A = -1 - sx;
+  const int64_t B = -sx;
+  const int64_t C = +1 - sx;
+  const int64_t D = -1;
+
+  int64_t loc = 0;
+  OUT next_label = 0;
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int64_t y = 0; y < sy; y++) {
+    for (int64_t x = 0; x < sx; x++) {
+      loc = x + sx * y;
+
+      const T cur = in_labels[loc];
+
+      if (cur == 0) {
+        continue;
+      }
+
+      if (y > 0 && cur == in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+      }
+      else if (x > 0 && cur == in_labels[loc + D]) {
+        out_labels[loc] = out_labels[loc + D];
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+      }
+      else if (x > 0 && y > 0 && cur == in_labels[loc + A]) {
+        out_labels[loc] = out_labels[loc + A];
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+      }
+      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);        
+      }
+    }
+  }
+
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+}
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
@@ -700,8 +862,26 @@ OUT* connected_components3d(
       max_labels, out_labels
     );
   }
+  else if (connectivity == 8) {
+    if (sz != 1) {
+      throw std::runtime_error("sz must be 1 for 2D connectivities.");
+    }
+    return connected_components2d_8_wu_2005<T,OUT>(
+      in_labels, sx, sy,
+      max_labels, out_labels
+    );
+  }
+  else if (connectivity == 4) {
+    if (sz != 1) {
+      throw std::runtime_error("sz must be 1 for 2D connectivities.");
+    }
+    return connected_components3d_6<T, OUT>(
+      in_labels, sx, sy, sz, 
+      max_labels, out_labels
+    );
+  }
   else {
-    throw std::runtime_error("Only 6, 18, and 26 3D connectivities are supported.");
+    throw std::runtime_error("Only 4 and 8 2D and 6, 18, and 26 3D connectivities are supported.");
   }
 }
 

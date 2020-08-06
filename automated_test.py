@@ -18,9 +18,10 @@ def gt_c2f(gt):
   f_gt[ f_gt == mx ] = 3
   return f_gt
 
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
-def test_2d_square(out_dtype, dtype):
+def test_2d_square(out_dtype, dtype, connectivity):
   def test(order, ground_truth):
     input_labels = np.zeros( (16,16), dtype=dtype, order=order )
     input_labels[:8,:8] = 8
@@ -28,7 +29,9 @@ def test_2d_square(out_dtype, dtype):
     input_labels[:8,8:] = 10
     input_labels[8:,8:] = 11
 
-    output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
+    output_labels = cc3d.connected_components(
+      input_labels, out_dtype=out_dtype, connectivity=connectivity
+    ).astype(dtype)
     
     print(order)
     print(output_labels)
@@ -57,9 +60,10 @@ def test_2d_square(out_dtype, dtype):
   test('C', ground_truth)
   test('F', ground_truth.T)
 
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
-def test_2d_rectangle(out_dtype, dtype):
+def test_2d_rectangle(out_dtype, dtype, connectivity):
   def test(order, ground_truth):
     input_labels = np.zeros( (16,13,1), dtype=dtype, order=order )
     input_labels[:8,:8,:] = 8
@@ -67,9 +71,11 @@ def test_2d_rectangle(out_dtype, dtype):
     input_labels[:8,8:,:] = 10
     input_labels[8:,8:,:] = 11
 
-    output_labels = cc3d.connected_components(input_labels, out_dtype=out_dtype).astype(dtype)
+    output_labels = cc3d.connected_components(
+      input_labels, out_dtype=out_dtype, connectivity=connectivity
+    ).astype(dtype)
     print(output_labels.shape)
-    output_labels = output_labels[:,:,0]
+    output_labels = output_labels[:,:]
 
     print(output_labels)
 
@@ -97,21 +103,22 @@ def test_2d_rectangle(out_dtype, dtype):
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
-def test_2d_cross(dtype):
+def test_2d_cross(dtype, connectivity):
   def test(order, ground_truth):
     input_labels = np.zeros( (17,17), dtype=dtype, order=order)
     input_labels[:] = 1
     input_labels[:,8] = 0
     input_labels[8,:] = 0
 
-    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    output_labels = cc3d.connected_components(input_labels, connectivity=connectivity).astype(dtype)
     print(output_labels)
 
     assert np.all(output_labels == ground_truth)
 
     input_labels[9:,9:] = 2
-    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    output_labels = cc3d.connected_components(input_labels, connectivity=connectivity).astype(dtype)
     output_labels = output_labels[:,:]
     assert np.all(output_labels == ground_truth)
 
@@ -138,8 +145,8 @@ def test_2d_cross(dtype):
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
-
-def test_2d_diagonals():
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
+def test_2d_diagonals(connectivity):
   input_labels = np.array([
     [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -160,11 +167,12 @@ def test_2d_diagonals():
     [0, 5, 0, 0, 0, 6, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0],
   ], dtype=np.uint32)
 
-  output_labels = cc3d.connected_components(input_labels)
+  output_labels = cc3d.connected_components(input_labels, connectivity=connectivity)
   print(output_labels)
   assert np.all(output_labels == ground_truth)
 
-def test_2d_cross_with_intruder():
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
+def test_2d_cross_with_intruder(connectivity):
   def test(order, ground_truth):
     input_labels = np.zeros( (5,5), dtype=np.uint8, order=order)
     input_labels[:] = 1
@@ -173,7 +181,7 @@ def test_2d_cross_with_intruder():
     input_labels[3:,3:] = 2
     input_labels[3,3] = 1
 
-    output_labels = cc3d.connected_components(input_labels).astype(np.uint8)
+    output_labels = cc3d.connected_components(input_labels, connectivity=connectivity).astype(np.uint8)
     assert np.all(output_labels == ground_truth)
 
   ground_truth = np.array([
@@ -197,23 +205,22 @@ def test_3d_all_different(order):
   assert np.unique(output_labels).shape[0] == 100*99*98
   assert output_labels.shape == (100, 99, 98)
 
-def test_3d_cross():
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+def test_3d_cross(dtype):
   def test(order, ground_truth):
     print(order)
-    for dtype in TEST_TYPES:
-      print(dtype)
-      input_labels = np.zeros( (7,7,7), dtype=dtype, order=order )
-      input_labels[:] = 1
-      input_labels[:,3,:] = 0
-      input_labels[:,:,3] = 0
+    input_labels = np.zeros( (7,7,7), dtype=dtype, order=order )
+    input_labels[:] = 1
+    input_labels[:,3,:] = 0
+    input_labels[:,:,3] = 0
 
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      print(output_labels)
-      assert np.all(output_labels == ground_truth)
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    print(output_labels)
+    assert np.all(output_labels == ground_truth)
 
-      input_labels[:,4:,4:] = 2
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      assert np.all(output_labels == ground_truth)
+    input_labels[:,4:,4:] = 2
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    assert np.all(output_labels == ground_truth)
 
   ground_truth = np.array([
      [[1, 1, 1, 0, 2, 2, 2],
@@ -275,23 +282,22 @@ def test_3d_cross():
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
-def test_3d_cross_asymmetrical():
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+def test_3d_cross_asymmetrical(dtype):
   def test(order, ground_truth):
     print(order)
-    for dtype in TEST_TYPES:
-      print(dtype)
-      input_labels = np.zeros( (7,7,8), dtype=dtype, order=order )
-      input_labels[:] = 1
-      input_labels[:,3,:] = 0
-      input_labels[:,:,3] = 0
+    input_labels = np.zeros( (7,7,8), dtype=dtype, order=order )
+    input_labels[:] = 1
+    input_labels[:,3,:] = 0
+    input_labels[:,:,3] = 0
 
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      print(output_labels)
-      assert np.all(output_labels == ground_truth)
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    print(output_labels)
+    assert np.all(output_labels == ground_truth)
 
-      input_labels[:,4:,4:] = 2
-      output_labels = cc3d.connected_components(input_labels).astype(dtype)
-      assert np.all(output_labels == ground_truth)
+    input_labels[:,4:,4:] = 2
+    output_labels = cc3d.connected_components(input_labels).astype(dtype)
+    assert np.all(output_labels == ground_truth)
 
   ground_truth = np.array([
      [[1, 1, 1, 0, 2, 2, 2, 2],
