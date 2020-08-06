@@ -65,11 +65,11 @@ def test_2d_square(out_dtype, dtype, connectivity):
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
 def test_2d_rectangle(out_dtype, dtype, connectivity):
   def test(order, ground_truth):
-    input_labels = np.zeros( (16,13,1), dtype=dtype, order=order )
-    input_labels[:8,:8,:] = 8
-    input_labels[8:,:8,:] = 9
-    input_labels[:8,8:,:] = 10
-    input_labels[8:,8:,:] = 11
+    input_labels = np.zeros( (16,13), dtype=dtype, order=order )
+    input_labels[:8,:8] = 8
+    input_labels[8:,:8] = 9
+    input_labels[:8,8:] = 10
+    input_labels[8:,8:] = 11
 
     output_labels = cc3d.connected_components(
       input_labels, out_dtype=out_dtype, connectivity=connectivity

@@ -109,9 +109,8 @@ def connected_components(
       supported through the python interface (C++ can handle any integer type)."""
     )
 
-  if (dims == 2 or (dims == 3 and data.shape[2] == 1)):
-    if connectivity not in (4, 8, 6, 18, 26):
-      raise ValueError("Only 4, 8, and 6, 18, 26 connectivities are supported for 2D images. Got: " + str(connectivity))
+  if dims == 2 and connectivity not in (4, 8, 6, 18, 26):
+    raise ValueError("Only 4, 8, and 6, 18, 26 connectivities are supported for 2D images. Got: " + str(connectivity))
   elif dims != 2 and connectivity not in (6, 18, 26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported for 3D images. Got: " + str(connectivity))
 
