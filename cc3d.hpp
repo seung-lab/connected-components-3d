@@ -673,6 +673,84 @@ OUT* connected_components3d_6(
   return relabel<OUT>(out_labels, voxels, next_label, equivalences);
 }
 
+// K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
+// Lawrence Berkely National Laboratory. LBNL-29102, 2005.
+// This is the stripped down version of that decision tree algorithm.
+// It seems to give up to about 1.18x improvement on some data. No improvement on binary
+// vs 18 connected (from 3D).
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components2d_8(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy,
+    size_t max_labels, OUT *out_labels = NULL
+  ) {
+
+  const int64_t voxels = sx * sy;
+
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+    
+  /*
+    Layout of mask. We start from e.
+
+    a | b | c
+    d | e 
+  */
+
+  const int64_t A = -1 - sx;
+  const int64_t B = -sx;
+  const int64_t C = +1 - sx;
+  const int64_t D = -1;
+
+  int64_t loc = 0;
+  OUT next_label = 0;
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int64_t y = 0; y < sy; y++) {
+    for (int64_t x = 0; x < sx; x++) {
+      loc = x + sx * y;
+
+      const T cur = in_labels[loc];
+
+      if (cur == 0) {
+        continue;
+      }
+
+      if (y > 0 && cur == in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+      }
+      else if (x > 0 && cur == in_labels[loc + D]) {
+        out_labels[loc] = out_labels[loc + D];
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+      }
+      else if (x > 0 && y > 0 && cur == in_labels[loc + A]) {
+        out_labels[loc] = out_labels[loc + A];
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+      }
+      else if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);        
+      }
+    }
+  }
+
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+}
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
@@ -700,8 +778,26 @@ OUT* connected_components3d(
       max_labels, out_labels
     );
   }
+  else if (connectivity == 8) {
+    if (sz != 1) {
+      throw std::runtime_error("sz must be 1 for 2D connectivities.");
+    }
+    return connected_components2d_8<T,OUT>(
+      in_labels, sx, sy,
+      max_labels, out_labels
+    );
+  }
+  else if (connectivity == 4) {
+    if (sz != 1) {
+      throw std::runtime_error("sz must be 1 for 2D connectivities.");
+    }
+    return connected_components3d_6<T, OUT>(
+      in_labels, sx, sy, sz, 
+      max_labels, out_labels
+    );
+  }
   else {
-    throw std::runtime_error("Only 6, 18, and 26 3D connectivities are supported.");
+    throw std::runtime_error("Only 4 and 8 2D and 6, 18, and 26 3D connectivities are supported.");
   }
 }
 
