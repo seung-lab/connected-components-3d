@@ -89,7 +89,10 @@ def connected_components(
     max_labels (int): save memory by predicting the maximum
       number of possible labels that might be output.
       Defaults to number of voxels.
-    connectivity (int): 6 (voxel faces), 18 (+edges), or 26 (+corners)
+    connectivity (int): 
+      For 3D images, 6 (voxel faces), 18 (+edges), or 26 (+corners)
+      If the input image is 2D, you may specify 4 (pixel faces) or
+        8 (+corners).
     out_dtype: Sets the output data type of the output.
   
   Returns: 2D or 3D numpy array remapped to reflect
@@ -106,8 +109,16 @@ def connected_components(
       supported through the python interface (C++ can handle any integer type)."""
     )
 
-  if connectivity not in (6, 18, 26):
-    raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
+  if dims == 2 and connectivity not in (4, 8, 6, 18, 26):
+    raise ValueError("Only 4, 8, and 6, 18, 26 connectivities are supported for 2D images. Got: " + str(connectivity))
+  if dims != 2 and connectivity not in (6, 18, 26):
+    raise ValueError("Only 6, 18, and 26 connectivities are supported for 3D images. Got: " + str(connectivity))
+  
+  if dims == 2:
+    if connectivity == 4:
+      connectivity = 6
+    elif connectivity == 8:
+      connectivity = 18 # or 26 but 18 might be faster
 
   if data.size == 0:
     return np.zeros(shape=(0,), dtype=np.uint32)
