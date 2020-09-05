@@ -1,0 +1,5 @@
+build
+*.egg-info
+benchmarks
+__pycache__
+manual_testing
