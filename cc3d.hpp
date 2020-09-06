@@ -46,6 +46,7 @@
 #define CC3D_HPP 
 
 #include <algorithm>
+#include <functional>
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
@@ -745,6 +746,145 @@ OUT* connected_components2d_8(
         next_label++;
         out_labels[loc] = next_label;
         equivalences.add(out_labels[loc]);        
+      }
+    }
+  }
+
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+}
+
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components2d_8_bbdt(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy,
+    size_t max_labels, OUT *out_labels = NULL
+  ) {
+
+  const int64_t voxels = sx * sy;
+
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+    
+  /*
+    Layout of mask. We start from e.
+
+    a | b | c
+    d | e 
+  */
+
+  const int64_t A = -1 + sx;
+  const int64_t B = -1;
+  const int64_t C = -1 - sx;
+  const int64_t D = -sx;
+  const int64_t E = +1 - sx;
+  const int64_t F = +2 - sx;
+  const int64_t X = +sx;
+  const int64_t Y = 0;
+  const int64_t Z = +1;
+  const int64_t W = +1 + sx;
+
+  int64_t loc = 0;
+  OUT next_label = 0;
+
+  OUT lp = 0;
+  OUT lq = 0;
+  OUT lr = 0;
+  OUT ls = 0;
+  OUT lx = 0;
+
+  std::function<void(int64_t, OUT)> assignfn = [X,Y,Z,W,out_labels,in_labels](size_t loc, OUT value) { 
+    out_labels[loc + Y] = in_labels[loc + Y] * value;
+    out_labels[loc + Z] = in_labels[loc + Z] * value;
+    out_labels[loc + X] = in_labels[loc + X] * value;
+    out_labels[loc + W] = in_labels[loc + W] * value;    
+  };  
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int64_t y = 0; y < sy; y += 2) {
+    for (int64_t x = 0; x < sx; x += 2) {
+      loc = x + sx * y;
+
+      lp = 0;
+      lq = 0;
+      lr = 0;
+      ls = 0;
+      lx = 0;
+
+      if (in_labels[loc + Y]) {
+        if (x > 0 && y > 0 && in_labels[loc + C]) {
+          lp = out_labels[loc + C];
+        }
+        if (y > 0 && in_labels[loc + D]) {
+          lq = out_labels[loc + D];
+        }
+        else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
+          lq = out_labels[loc + E];
+        }
+        if (x > 0 && in_labels[loc + B]) {
+          ls = out_labels[loc + B];
+        }
+        else if (x > 0 && y < sx - 1 && in_labels[loc + A]) {
+          ls = out_labels[loc + A];
+        }
+        if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
+          lr = out_labels[loc + F];
+        }
+
+      }
+      else if (x < sx - 1 && in_labels[loc + Z]) {
+        if (y > 0 && in_labels[loc + D]) {
+          lq = out_labels[loc + D];
+        }
+        else if (y > 0 && in_labels[loc + E]) {
+          lq = out_labels[loc + E];
+        }
+        if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
+          lr = in_labels[loc + F];
+        }
+        if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+          ls = in_labels[loc + A] 
+            ? out_labels[loc + A] 
+            : out_labels[loc + B]; // out_labels will be 0
+        }
+      }
+      else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+          ls = in_labels[loc + A] 
+            ? out_labels[loc + A] 
+            : out_labels[loc + B]; // out_labels will be 0
+      }
+      else if (!in_labels[loc + W]) {
+        continue;
+      }
+
+      if (lq) {
+        assignfn(loc, lq);
+      }
+      else if (lp) {
+        assignfn(loc, lp);
+        if (lr) {
+          equivalences.unify(lp, lr);
+        }
+      }
+      else if (ls) {
+        assignfn(loc, ls);
+        if (lr) {
+          equivalences.unify(lp, lr);
+        }
+      }
+      else if (lr) {
+        assignfn(loc, lr);
+      }
+      else {
+        next_label++;
+        assignfn(loc, next_label);
+        equivalences.add(next_label);        
       }
     }
   }
