@@ -756,11 +756,12 @@ OUT* connected_components2d_8(
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_8_bbdt(
     T* in_labels, 
-    const int64_t sx, const int64_t sy,
-    size_t max_labels, OUT *out_labels = NULL
+    const int64_t sx, const int64_t sy, const int64_t sz = 1,
+    size_t max_labels = 10000000000000000, OUT *out_labels = NULL
   ) {
 
-  const int64_t voxels = sx * sy;
+  const int64_t sxy = sx * sy;
+  const int64_t voxels = sx * sy * sz;
 
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
@@ -772,10 +773,11 @@ OUT* connected_components2d_8_bbdt(
   }
     
   /*
-    Layout of mask. We start from e.
-
-    a | b | c
-    d | e 
+    Layout of mask. We start from y.
+    
+    c | d | e | f
+    b | y | z
+    a | x | w
   */
 
   const int64_t A = -1 + sx;
@@ -807,84 +809,86 @@ OUT* connected_components2d_8_bbdt(
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
-  for (int64_t y = 0; y < sy; y += 2) {
-    for (int64_t x = 0; x < sx; x += 2) {
-      loc = x + sx * y;
+  for (int64_t z = 0; z < sz; z++) {
+    for (int64_t y = 0; y < sy; y += 2) {
+      for (int64_t x = 0; x < sx; x += 2) {
+        loc = x + sx * y + sxy * z;
 
-      lp = 0;
-      lq = 0;
-      lr = 0;
-      ls = 0;
-      lx = 0;
+        lp = 0;
+        lq = 0;
+        lr = 0;
+        ls = 0;
+        lx = 0;
 
-      if (in_labels[loc + Y]) {
-        if (x > 0 && y > 0 && in_labels[loc + C]) {
-          lp = out_labels[loc + C];
+        if (in_labels[loc + Y]) {
+          if (x > 0 && y > 0 && in_labels[loc + C]) {
+            lp = out_labels[loc + C];
+          }
+          if (y > 0 && in_labels[loc + D]) {
+            lq = out_labels[loc + D];
+          }
+          else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
+            lq = out_labels[loc + E];
+          }
+          if (x > 0 && in_labels[loc + B]) {
+            ls = out_labels[loc + B];
+          }
+          else if (x > 0 && y < sx - 1 && in_labels[loc + A]) {
+            ls = out_labels[loc + A];
+          }
+          if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
+            lr = out_labels[loc + F];
+          }
+
         }
-        if (y > 0 && in_labels[loc + D]) {
-          lq = out_labels[loc + D];
+        else if (x < sx - 1 && in_labels[loc + Z]) {
+          if (y > 0 && in_labels[loc + D]) {
+            lq = out_labels[loc + D];
+          }
+          else if (y > 0 && in_labels[loc + E]) {
+            lq = out_labels[loc + E];
+          }
+          if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
+            lr = in_labels[loc + F];
+          }
+          if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+            ls = in_labels[loc + A] 
+              ? out_labels[loc + A] 
+              : out_labels[loc + B]; // out_labels will be 0
+          }
         }
-        else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
-          lq = out_labels[loc + E];
+        else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+            ls = in_labels[loc + A] 
+              ? out_labels[loc + A] 
+              : out_labels[loc + B]; // out_labels will be 0
         }
-        if (x > 0 && in_labels[loc + B]) {
-          ls = out_labels[loc + B];
-        }
-        else if (x > 0 && y < sx - 1 && in_labels[loc + A]) {
-          ls = out_labels[loc + A];
-        }
-        if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
-          lr = out_labels[loc + F];
+        else if (!in_labels[loc + W]) {
+          continue;
         }
 
-      }
-      else if (x < sx - 1 && in_labels[loc + Z]) {
-        if (y > 0 && in_labels[loc + D]) {
-          lq = out_labels[loc + D];
+        if (lq) {
+          assignfn(loc, lq);
         }
-        else if (y > 0 && in_labels[loc + E]) {
-          lq = out_labels[loc + E];
+        else if (lp) {
+          assignfn(loc, lp);
+          if (lr) {
+            equivalences.unify(lp, lr);
+          }
         }
-        if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
-          lr = in_labels[loc + F];
+        else if (ls) {
+          assignfn(loc, ls);
+          if (lr) {
+            equivalences.unify(lp, lr);
+          }
         }
-        if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-          ls = in_labels[loc + A] 
-            ? out_labels[loc + A] 
-            : out_labels[loc + B]; // out_labels will be 0
+        else if (lr) {
+          assignfn(loc, lr);
         }
-      }
-      else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-          ls = in_labels[loc + A] 
-            ? out_labels[loc + A] 
-            : out_labels[loc + B]; // out_labels will be 0
-      }
-      else if (!in_labels[loc + W]) {
-        continue;
-      }
-
-      if (lq) {
-        assignfn(loc, lq);
-      }
-      else if (lp) {
-        assignfn(loc, lp);
-        if (lr) {
-          equivalences.unify(lp, lr);
+        else {
+          next_label++;
+          assignfn(loc, next_label);
+          equivalences.add(next_label);        
         }
-      }
-      else if (ls) {
-        assignfn(loc, ls);
-        if (lr) {
-          equivalences.unify(lp, lr);
-        }
-      }
-      else if (lr) {
-        assignfn(loc, lr);
-      }
-      else {
-        next_label++;
-        assignfn(loc, next_label);
-        equivalences.add(next_label);        
       }
     }
   }
