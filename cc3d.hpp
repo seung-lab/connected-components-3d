@@ -794,14 +794,8 @@ OUT* connected_components2d_8_bbdt(
   int64_t loc = 0;
   OUT next_label = 0;
 
-  OUT lp = 0;
-  OUT lq = 0;
-  OUT lr = 0;
-  OUT ls = 0;
-  OUT lx = 0;
-
-  std::function<void(int64_t,int64_t,int64_t,OUT)> assignfn = [X,Y,Z,W,sx,sy,out_labels,in_labels](int64_t x, int64_t y, int64_t loc, OUT value) { 
-    out_labels[loc + Y] = (in_labels[loc + Y] > 0) * value;
+  std::function<void(int64_t,int64_t,int64_t,OUT)> assignY = [X,Y,Z,W,sx,sy,out_labels,in_labels](int64_t x, int64_t y, int64_t loc, OUT value) { 
+    out_labels[loc + Y] = value;
     if (x < sx - 1) {
       out_labels[loc + Z] = (in_labels[loc + Z] > 0) * value;
     }
@@ -809,6 +803,21 @@ OUT* connected_components2d_8_bbdt(
       out_labels[loc + X] = (in_labels[loc + X] > 0) * value;
     }
     if (x < sx - 1 && y < sy - 1) {
+      out_labels[loc + W] = (in_labels[loc + W] > 0) * value;
+    }
+  };
+
+  std::function<void(int64_t,int64_t,int64_t,OUT)> assignZ = [X,Z,W,sy,out_labels,in_labels](int64_t x, int64_t y, int64_t loc, OUT value) { 
+    out_labels[loc + Z] = value;
+    if (y < sy - 1) {
+      out_labels[loc + X] = (in_labels[loc + X] > 0) * value;
+      out_labels[loc + W] = (in_labels[loc + W] > 0) * value;
+    }
+  };  
+
+  std::function<void(int64_t,int64_t,int64_t,OUT)> assignX = [X,W,sx,out_labels,in_labels](int64_t x, int64_t y, int64_t loc, OUT value) { 
+    out_labels[loc + X] = value;
+    if (x < sx - 1) {
       out_labels[loc + W] = (in_labels[loc + W] > 0) * value;
     }
   };  
@@ -820,82 +829,131 @@ OUT* connected_components2d_8_bbdt(
       for (int64_t x = 0; x < sx; x += 2) {
         loc = x + sx * y + sxy * z;
 
-        lp = 0;
-        lq = 0;
-        lr = 0;
-        ls = 0;
-        lx = 0;
-
         if (in_labels[loc + Y]) {
           if (y > 0 && in_labels[loc + D]) {
-            lq = out_labels[loc + D];
+            assignY(x, y, loc, out_labels[loc + D]);
+            if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
+            }
           }
           else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
-            lq = out_labels[loc + E];
+            assignY(x, y, loc, out_labels[loc + E]);
+            if (x > 0 && y > 0 && in_labels[loc + C]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + C]);
+              if (y < sy - 1 && !in_labels[loc + B] && in_labels[loc + A]) {
+                equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
+              }
+            }
+            else if (x > 0 && in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + B]);
+            }
+            else if (x > 0 && y < sy - 1 && in_labels[loc + A]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
+            }
           }
-          if (x > 0 && y > 0 && in_labels[loc + C]) {
-            lp = out_labels[loc + C];
+          else if (x > 0 && y > 0 && in_labels[loc + C]) {
+            assignY(x, y, loc, out_labels[loc + C]);
+            if (y < sy - 1 && !in_labels[loc + B] && in_labels[loc + A]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
+            }
+            if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
+            }            
           }
-          if (x > 0 && in_labels[loc + B]) {
-            ls = out_labels[loc + B];
+          else if (x > 0 && in_labels[loc + B]) {
+            assignY(x, y, loc, out_labels[loc + B]);
+            if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
+            }            
           }
           else if (x > 0 && y < sx - 1 && in_labels[loc + A]) {
-            ls = out_labels[loc + A];
+            assignY(x, y, loc, out_labels[loc + A]);
+            if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
+            }            
           }
-          if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
-            lr = out_labels[loc + F];
+          else if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
+            assignY(x, y, loc, out_labels[loc + F]);
+          }
+          else {
+            next_label++;
+            assignY(x, y, loc, next_label);
+            equivalences.add(next_label);            
           }
         }
         else if (x < sx - 1 && in_labels[loc + Z]) {
           if (y > 0 && in_labels[loc + D]) {
-            lq = out_labels[loc + D];
+            assignZ(x, y, loc, out_labels[loc + D]);
+            if (x < sx - 2 && in_labels[loc + F]) {
+              equivalences.unify(out_labels[loc + Z], out_labels[loc + F]);
+            }
+            if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+              if (in_labels[loc + B]) {
+                equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+              }
+              else if (in_labels[loc + A]) {
+                equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+              }
+            }
           }
           else if (y > 0 && in_labels[loc + E]) {
-            lq = out_labels[loc + E];
+            assignZ(x, y, loc, out_labels[loc + E]);
+            if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+              if (in_labels[loc + B]) {
+                equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+              }
+              else if (in_labels[loc + A]) {
+                equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+              }
+            }            
           }
-          if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
-            lr = out_labels[loc + F];
+          else if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
+            assignZ(x, y, loc, out_labels[loc + F]);
+            if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+              if (in_labels[loc + B]) {
+                equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+              }
+              else if (in_labels[loc + A]) {
+                equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+              }
+            }            
           }
-          if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-            ls = in_labels[loc + A] 
-              ? out_labels[loc + A] 
-              : out_labels[loc + B]; // out_labels will be 0
+          else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+            if (in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+            }
+            else if (in_labels[loc + A]) {
+              equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+            }
+            else {
+              next_label++;
+              assignZ(x, y, loc, next_label);
+              equivalences.add(next_label);
+            }
+          }
+          else {
+            next_label++;
+            assignZ(x, y, loc, next_label);
+            equivalences.add(next_label);
           }
         }
         else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-          ls = in_labels[loc + A] 
-            ? out_labels[loc + A] 
-            : out_labels[loc + B]; // out_labels will be 0
-        }
-        else if (x >= sx - 1 || y >= sy - 1 || !in_labels[loc + W]) {
-          continue;
-        }
-
-        if (lq) {
-          assignfn(x, y, loc, lq);
-          if (lr) {
-            equivalences.unify(lq, lr);
+          if (in_labels[loc + B]) {
+            assignX(x, y, loc, out_labels[loc + B]);
           }
+          else if (in_labels[loc + A]) {
+            assignX(x, y, loc, out_labels[loc + A]); 
+          }    
+          else {
+            next_label++;
+            assignX(x, y, loc, next_label);
+            equivalences.add(next_label);
+          }      
         }
-        else if (lp) {
-          assignfn(x, y, loc, lp);
-          if (lr) {
-            equivalences.unify(lp, lr);
-          }
-        }
-        else if (ls) {
-          assignfn(x, y, loc, ls);
-          if (lr) {
-            equivalences.unify(lp, lr);
-          }
-        }
-        else if (lr) {
-          assignfn(x, y, loc, lr);
-        }
-        else {
+        else if (x < sx - 1 && y < sy - 1 && in_labels[loc + W]) {
           next_label++;
-          assignfn(x, y, loc, next_label);
-          equivalences.add(next_label);        
+          out_labels[loc + W] = next_label;
+          equivalences.add(next_label);    
         }
       }
     }
