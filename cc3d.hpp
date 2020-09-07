@@ -800,11 +800,17 @@ OUT* connected_components2d_8_bbdt(
   OUT ls = 0;
   OUT lx = 0;
 
-  std::function<void(int64_t, OUT)> assignfn = [X,Y,Z,W,out_labels,in_labels](size_t loc, OUT value) { 
-    out_labels[loc + Y] = in_labels[loc + Y] * value;
-    out_labels[loc + Z] = in_labels[loc + Z] * value;
-    out_labels[loc + X] = in_labels[loc + X] * value;
-    out_labels[loc + W] = in_labels[loc + W] * value;    
+  std::function<void(int64_t,int64_t,int64_t,OUT)> assignfn = [X,Y,Z,W,sx,sy,out_labels,in_labels](int64_t x, int64_t y, int64_t loc, OUT value) { 
+    out_labels[loc + Y] = (in_labels[loc + Y] > 0) * value;
+    if (x < sx - 1) {
+      out_labels[loc + Z] = (in_labels[loc + Z] > 0) * value;
+    }
+    if (y < sy - 1) {
+      out_labels[loc + X] = (in_labels[loc + X] > 0) * value;
+    }
+    if (x < sx - 1 && y < sy - 1) {
+      out_labels[loc + W] = (in_labels[loc + W] > 0) * value;
+    }
   };  
 
   // Raster Scan 1: Set temporary labels and 
@@ -821,14 +827,14 @@ OUT* connected_components2d_8_bbdt(
         lx = 0;
 
         if (in_labels[loc + Y]) {
-          if (x > 0 && y > 0 && in_labels[loc + C]) {
-            lp = out_labels[loc + C];
-          }
           if (y > 0 && in_labels[loc + D]) {
             lq = out_labels[loc + D];
           }
           else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
             lq = out_labels[loc + E];
+          }
+          if (x > 0 && y > 0 && in_labels[loc + C]) {
+            lp = out_labels[loc + C];
           }
           if (x > 0 && in_labels[loc + B]) {
             ls = out_labels[loc + B];
@@ -839,7 +845,6 @@ OUT* connected_components2d_8_bbdt(
           if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
             lr = out_labels[loc + F];
           }
-
         }
         else if (x < sx - 1 && in_labels[loc + Z]) {
           if (y > 0 && in_labels[loc + D]) {
@@ -849,7 +854,7 @@ OUT* connected_components2d_8_bbdt(
             lq = out_labels[loc + E];
           }
           if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
-            lr = in_labels[loc + F];
+            lr = out_labels[loc + F];
           }
           if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
             ls = in_labels[loc + A] 
@@ -858,35 +863,38 @@ OUT* connected_components2d_8_bbdt(
           }
         }
         else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-            ls = in_labels[loc + A] 
-              ? out_labels[loc + A] 
-              : out_labels[loc + B]; // out_labels will be 0
+          ls = in_labels[loc + A] 
+            ? out_labels[loc + A] 
+            : out_labels[loc + B]; // out_labels will be 0
         }
-        else if (!in_labels[loc + W]) {
+        else if (x >= sx - 1 || y >= sy - 1 || !in_labels[loc + W]) {
           continue;
         }
 
         if (lq) {
-          assignfn(loc, lq);
+          assignfn(x, y, loc, lq);
+          if (lr) {
+            equivalences.unify(lq, lr);
+          }
         }
         else if (lp) {
-          assignfn(loc, lp);
+          assignfn(x, y, loc, lp);
           if (lr) {
             equivalences.unify(lp, lr);
           }
         }
         else if (ls) {
-          assignfn(loc, ls);
+          assignfn(x, y, loc, ls);
           if (lr) {
             equivalences.unify(lp, lr);
           }
         }
         else if (lr) {
-          assignfn(loc, lr);
+          assignfn(x, y, loc, lr);
         }
         else {
           next_label++;
-          assignfn(loc, next_label);
+          assignfn(x, y, loc, next_label);
           equivalences.add(next_label);        
         }
       }
