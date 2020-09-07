@@ -774,6 +774,8 @@ OUT* connected_components2d_8_bbdt(
     
   /*
     Layout of mask. We start from y.
+    We are exploiting the 2x2 connectedness
+    of XYZW. This only works for binary images.
     
     c | d | e | f
     b | y | z
@@ -838,6 +840,9 @@ OUT* connected_components2d_8_bbdt(
           }
           else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
             assignY(x, y, loc, out_labels[loc + E]);
+            if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
+              equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
+            }
             if (x > 0 && y > 0 && in_labels[loc + C]) {
               equivalences.unify(out_labels[loc + Y], out_labels[loc + C]);
               if (y < sy - 1 && !in_labels[loc + B] && in_labels[loc + A]) {
@@ -898,12 +903,15 @@ OUT* connected_components2d_8_bbdt(
           }
           else if (y > 0 && in_labels[loc + E]) {
             assignZ(x, y, loc, out_labels[loc + E]);
+            if (x < sx - 2 && in_labels[loc + F]) {
+              equivalences.unify(out_labels[loc + Z], out_labels[loc + F]);
+            }
             if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
               if (in_labels[loc + B]) {
-                equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+                equivalences.unify(out_labels[loc + X], out_labels[loc + B]);   
               }
               else if (in_labels[loc + A]) {
-                equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+                equivalences.unify(out_labels[loc + X], out_labels[loc + A]); 
               }
             }            
           }
@@ -911,10 +919,10 @@ OUT* connected_components2d_8_bbdt(
             assignZ(x, y, loc, out_labels[loc + F]);
             if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
               if (in_labels[loc + B]) {
-                equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+                equivalences.unify(out_labels[loc + X], out_labels[loc + B]);   
               }
               else if (in_labels[loc + A]) {
-                equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+                equivalences.unify(out_labels[loc + X], out_labels[loc + A]); 
               }
             }            
           }
@@ -929,13 +937,17 @@ OUT* connected_components2d_8_bbdt(
             }
             else {
               next_label++;
-              assignZ(x, y, loc, next_label);
+              out_labels[loc + Z] = next_label;
+              assignX(x, y, loc, next_label);
               equivalences.add(next_label);
             }
           }
-          else {
+          else { // ZW
             next_label++;
-            assignZ(x, y, loc, next_label);
+            out_labels[loc + Z] = next_label;
+            if (y < sy - 1 && in_labels[loc + W]) {
+              out_labels[loc + W] = next_label;
+            }
             equivalences.add(next_label);
           }
         }
