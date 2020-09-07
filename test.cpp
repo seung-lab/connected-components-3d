@@ -32,12 +32,12 @@ void print(int *input, int sx, int sy, int sz) {
 
 int main () {
 
-	int *big = new int[512*512*512]();
-	for (int i = 0; i < 512*512*512; i++) {
+	bool *big = new bool[512*512]();
+	for (int i = 0; i < 512*512; i++) {
 		big[i] = 1;
 	}
 
-	cc3d::connected_components3d<int, uint16_t>(big, 512,512,512);	
+	cc3d::connected_components2d_8_bbdt<bool, uint32_t>(big, 512,512,1);	
 
 
 	// int twod[25] = {
