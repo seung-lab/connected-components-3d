@@ -920,10 +920,12 @@ OUT* connected_components2d_8_bbdt(
           }
           else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
             if (in_labels[loc + B]) {
-              equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+              out_labels[loc + Z] = out_labels[loc + B];
+              assignX(x, y, loc, out_labels[loc + B]);
             }
             else if (in_labels[loc + A]) {
-              equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+              out_labels[loc + Z] = out_labels[loc + A];
+              assignX(x, y, loc, out_labels[loc + A]);
             }
             else {
               next_label++;
