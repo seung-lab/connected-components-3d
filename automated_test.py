@@ -537,3 +537,17 @@ def test_region_graph_6():
   assert res == set([
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
+
+def test_stress_upper_bound_for_binary():
+  labels = np.zeros((256,256,256), dtype=np.bool)
+  for z in range(256):
+    for y in range(256):
+      off = (y + (z % 2)) % 2
+      labels[off::2,y,z] = True
+
+  out = cc3d.connected_components(labels, connectivity=6)
+  assert np.max(out) + 1 == (256**3) // 2 + 1
+
+
+
+
