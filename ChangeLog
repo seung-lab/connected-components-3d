@@ -1,6 +1,21 @@
 CHANGES
 =======
 
+1.9.0
+-----
+
+* release(1.9.0): lower memory usage for binary images
+* perf(binary images): reduce max\_labels based on theoretical maximums (#43)
+* fix(cpp): std::vector needs inclusion for direct compilation
+* chore(manylinux2014): adapt build\_linux.sh script
+* chore(manylinux2014): python3.9 not ready for prime-time
+* chore(manylinux2014): add dockerfile
+* chore(linux): added streamlined build process for linux
+* chore(manylinux2010): add dockerfile for build
+* chore: update to production/stable Trove identifier
+* fix(tox): make sure the binary is compiled first
+* chore: update changelog
+
 1.8.0
 -----
 
