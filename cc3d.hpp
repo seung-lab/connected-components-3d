@@ -854,7 +854,7 @@ OUT* connected_components2d_8_bbdt(
             out_labels[loc + X] = next_label;
             if (x < sx - 1 && in_labels[loc + Y]) {
               out_labels[loc + Y] = next_label;
-              if (x < sx - 2 && in_labels[loc + E]) {
+              if (x < sx - 2 && y > 0 && in_labels[loc + E]) {
                 equivalences.unify(out_labels[loc + Y], out_labels[loc + E]);
               }
             }
