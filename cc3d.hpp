@@ -823,11 +823,11 @@ OUT* connected_components2d_4_bbdt(
           else if (x < sx - 1 && in_labels[loc + B]) {
             if (cur == in_labels[loc + B]) {
               out_labels[loc + B] = out_labels[loc];
-              if (in_labels[loc + B] == in_labels[loc + H]) {
+              if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) {
                 equivalences.unify(out_labels[loc + B], out_labels[loc + H]);
               }
             }
-            else if (in_labels[loc + B] == in_labels[loc + H]) {
+            else if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) {
               out_labels[loc + B] = out_labels[loc + H];
             }
             else {
