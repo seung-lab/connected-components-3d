@@ -768,7 +768,7 @@ OUT* connected_components2d_4_bbdt(
   const int64_t C = +sx;
   const int64_t D = 1+sx;
 
-  const int64_t E = -1-sx;
+  const int64_t E = -1+sx;
   const int64_t F = -1;
   const int64_t G = -sx;
   const int64_t H = +1-sx;
@@ -1122,7 +1122,7 @@ OUT* connected_components3d(
     if (sz != 1) {
       throw std::runtime_error("sz must be 1 for 2D connectivities.");
     }
-    return connected_components2d_4<T, OUT>(
+    return connected_components2d_4_bbdt<T, OUT>(
       in_labels, sx, sy, 
       max_labels, out_labels
     );
