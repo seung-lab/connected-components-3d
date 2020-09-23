@@ -675,7 +675,7 @@ OUT* connected_components3d_6(
 }
 
 template <typename T, typename OUT = uint32_t>
-OUT* connected_components2d_4(
+OUT* connected_components2d_4_sauf(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
     size_t max_labels, OUT *out_labels = NULL
@@ -738,7 +738,126 @@ OUT* connected_components2d_4(
 }
 
 template <typename T, typename OUT = uint32_t>
-OUT* connected_components2d_4_bbdt(
+OUT* connected_components2d_4_bbdt_2(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy,
+    size_t max_labels, OUT *out_labels = NULL
+  ) {
+
+  const int64_t voxels = sx * sy;
+
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+    
+  /*
+    Layout of forward pass mask (which faces backwards). 
+    B is the current location.
+      D E
+    A B C
+  */
+  const int64_t B = 0;
+  const int64_t A = B - 1;
+  const int64_t C = B + 1;
+  const int64_t D = B - sx;
+  const int64_t E = C - sx;
+
+  int64_t loc = 0;
+  OUT next_label = 0;
+
+#define MKLABEL(location) \
+  next_label++; \
+  out_labels[(location)] = next_label; \
+  equivalences.add(out_labels[(location)]);
+
+// When B matches D
+#define EVAL_C_FAST \
+  if (x < sx - 1 && in_labels[loc + C]) { \
+    if (in_labels[loc] == in_labels[loc + C]) { \
+      out_labels[loc + C] = out_labels[loc]; \
+    } \
+    else if (y > 0 && in_labels[loc + C] == in_labels[loc + E]) { \
+      out_labels[loc + C] = out_labels[loc + E]; \
+    } \
+    else { \
+      next_label++; \
+      out_labels[loc + C] = next_label; \
+      equivalences.add(out_labels[loc + C]); \
+    } \
+  }
+
+// When B does not match D
+#define EVAL_C_UNIFY \
+  if (x < sx - 1 && in_labels[loc + C]) { \
+    if (in_labels[loc] == in_labels[loc + C]) { \
+      out_labels[loc + C] = out_labels[loc]; \
+      if (y > 0 && in_labels[loc + C] == in_labels[loc + E]) { \
+        equivalences.unify(out_labels[loc + C], out_labels[loc + E]); \
+      } \
+    } \
+    else if (in_labels[loc + C] == in_labels[loc + E]) { \
+      out_labels[loc + C] = out_labels[loc + E]; \
+    } \
+    else { \
+      next_label++; \
+      out_labels[loc + C] = next_label; \
+      equivalences.add(out_labels[loc + C]); \
+    } \
+  }
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int64_t y = 0; y < sy; y++) {
+    for (int64_t x = 0; x < sx; x += 2) {
+      loc = x + sx * y;
+
+      const T cur = in_labels[loc];
+
+      if (cur) {
+        if (x > 0 && cur == in_labels[loc + A]) {
+          out_labels[loc] = out_labels[loc + A];
+          if (y > 0 && cur == in_labels[loc + D]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + D]);
+            EVAL_C_FAST
+          }
+          else {
+            EVAL_C_UNIFY
+          }
+        }
+        else if (y > 0 && cur == in_labels[loc + D]) {
+          out_labels[loc] = out_labels[loc + D];
+          EVAL_C_FAST
+        }
+        else {
+          MKLABEL(loc);
+          EVAL_C_UNIFY
+        }
+      }
+      else if (x < sx - 1 && in_labels[loc + C]) {
+        if (y > 0 && in_labels[loc + C] == in_labels[loc + E]) {
+          out_labels[loc + C] = out_labels[loc + E];
+        }
+        else {
+          MKLABEL(loc + C)
+        }
+      }
+    }
+  }
+
+#undef MKLABEL
+#undef EVAL_C_FAST
+#undef EVAL_C_UNIFY
+
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+}
+
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components2d_4_bbdt_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
     size_t max_labels, OUT *out_labels = NULL
@@ -776,14 +895,19 @@ OUT* connected_components2d_4_bbdt(
   int64_t loc = 0;
   OUT next_label = 0;
 
+#define MKLABEL(location) \
+  next_label++; \
+  out_labels[(location)] = next_label; \
+  equivalences.add(out_labels[(location)]);
+
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
 
-  std::function<void(int64_t)> mklabel = [&next_label,&equivalences,out_labels](int64_t loc) {
-    next_label++;
-    out_labels[loc] = next_label;
-    equivalences.add(out_labels[loc]);    
-  };
+  // std::function<void(int64_t)> mklabel = [&next_label,&equivalences,out_labels](int64_t loc) {
+  //   next_label++;
+  //   out_labels[loc] = next_label;
+  //   equivalences.add(out_labels[loc]);    
+  // };
 
   T cur = 0;
   for (int64_t y = 0; y < sy; y += 2) {
@@ -804,7 +928,7 @@ OUT* connected_components2d_4_bbdt(
                 out_labels[loc + B] = out_labels[loc + H];
               }
               else {
-                mklabel(loc + B);
+                MKLABEL(loc + B);
               }
             }
           }
@@ -819,7 +943,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + B] = out_labels[loc + H];
             }
             else {
-              mklabel(loc + B);
+              MKLABEL(loc + B);
             }
           }
 
@@ -835,7 +959,7 @@ OUT* connected_components2d_4_bbdt(
                   out_labels[loc + D] = out_labels[loc + B];
                 }
                 else {
-                  mklabel(loc + D);
+                  MKLABEL(loc + D);
                 }
               }
               continue;
@@ -844,7 +968,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + C] = out_labels[loc + E]; 
             }
             else {
-              mklabel(loc + C);
+              MKLABEL(loc + C);
             }
           }
 
@@ -859,7 +983,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + D] = out_labels[loc + C];
             }
             else {
-              mklabel(loc + D);
+              MKLABEL(loc + D);
             }
           }
         }
@@ -873,7 +997,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + B] = out_labels[loc + H];
             }
             else {
-              mklabel(loc + B);
+              MKLABEL(loc + B);
             }
           }
 
@@ -892,7 +1016,7 @@ OUT* connected_components2d_4_bbdt(
                   out_labels[loc + D] = out_labels[loc + B];
                 }
                 else {
-                  mklabel(loc + D);
+                  MKLABEL(loc + D);
                 }
               }
               continue;
@@ -901,7 +1025,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + C] = out_labels[loc + E];
             }
             else {
-              mklabel(loc + C);
+              MKLABEL(loc + C);
             }
           }
 
@@ -918,12 +1042,12 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + D] = out_labels[loc + C];
             }
             else {
-              mklabel(loc + D);
+              MKLABEL(loc + D);
             }
           }
         }
         else {
-          mklabel(loc + A);
+          MKLABEL(loc + A);
           if (x < sx - 1 && in_labels[loc + B]) {
             if (in_labels[loc + B] == in_labels[loc + A]) {
               out_labels[loc + B] = out_labels[loc];
@@ -935,7 +1059,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + B] = out_labels[loc + H];
             }
             else {
-              mklabel(loc + B);
+              MKLABEL(loc + B);
             }
           }
 
@@ -954,7 +1078,7 @@ OUT* connected_components2d_4_bbdt(
                   out_labels[loc + D] = out_labels[loc + B];
                 }
                 else {
-                  mklabel(loc + D);
+                  MKLABEL(loc + D);
                 }
               }
               continue;
@@ -963,7 +1087,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + C] = out_labels[loc + E];
             }
             else {
-              mklabel(loc + C);
+              MKLABEL(loc + C);
             }
           }
 
@@ -978,7 +1102,7 @@ OUT* connected_components2d_4_bbdt(
               equivalences.unify(out_labels[loc + D], out_labels[loc + C]);
             }
             else {
-              mklabel(loc + D);
+              MKLABEL(loc + D);
             }
           }
         }
@@ -988,7 +1112,7 @@ OUT* connected_components2d_4_bbdt(
           out_labels[loc + C] = out_labels[loc + E];
         }
         else {
-          mklabel(loc + C);
+          MKLABEL(loc + C);
         }
 
         if (x < sx - 1 && in_labels[loc + B]) {
@@ -996,7 +1120,7 @@ OUT* connected_components2d_4_bbdt(
             out_labels[loc + B] = out_labels[loc + H];
           }
           else {
-            mklabel(loc + B);
+            MKLABEL(loc + B);
           }
 
           if (x < sx - 1 && in_labels[loc + D]) {
@@ -1010,7 +1134,7 @@ OUT* connected_components2d_4_bbdt(
               out_labels[loc + D] = out_labels[loc + C]; 
             }
             else {
-              mklabel(loc + D);
+              MKLABEL(loc + D);
             }
           }
         }
@@ -1019,7 +1143,7 @@ OUT* connected_components2d_4_bbdt(
             out_labels[loc + D] = out_labels[loc + C];  
           }
           else {
-            mklabel(loc + D);
+            MKLABEL(loc + D);
           }
         }
       }
@@ -1028,7 +1152,7 @@ OUT* connected_components2d_4_bbdt(
           out_labels[loc + B] = out_labels[loc + H];
         }
         else {
-          mklabel(loc + B);
+          MKLABEL(loc + B);
         }
 
         if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
@@ -1036,15 +1160,17 @@ OUT* connected_components2d_4_bbdt(
             out_labels[loc + D] = out_labels[loc + B];  
           }
           else {
-            mklabel(loc + D);
+            MKLABEL(loc + D);
           }
         }
       }
       else if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
-        mklabel(loc + D);
+        MKLABEL(loc + D);
       }
     }
   }
+
+#undef MKLABEL
 
   return relabel<OUT>(out_labels, voxels, next_label, equivalences);
 }
@@ -1167,7 +1293,7 @@ OUT* connected_components3d(
     if (sz != 1) {
       throw std::runtime_error("sz must be 1 for 2D connectivities.");
     }
-    return connected_components2d_4_bbdt<T, OUT>(
+    return connected_components2d_4_bbdt_2<T, OUT>(
       in_labels, sx, sy, 
       max_labels, out_labels
     );
