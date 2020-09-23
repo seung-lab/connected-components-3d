@@ -677,6 +677,69 @@ OUT* connected_components3d_6(
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
+    const int64_t sx, const int64_t sy,
+    size_t max_labels, OUT *out_labels = NULL
+  ) {
+
+  const int64_t voxels = sx * sy;
+
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+    
+  /*
+    Layout of forward pass mask (which faces backwards). 
+    B is the current location.
+      C
+    A B
+  */
+  const int64_t A = -1;
+  const int64_t B = 0;
+  const int64_t C = -sx;
+
+  int64_t loc = 0;
+  OUT next_label = 0;
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int64_t y = 0; y < sy; y++) {
+    for (int64_t x = 0; x < sx; x++) {
+      loc = x + sx * y;
+
+      const T cur = in_labels[loc];
+
+      if (cur == 0) {
+        continue;
+      }
+
+      if (x > 0 && cur == in_labels[loc + A]) {
+        out_labels[loc] = out_labels[loc + A];
+        if (y > 0 && cur == in_labels[loc + C]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]); 
+        }
+      }
+      else if (y > 0 && cur == in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+      }
+    }
+  }
+
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+}
+
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components2d_4_bbdt(
+    T* in_labels, 
     const int64_t sx, const int64_t sy, 
     size_t max_labels, OUT *out_labels = NULL
   ) {
@@ -814,6 +877,7 @@ OUT* connected_components2d_4(
           }
 
           // can be optimized by taking advantage of existence of A
+          // i.e. we could skip checking B if C matches A
           if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
             if (in_labels[loc + D] == in_labels[loc + B]) {
               out_labels[loc + D] = out_labels[loc + B];
@@ -838,7 +902,7 @@ OUT* connected_components2d_4(
                 equivalences.unify(out_labels[loc + B], out_labels[loc + H]);
               }
             }
-            else if (y > 0 && in_labels[loc + B] == in_labels[loc + H]]) {
+            else if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) {
               out_labels[loc + B] = out_labels[loc + H];
             }
             else {
