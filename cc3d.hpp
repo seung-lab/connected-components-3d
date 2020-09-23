@@ -794,18 +794,6 @@ OUT* connected_components2d_4_bbdt(
       if (cur) {
         if (x > 0 && cur == in_labels[loc + F]) {
           out_labels[loc] = out_labels[loc + F];
-          if (y < sy - 1 && in_labels[loc + C]) {
-            if (in_labels[loc + C] == in_labels[loc + A]) {
-              out_labels[loc + C] = out_labels[loc];
-            }
-            else if (in_labels[loc + C] == in_labels[loc + E]) {
-              out_labels[loc + C] = out_labels[loc + E]; 
-            }
-            else {
-              mklabel(loc + C);
-            }
-          }
-
           if (y > 0 && cur == in_labels[loc + G]) {
             equivalences.unify(out_labels[loc + A], out_labels[loc + G]);
             if (x < sx - 1 && in_labels[loc + B]) {
@@ -832,6 +820,31 @@ OUT* connected_components2d_4_bbdt(
             }
             else {
               mklabel(loc + B);
+            }
+          }
+
+          if (y < sy - 1 && in_labels[loc + C]) {
+            if (in_labels[loc + C] == in_labels[loc + A]) {
+              out_labels[loc + C] = out_labels[loc];
+
+              if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
+                if (in_labels[loc + D] == in_labels[loc + C]) {
+                  out_labels[loc + D] = out_labels[loc + C];
+                }
+                else if (in_labels[loc + D] == in_labels[loc + B]) {
+                  out_labels[loc + D] = out_labels[loc + B];
+                }
+                else {
+                  mklabel(loc + D);
+                }
+              }
+              continue;
+            }
+            else if (in_labels[loc + C] == in_labels[loc + E]) {
+              out_labels[loc + C] = out_labels[loc + E]; 
+            }
+            else {
+              mklabel(loc + C);
             }
           }
 
@@ -870,6 +883,19 @@ OUT* connected_components2d_4_bbdt(
               if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
                 equivalences.unify(out_labels[loc + C], out_labels[loc + E]);
               }
+
+              if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
+                if (in_labels[loc + D] == in_labels[loc + C]) {
+                  out_labels[loc + D] = out_labels[loc + C];
+                }
+                else if (in_labels[loc + D] == in_labels[loc + B]) {
+                  out_labels[loc + D] = out_labels[loc + B];
+                }
+                else {
+                  mklabel(loc + D);
+                }
+              }
+              continue;
             }
             else if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
               out_labels[loc + C] = out_labels[loc + E];
@@ -916,6 +942,22 @@ OUT* connected_components2d_4_bbdt(
           if (y < sy - 1 && in_labels[loc + C]) {
             if (cur == in_labels[loc + C]) {
               out_labels[loc + C] = out_labels[loc];
+              if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
+                equivalences.unify(out_labels[loc + C], out_labels[loc + E]);
+              }
+
+              if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
+                if (in_labels[loc + D] == in_labels[loc + C]) {
+                  out_labels[loc + D] = out_labels[loc + C];
+                }
+                else if (in_labels[loc + D] == in_labels[loc + B]) {
+                  out_labels[loc + D] = out_labels[loc + B];
+                }
+                else {
+                  mklabel(loc + D);
+                }
+              }
+              continue;
             }
             else if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
               out_labels[loc + C] = out_labels[loc + E];
