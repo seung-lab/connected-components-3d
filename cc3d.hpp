@@ -223,22 +223,21 @@ OUT* relabel(
   OUT* renumber = new OUT[num_labels + 1]();
   OUT next_label = 1;
 
-  // Raster Scan 2: Write final labels based on equivalences
-  for (int64_t loc = 0; loc < voxels; loc++) {
-    if (!out_labels[loc]) {
-      continue;
-    }
-   
-    label = equivalences.root(out_labels[loc]);
-
-    if (renumber[label]) {
-      out_labels[loc] = renumber[label];
-    }
-    else {
+  for (int64_t i = 1; i <= num_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
       renumber[label] = next_label;
-      out_labels[loc] = next_label;
+      renumber[i] = next_label;
       next_label++;
     }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  // Raster Scan 2: Write final labels based on equivalences
+  for (int64_t loc = 0; loc < voxels; loc++) {
+    out_labels[loc] = renumber[out_labels[loc]];
   }
 
   delete[] renumber;
