@@ -32,13 +32,17 @@ void print(int *input, int sx, int sy, int sz) {
 
 int main () {
 
-	int *big = new int[512*512*512]();
-	for (int i = 0; i < 512*512*512; i++) {
-		big[i] = 1;
+	int sx = 2048;
+	int sy = 2048;
+
+	int *big = new int[sx*sy]();
+	for (int i = 0; i < sx*sy; i++) {
+		big[i] = rand() % 1000;
 	}
 
-	cc3d::connected_components3d<int, uint16_t>(big, 512,512,512);	
-
+	auto *out = cc3d::connected_components2d_4_bbdt_2<int, uint32_t>(big, sx,sy, sx*sy);	
+	delete[] out;
+	delete[] big;
 
 	// int twod[25] = {
 	// 	1,1,0,1,1,
