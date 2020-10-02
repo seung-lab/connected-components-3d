@@ -5966,7 +5966,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     if out_dtype == np.uint16:
  *       connected_components2d_8_bbdt[uint8_t, uint16_t](
  *         &arr_memview8u[0,0,0],             # <<<<<<<<<<<<<<
- *         sx, sy, sz, max_labels,
+ *         sx, sy, max_labels,
  *         <uint16_t*>&out_labels16[0]
  */
       __pyx_t_70 = 0;
@@ -5992,7 +5992,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
 
       /* "cc3d.pyx":256
  *         &arr_memview8u[0,0,0],
- *         sx, sy, sz, max_labels,
+ *         sx, sy, max_labels,
  *         <uint16_t*>&out_labels16[0]             # <<<<<<<<<<<<<<
  *       )
  *     elif out_dtype == np.uint32:
@@ -6013,9 +6013,9 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     if out_dtype == np.uint16:
  *       connected_components2d_8_bbdt[uint8_t, uint16_t](             # <<<<<<<<<<<<<<
  *         &arr_memview8u[0,0,0],
- *         sx, sy, sz, max_labels,
+ *         sx, sy, max_labels,
  */
-      (void)(cc3d::connected_components2d_8_bbdt<uint8_t,uint16_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_70 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_71 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_72 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, ((uint16_t *)(&(*__Pyx_BufPtrStrided1d(uint16_t *, __pyx_pybuffernd_out_labels16.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_out_labels16.diminfo[0].strides))))));
+      (void)(cc3d::connected_components2d_8_bbdt<uint8_t,uint16_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_70 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_71 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_72 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_max_labels, ((uint16_t *)(&(*__Pyx_BufPtrStrided1d(uint16_t *, __pyx_pybuffernd_out_labels16.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_out_labels16.diminfo[0].strides))))));
 
       /* "cc3d.pyx":252
  *   elif dtype == np.bool and connectivity == 8:
@@ -6049,7 +6049,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     elif out_dtype == np.uint32:
  *       connected_components2d_8_bbdt[uint8_t, uint32_t](
  *         &arr_memview8u[0,0,0],             # <<<<<<<<<<<<<<
- *         sx, sy, sz, max_labels,
+ *         sx, sy,  max_labels,
  *         <uint32_t*>&out_labels32[0]
  */
       __pyx_t_74 = 0;
@@ -6075,7 +6075,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
 
       /* "cc3d.pyx":262
  *         &arr_memview8u[0,0,0],
- *         sx, sy, sz, max_labels,
+ *         sx, sy,  max_labels,
  *         <uint32_t*>&out_labels32[0]             # <<<<<<<<<<<<<<
  *       )
  *     elif out_dtype == np.uint64:
@@ -6096,9 +6096,9 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     elif out_dtype == np.uint32:
  *       connected_components2d_8_bbdt[uint8_t, uint32_t](             # <<<<<<<<<<<<<<
  *         &arr_memview8u[0,0,0],
- *         sx, sy, sz, max_labels,
+ *         sx, sy,  max_labels,
  */
-      (void)(cc3d::connected_components2d_8_bbdt<uint8_t,uint32_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_74 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_75 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_76 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, ((uint32_t *)(&(*__Pyx_BufPtrStrided1d(uint32_t *, __pyx_pybuffernd_out_labels32.rcbuffer->pybuffer.buf, __pyx_t_77, __pyx_pybuffernd_out_labels32.diminfo[0].strides))))));
+      (void)(cc3d::connected_components2d_8_bbdt<uint8_t,uint32_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_74 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_75 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_76 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_max_labels, ((uint32_t *)(&(*__Pyx_BufPtrStrided1d(uint32_t *, __pyx_pybuffernd_out_labels32.rcbuffer->pybuffer.buf, __pyx_t_77, __pyx_pybuffernd_out_labels32.diminfo[0].strides))))));
 
       /* "cc3d.pyx":258
  *         <uint16_t*>&out_labels16[0]
@@ -6132,7 +6132,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     elif out_dtype == np.uint64:
  *       connected_components2d_8_bbdt[uint8_t, uint64_t](
  *         &arr_memview8u[0,0,0],             # <<<<<<<<<<<<<<
- *         sx, sy, sz, max_labels,
+ *         sx, sy,  max_labels,
  *         <uint64_t*>&out_labels64[0]
  */
       __pyx_t_78 = 0;
@@ -6158,7 +6158,7 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
 
       /* "cc3d.pyx":268
  *         &arr_memview8u[0,0,0],
- *         sx, sy, sz, max_labels,
+ *         sx, sy,  max_labels,
  *         <uint64_t*>&out_labels64[0]             # <<<<<<<<<<<<<<
  *       )
  *   else:
@@ -6179,9 +6179,9 @@ static PyObject *__pyx_pf_4cc3d_connected_components(CYTHON_UNUSED PyObject *__p
  *     elif out_dtype == np.uint64:
  *       connected_components2d_8_bbdt[uint8_t, uint64_t](             # <<<<<<<<<<<<<<
  *         &arr_memview8u[0,0,0],
- *         sx, sy, sz, max_labels,
+ *         sx, sy,  max_labels,
  */
-      (void)(cc3d::connected_components2d_8_bbdt<uint8_t,uint64_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_78 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_79 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_80 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_sz, __pyx_v_max_labels, ((uint64_t *)(&(*__Pyx_BufPtrStrided1d(uint64_t *, __pyx_pybuffernd_out_labels64.rcbuffer->pybuffer.buf, __pyx_t_81, __pyx_pybuffernd_out_labels64.diminfo[0].strides))))));
+      (void)(cc3d::connected_components2d_8_bbdt<uint8_t,uint64_t>((&(*((uint8_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr_memview8u.data + __pyx_t_78 * __pyx_v_arr_memview8u.strides[0]) ) + __pyx_t_79 * __pyx_v_arr_memview8u.strides[1]) ) + __pyx_t_80 * __pyx_v_arr_memview8u.strides[2]) )))), __pyx_v_sx, __pyx_v_sy, __pyx_v_max_labels, ((uint64_t *)(&(*__Pyx_BufPtrStrided1d(uint64_t *, __pyx_pybuffernd_out_labels64.rcbuffer->pybuffer.buf, __pyx_t_81, __pyx_pybuffernd_out_labels64.diminfo[0].strides))))));
 
       /* "cc3d.pyx":264
  *         <uint32_t*>&out_labels32[0]

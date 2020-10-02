@@ -51,7 +51,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
   )
   cdef U* connected_components2d_8_bbdt[T,U](
     T* in_labels, 
-    int64_t sx, int64_t sy, int64_t sz,
+    int64_t sx, int64_t sy,
     int64_t max_labels, 
     U* out_labels
   )
@@ -252,19 +252,19 @@ def connected_components(
     if out_dtype == np.uint16:
       connected_components2d_8_bbdt[uint8_t, uint16_t](
         &arr_memview8u[0,0,0],
-        sx, sy, sz, max_labels,
+        sx, sy, max_labels,
         <uint16_t*>&out_labels16[0]
       )
     elif out_dtype == np.uint32:
       connected_components2d_8_bbdt[uint8_t, uint32_t](
         &arr_memview8u[0,0,0],
-        sx, sy, sz, max_labels,
+        sx, sy,  max_labels,
         <uint32_t*>&out_labels32[0]
       )
     elif out_dtype == np.uint64:
       connected_components2d_8_bbdt[uint8_t, uint64_t](
         &arr_memview8u[0,0,0],
-        sx, sy, sz, max_labels,
+        sx, sy,  max_labels,
         <uint64_t*>&out_labels64[0]
       )
   else:
