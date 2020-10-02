@@ -1,6 +1,17 @@
 CHANGES
 =======
 
+1.10.0
+------
+
+* release(1.10.0): faster relabeling operation
+* perf(relabel): collapse union-find into simple array remap (#45)
+* docs: discuss where multi-label images come from
+* fix: missing docker build command for manylinux2014
+* chore: update changelog
+* chore: add python3.8 to setup.cfg
+* chore(manylinux): manylinux newer dockers drop py34 and support py38
+
 1.9.0
 -----
 
