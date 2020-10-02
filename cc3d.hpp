@@ -673,6 +673,254 @@ OUT* connected_components3d_6(
   return relabel<OUT>(out_labels, voxels, next_label, equivalences);
 }
 
+// uses an approach inspired by 2x2 block based decision trees
+// by Grana et al that was intended for 8-connected. Here we 
+// skip a unify on every other voxel in the horizontal and
+// vertical directions.
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components2d_4(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy, 
+    size_t max_labels, OUT *out_labels = NULL
+  ) {
+
+  const int64_t voxels = sx * sy;
+
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+    
+  /*
+    Layout of forward pass mask. 
+    A is the current location.
+      G H 
+    F A B 
+    E C D 
+  */
+
+  const int64_t A = 0;
+  const int64_t B = +1;
+  const int64_t C = +sx;
+  const int64_t D = 1+sx;
+
+  const int64_t E = -1+sx;
+  const int64_t F = -1;
+  const int64_t G = -sx;
+  const int64_t H = +1-sx;
+
+  int64_t loc = 0;
+  OUT next_label = 0;
+
+#define MKLABEL(location) \
+  next_label++; \
+  out_labels[(location)] = next_label; \
+  equivalences.add(out_labels[(location)]);
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+
+#define EVAL_B_FAST \
+  if (x < sx - 1 && in_labels[loc + B]) { \
+    if (in_labels[loc] == in_labels[loc + B]) { \
+      out_labels[loc + B] = out_labels[loc]; \
+    } \
+    else if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) { \
+      out_labels[loc + B] = out_labels[loc + H]; \
+    } \
+    else { \
+      MKLABEL(loc + B); \
+    } \
+  }
+
+#define EVAL_B_UNIFY \
+  if (x < sx - 1 && in_labels[loc + B]) { \
+    if (in_labels[loc] == in_labels[loc + B]) { \
+      out_labels[loc + B] = out_labels[loc]; \
+      if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) { \
+        equivalences.unify(out_labels[loc + B], out_labels[loc + H]); \
+      } \
+    } \
+    else if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) { \
+      out_labels[loc + B] = out_labels[loc + H]; \
+    } \
+    else { \
+      MKLABEL(loc + B); \
+    } \
+  }
+
+#define EVAL_D_FAST \
+  if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) { \
+    if (in_labels[loc + D] == in_labels[loc + C]) { \
+      out_labels[loc + D] = out_labels[loc + C]; \
+    } \
+    else if (in_labels[loc + D] == in_labels[loc + B]) { \
+      out_labels[loc + D] = out_labels[loc + B]; \
+    } \
+    else { \
+      MKLABEL(loc + D); \
+    } \
+  }
+
+#define EVAL_D_UNIFY \
+  if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) { \
+    if (in_labels[loc + D] == in_labels[loc + C]) { \
+      out_labels[loc + D] = out_labels[loc + C]; \
+      if (in_labels[loc + D] == in_labels[loc + B]) { \
+        equivalences.unify(out_labels[loc + D], out_labels[loc + B]); \
+      } \
+    } \
+    else if (in_labels[loc + D] == in_labels[loc + B]) { \
+      out_labels[loc + D] = out_labels[loc + B]; \
+    } \
+    else { \
+      MKLABEL(loc + D); \
+    } \
+  }
+
+  T cur = 0;
+  for (int64_t y = 0; y < sy; y += 2) {
+    for (int64_t x = 0; x < sx; x += 2) {
+      loc = x + sx * y;
+      cur = in_labels[loc];
+
+      if (cur) {
+        if (x > 0 && cur == in_labels[loc + F]) {
+          out_labels[loc] = out_labels[loc + F];
+          if (y > 0 && cur == in_labels[loc + G]) {
+            equivalences.unify(out_labels[loc + A], out_labels[loc + G]);
+            EVAL_B_FAST
+          }
+          else {
+            EVAL_B_UNIFY
+          }
+
+          if (y < sy - 1 && in_labels[loc + C]) {
+            if (in_labels[loc + C] == in_labels[loc]) {
+              out_labels[loc + C] = out_labels[loc];
+              EVAL_D_FAST
+              continue;
+            }
+            else if (in_labels[loc + C] == in_labels[loc + E]) {
+              out_labels[loc + C] = out_labels[loc + E]; 
+            }
+            else {
+              MKLABEL(loc + C);
+            }
+          }
+
+          EVAL_D_UNIFY
+        }
+        else if (y > 0 && cur == in_labels[loc + G]) {
+          out_labels[loc] = out_labels[loc + G];
+          EVAL_B_FAST
+
+          if (y < sy - 1 && in_labels[loc + C]) {
+            if (cur == in_labels[loc + C]) {
+              out_labels[loc + C] = out_labels[loc];
+              if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
+                equivalences.unify(out_labels[loc + C], out_labels[loc + E]);
+              }
+              EVAL_D_FAST
+              continue;
+            }
+            else if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
+              out_labels[loc + C] = out_labels[loc + E];
+            }
+            else {
+              MKLABEL(loc + C);
+            }
+          }
+
+          EVAL_D_UNIFY
+        }
+        else {
+          MKLABEL(loc + A);
+          EVAL_B_UNIFY
+
+          if (y < sy - 1 && in_labels[loc + C]) {
+            if (cur == in_labels[loc + C]) {
+              out_labels[loc + C] = out_labels[loc];
+              if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
+                equivalences.unify(out_labels[loc + C], out_labels[loc + E]);
+              }
+              EVAL_D_FAST
+              continue;
+            }
+            else if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
+              out_labels[loc + C] = out_labels[loc + E];
+            }
+            else {
+              MKLABEL(loc + C);
+            }
+          }
+
+          EVAL_D_UNIFY
+        }
+      }
+      else if (y < sy - 1 && in_labels[loc + C]) {
+        if (x > 0 && in_labels[loc + C] == in_labels[loc + E]) {
+          out_labels[loc + C] = out_labels[loc + E];
+        }
+        else {
+          MKLABEL(loc + C);
+        }
+
+        if (x < sx - 1 && in_labels[loc + B]) {
+          if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) {
+            out_labels[loc + B] = out_labels[loc + H];
+          }
+          else {
+            MKLABEL(loc + B);
+          }
+
+          EVAL_D_UNIFY
+        }
+        else if (x < sx - 1 && in_labels[loc + D]) {
+          if (in_labels[loc + D] == in_labels[loc + C]) {
+            out_labels[loc + D] = out_labels[loc + C];  
+          }
+          else {
+            MKLABEL(loc + D);
+          }
+        }
+      }
+      else if (x < sx - 1 && in_labels[loc + B]) {
+        if (y > 0 && in_labels[loc + B] == in_labels[loc + H]) {
+          out_labels[loc + B] = out_labels[loc + H];
+        }
+        else {
+          MKLABEL(loc + B);
+        }
+
+        if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
+          if (in_labels[loc + D] == in_labels[loc + B]) {
+            out_labels[loc + D] = out_labels[loc + B];  
+          }
+          else {
+            MKLABEL(loc + D);
+          }
+        }
+      }
+      else if (x < sx - 1 && y < sy - 1 && in_labels[loc + D]) {
+        MKLABEL(loc + D);
+      }
+    }
+  }
+
+#undef MKLABEL
+#undef EVAL_B_FAST
+#undef EVAL_B_UNIFY
+#undef EVAL_D_FAST
+#undef EVAL_D_UNIFY
+
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+}
+
 // K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
 // Lawrence Berkely National Laboratory. LBNL-29102, 2005.
 // This is the stripped down version of that decision tree algorithm.
@@ -791,8 +1039,8 @@ OUT* connected_components3d(
     if (sz != 1) {
       throw std::runtime_error("sz must be 1 for 2D connectivities.");
     }
-    return connected_components3d_6<T, OUT>(
-      in_labels, sx, sy, sz, 
+    return connected_components2d_4<T, OUT>(
+      in_labels, sx, sy, 
       max_labels, out_labels
     );
   }
