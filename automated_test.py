@@ -33,7 +33,6 @@ def test_2d_square(out_dtype, dtype, connectivity):
       input_labels, out_dtype=out_dtype, connectivity=connectivity
     ).astype(dtype)
     
-    print(order)
     print(output_labels)
 
     assert np.all(output_labels == ground_truth.astype(dtype))
@@ -183,7 +182,7 @@ def test_2d_diagonals_4_connected(connectivity):
     [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
   ], dtype=np.uint32)
 
-  ground_truth = np.array([
+  ground_truth_sauf = np.array([
     [0,  0,  1, 0,  2,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0],
     [3,  0,  0, 4,  0,  0,  5,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
     [0,  7,  0, 0,  8,  0,  0,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
@@ -193,9 +192,19 @@ def test_2d_diagonals_4_connected(connectivity):
     [0, 16,  0, 0,  0,  17, 0,  0, 18,  0,  0,  0, 0, 0, 0, 0, 0],
   ], dtype=np.uint32)
 
+  ground_truth_bbdt = np.array([
+    [0,  0,  2, 0,  4,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0],
+    [1,  0,  0, 3,  0,  0,  5,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
+    [0,  8,  0, 0, 10,  0,  0,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
+    [7,  0,  9, 0,  0,  0, 11, 11,  0,  0, 12, 12, 0, 0, 0, 0, 0],
+    [0,  0,  0, 0,  0,  0, 11, 11,  0,  0, 12, 12, 0, 0, 0, 0, 0],
+    [0,  0, 13, 0, 14,  0,  0,  0,  0, 15,  0,  0, 0, 0, 0, 0, 0],
+    [0, 16,  0, 0,  0,  17, 0,  0, 18,  0,  0,  0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
   output_labels = cc3d.connected_components(input_labels, connectivity=connectivity)
   print(output_labels)
-  assert np.all(output_labels == ground_truth)
+  assert np.all(output_labels == ground_truth_sauf) or np.all(output_labels == ground_truth_bbdt)
 
 @pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 def test_2d_cross_with_intruder(connectivity):
