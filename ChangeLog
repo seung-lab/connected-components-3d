@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+1.12.0
+------
+
+* release(1.12.0): better memory bounds for 8 and 26 connected
+* chore: upload changelog
+* docs: describe why the rule holds for binary image memory
+* perf: use far less memory for 8 and 26 connected binary images
+
 1.11.0
 ------
 
