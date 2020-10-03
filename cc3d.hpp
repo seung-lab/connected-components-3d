@@ -1090,7 +1090,7 @@ OUT* connected_components2d_8_bbdt(
           }
           else if (x > 0 && y > 0 && in_labels[loc + C]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + C]);
-            if (y < sy - 1 && !in_labels[loc + B] && in_labels[loc + A]) {
+            if (y < sy - 1 && in_labels[loc + A]) {
               equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
             }
           }
