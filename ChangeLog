@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+1.11.0
+------
+
+* release(1.11.0): using BBDT for 4-connected 2D
+* perf: use block based decision tree for 4-connected problem (#44)
+* chore: update ChangeLog
+
 1.10.0
 ------
 
