@@ -43,13 +43,18 @@ import numpy as np
 __VERSION__ = '1.10.0'
 
 cdef extern from "cc3d.hpp" namespace "cc3d":
-  cdef uint32_t* connected_components3d[T,U](
+  cdef U* connected_components3d[T,U](
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity,
     U* out_labels
   )
-
+  cdef U* connected_components2d_8_bbdt[T,U](
+    T* in_labels, 
+    int64_t sx, int64_t sy,
+    int64_t max_labels, 
+    U* out_labels
+  )
   cdef vector[T] extract_region_graph[T](
     T* labels,
     int64_t sx, int64_t sy, int64_t sz,
@@ -232,7 +237,7 @@ def connected_components(
         sx, sy, sz, max_labels, connectivity,
         <uint64_t*>&out_labels64[0]
       )
-  elif dtype in (np.uint8, np.int8, np.bool):
+  elif dtype in (np.uint8, np.int8) or (dtype == np.bool and connectivity != 8):
     arr_memview8u = data.view(np.uint8)
     if out_dtype == np.uint16:
       connected_components3d[uint8_t, uint16_t](
@@ -250,6 +255,26 @@ def connected_components(
       connected_components3d[uint8_t, uint64_t](
         &arr_memview8u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
+        <uint64_t*>&out_labels64[0]
+      )
+  elif dtype == np.bool and connectivity == 8:
+    arr_memview8u = data.view(np.uint8)
+    if out_dtype == np.uint16:
+      connected_components2d_8_bbdt[uint8_t, uint16_t](
+        &arr_memview8u[0,0,0],
+        sx, sy, max_labels,
+        <uint16_t*>&out_labels16[0]
+      )
+    elif out_dtype == np.uint32:
+      connected_components2d_8_bbdt[uint8_t, uint32_t](
+        &arr_memview8u[0,0,0],
+        sx, sy,  max_labels,
+        <uint32_t*>&out_labels32[0]
+      )
+    elif out_dtype == np.uint64:
+      connected_components2d_8_bbdt[uint8_t, uint64_t](
+        &arr_memview8u[0,0,0],
+        sx, sy,  max_labels,
         <uint64_t*>&out_labels64[0]
       )
   else:
