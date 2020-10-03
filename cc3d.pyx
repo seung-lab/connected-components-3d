@@ -168,7 +168,12 @@ def connected_components(
   # for a 2x2x2 block, where 1/2 the slots are filled
   # in the worst case. 
   if data.dtype == np.bool:
-    max_labels = min(max_labels, ((data.size + 1) // 2) + 1)
+    if connectivity in (4,6,18):
+      max_labels = min(max_labels, ((data.size + 1) // 2) + 1)
+    elif connectivity == 8:
+      max_labels = min(max_labels, ((data.size + 1) // 4) + 1)
+    else: # 26
+      max_labels = min(max_labels, ((data.size + 1) // 8) + 1)
 
   dtype = data.dtype
   
