@@ -1085,40 +1085,37 @@ OUT* connected_components2d_8_bbdt(
         }
         else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
           ASSIGN_Y(out_labels[loc + E]);
-          if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
-            equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
+          if (x > 0 && in_labels[loc + B]) {
+            equivalences.unify(out_labels[loc + Y], out_labels[loc + B]);
           }
-          if (x > 0 && y > 0 && in_labels[loc + C]) {
+          else if (x > 0 && y > 0 && in_labels[loc + C]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + C]);
             if (y < sy - 1 && !in_labels[loc + B] && in_labels[loc + A]) {
               equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
             }
           }
-          else if (x > 0 && in_labels[loc + B]) {
-            equivalences.unify(out_labels[loc + Y], out_labels[loc + B]);
-          }
           else if (x > 0 && y < sy - 1 && in_labels[loc + A]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
           }
         }
-        else if (x > 0 && y > 0 && in_labels[loc + C]) {
-          ASSIGN_Y(out_labels[loc + C]);
-          if (y < sy - 1 && !in_labels[loc + B] && in_labels[loc + A]) {
-            equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
-          }
-          if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
+        else if (x > 0 && in_labels[loc + B]) {
+          ASSIGN_Y(out_labels[loc + B]);
+          if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
           }            
         }
-        else if (x > 0 && in_labels[loc + B]) {
-          ASSIGN_Y(out_labels[loc + B]);
+        else if (x > 0 && y > 0 && in_labels[loc + C]) {
+          ASSIGN_Y(out_labels[loc + C]);
+          if (y < sy - 1 && in_labels[loc + A]) {
+            equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
+          }
           if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
           }            
         }
         else if (x > 0 && y < sx - 1 && in_labels[loc + A]) {
           ASSIGN_Y(out_labels[loc + A]);
-          if (x < sx - 2 && in_labels[loc + Z] && in_labels[loc + F]) {
+          if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
           }            
         }
@@ -1132,25 +1129,8 @@ OUT* connected_components2d_8_bbdt(
         }
       }
       else if (x < sx - 1 && in_labels[loc + Z]) {
-        if (y > 0 && in_labels[loc + D]) {
-          ASSIGN_Z(out_labels[loc + D]);
-          if (x < sx - 2 && in_labels[loc + F]) {
-            equivalences.unify(out_labels[loc + Z], out_labels[loc + F]);
-          }
-          if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-            if (in_labels[loc + B]) {
-              equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
-            }
-            else if (in_labels[loc + A]) {
-              equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
-            }
-          }
-        }
-        else if (y > 0 && in_labels[loc + E]) {
+        if (y > 0 && in_labels[loc + E]) {
           ASSIGN_Z(out_labels[loc + E]);
-          if (x < sx - 2 && in_labels[loc + F]) {
-            equivalences.unify(out_labels[loc + Z], out_labels[loc + F]);
-          }
           if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
             if (in_labels[loc + B]) {
               equivalences.unify(out_labels[loc + X], out_labels[loc + B]);   
@@ -1159,6 +1139,25 @@ OUT* connected_components2d_8_bbdt(
               equivalences.unify(out_labels[loc + X], out_labels[loc + A]); 
             }
           }            
+        }
+        else if (y > 0 && in_labels[loc + D]) {
+          ASSIGN_Z(out_labels[loc + D]);
+          if (x < sx - 2 && in_labels[loc + F]) {
+            equivalences.unify(out_labels[loc + Z], out_labels[loc + F]);
+          }
+          if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
+            if (in_labels[loc + C]) {
+              if (!in_labels[loc + B] && in_labels[loc + A]) {
+                equivalences.unify(out_labels[loc + Z], out_labels[loc + A]);
+              }
+            }
+            else if (in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc + Z], out_labels[loc + B]);   
+            }
+            else if (in_labels[loc + A]) {
+              equivalences.unify(out_labels[loc + Z], out_labels[loc + A]); 
+            }
+          }
         }
         else if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
           ASSIGN_Z(out_labels[loc + F]);
@@ -1171,19 +1170,16 @@ OUT* connected_components2d_8_bbdt(
             }
           }            
         }
-        else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-          if (in_labels[loc + B]) {
-            out_labels[loc + Z] = out_labels[loc + B];
-            ASSIGN_X(out_labels[loc + B]);
+        else if (y < sy - 1 && in_labels[loc + X]) {
+          if (x > 0 && in_labels[loc + B]) {
+            ASSIGN_Z(out_labels[loc + B]);
           }
-          else if (in_labels[loc + A]) {
-            out_labels[loc + Z] = out_labels[loc + A];
-            ASSIGN_X(out_labels[loc + A]);
+          else if (x > 0 && in_labels[loc + A]) {
+            ASSIGN_Z(out_labels[loc + A]);
           }
           else {
             next_label++;
-            out_labels[loc + Z] = next_label;
-            ASSIGN_X(next_label);
+            ASSIGN_Z(next_label);
             equivalences.add(next_label);
           }
         }
@@ -1196,11 +1192,11 @@ OUT* connected_components2d_8_bbdt(
           equivalences.add(next_label);
         }
       }
-      else if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
-        if (in_labels[loc + B]) {
+      else if (y < sy - 1 && in_labels[loc + X]) {
+        if (x > 0 && in_labels[loc + B]) {
           ASSIGN_X(out_labels[loc + B]);
         }
-        else if (in_labels[loc + A]) {
+        else if (x > 0 && in_labels[loc + A]) {
           ASSIGN_X(out_labels[loc + A]); 
         }    
         else {

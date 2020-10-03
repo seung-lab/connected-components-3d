@@ -32,15 +32,15 @@ void print(int *input, int sx, int sy, int sz) {
 
 int main () {
 
-	int sx = 2048;
-	int sy = 2048;
+	int sx = 5000;
+	int sy = 5000;
 
 	int *big = new int[sx*sy]();
 	for (int i = 0; i < sx*sy; i++) {
 		big[i] = rand() % 1000;
 	}
 
-	auto *out = cc3d::connected_components2d_4_bbdt_2<int, uint32_t>(big, sx,sy, sx*sy);	
+	auto *out = cc3d::connected_components2d_8_bbdt<int, uint32_t>(big, sx,sy, sx*sy);	
 	delete[] out;
 	delete[] big;
 
