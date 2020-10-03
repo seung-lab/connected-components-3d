@@ -40,7 +40,7 @@ from libcpp.vector cimport vector
 cimport numpy as cnp
 import numpy as np
 
-__VERSION__ = '1.11.0'
+__VERSION__ = '1.12.0'
 
 cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef uint32_t* connected_components3d[T,U](
@@ -69,6 +69,11 @@ ctypedef fused INTEGER:
 class DimensionError(Exception):
   """The array has the wrong number of dimensions."""
   pass
+
+cdef int64_t even_ceil(int64_t N):
+  if N & 0x1:
+    return N << 1
+  return N
 
 def connected_components(
   data, int64_t max_labels=-1, 
@@ -170,13 +175,15 @@ def connected_components(
   # For 8 connected, since 2x2 bocks are always connected,
   # at most 1/4 + 1 of the pixels can be labeled. For 26
   # connected, 2x2x2 blocks are connected, so at most 1/8 + 1
+  cdef int64_t union_find_voxels = even_ceil(data.shape[0]) * even_ceil(data.shape[1]) * even_ceil(data.shape[2])
+
   if data.dtype == np.bool:
     if connectivity in (4,6,18):
-      max_labels = min(max_labels, ((data.size + 1) // 2) + 1)
+      max_labels = min(max_labels, (union_find_voxels // 2) + 1)
     elif connectivity == 8:
-      max_labels = min(max_labels, ((data.size + 1) // 4) + 1)
+      max_labels = min(max_labels, (union_find_voxels // 4) + 1)
     else: # 26
-      max_labels = min(max_labels, ((data.size + 1) // 8) + 1)
+      max_labels = min(max_labels, (union_find_voxels // 8) + 1)
 
   dtype = data.dtype
   

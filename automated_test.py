@@ -573,34 +573,37 @@ def test_region_graph_6():
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
 
-def test_stress_upper_bound_for_binary_6():
-  labels = np.zeros((256,256,256), dtype=np.bool)
-  for z in range(256):
-    for y in range(256):
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_6(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  for z in range(labels.shape[2]):
+    for y in range(labels.shape[1]):
       off = (y + (z % 2)) % 2
       labels[off::2,y,z] = True
 
   out = cc3d.connected_components(labels, connectivity=6)
-  assert np.max(out) + 1 == (256**3) // 2 + 1
+  assert np.max(out) + 1 <= (256**3) // 2 + 1
 
-def test_stress_upper_bound_for_binary_8():
-  labels = np.zeros((256,256), dtype=np.bool)
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_8(size):
+  labels = np.zeros((size,size), dtype=np.bool)
   labels[0::2,0::2] = True
 
   out = cc3d.connected_components(labels, connectivity=8)
-  assert np.max(out) + 1 == (256**2) // 4 + 1
+  assert np.max(out) + 1 <= (256**2) // 4 + 1
 
   for _ in range(10):
     labels = np.random.randint(0,2, (256,256), dtype=np.bool)
     out = cc3d.connected_components(labels, connectivity=8)
     assert np.max(out) + 1 <= (256**2) // 4 + 1    
 
-def test_stress_upper_bound_for_binary_26():
-  labels = np.zeros((256,256,256), dtype=np.bool)
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_26(size):
+  labels = np.zeros((255,255,255), dtype=np.bool)
   labels[::2,::2,::2] = True
 
   out = cc3d.connected_components(labels, connectivity=26)
-  assert np.max(out) + 1 == (256**3) // 8 + 1
+  assert np.max(out) + 1 <= (256**3) // 8 + 1
 
   for _ in range(10):
     labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
