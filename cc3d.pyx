@@ -162,11 +162,14 @@ def connected_components(
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
-  # 1 0  for a 4-connected and 8-connected dataset
-  # 0 1  that's 1/2 the size + 1 for black.
+  # 1 0  for a 4-connected that's 1/2 the size + 1 
+  # 0 1  for black.
   # For 3D six-connected data the same ratio holds
   # for a 2x2x2 block, where 1/2 the slots are filled
   # in the worst case. 
+  # For 8 connected, since 2x2 bocks are always connected,
+  # at most 1/4 + 1 of the pixels can be labeled. For 26
+  # connected, 2x2x2 blocks are connected, so at most 1/8 + 1
   if data.dtype == np.bool:
     if connectivity in (4,6,18):
       max_labels = min(max_labels, ((data.size + 1) // 2) + 1)
