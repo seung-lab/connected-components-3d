@@ -1060,7 +1060,7 @@ OUT* connected_components2d_8_bbdt(
     if (y < sy - 1 && in_labels[loc + X]) { \
       out_labels[loc + X] = (value); \
     } \
-    if (y < sy - 1 && in_labels[loc  +W]) { \
+    if (y < sy - 1 && in_labels[loc + W]) { \
       out_labels[loc + W] = (value); \
     }
 
