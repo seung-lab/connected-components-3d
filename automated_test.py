@@ -18,7 +18,7 @@ def gt_c2f(gt):
   f_gt[ f_gt == mx ] = 3
   return f_gt
 
-@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
 def test_2d_square(out_dtype, dtype, connectivity):
@@ -33,7 +33,6 @@ def test_2d_square(out_dtype, dtype, connectivity):
       input_labels, out_dtype=out_dtype, connectivity=connectivity
     ).astype(dtype)
     
-    print(order)
     print(output_labels)
 
     assert np.all(output_labels == ground_truth.astype(dtype))
@@ -60,7 +59,7 @@ def test_2d_square(out_dtype, dtype, connectivity):
   test('C', ground_truth)
   test('F', ground_truth.T)
 
-@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
 def test_2d_rectangle(out_dtype, dtype, connectivity):
@@ -103,7 +102,7 @@ def test_2d_rectangle(out_dtype, dtype, connectivity):
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
-@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 def test_2d_cross(dtype, connectivity):
   def test(order, ground_truth):
@@ -146,7 +145,7 @@ def test_2d_cross(dtype, connectivity):
   test('F', gt_c2f(ground_truth))
 
 @pytest.mark.parametrize("connectivity", (8, 18, 26))
-def test_2d_diagonals(connectivity):
+def test_2d_diagonals_8_connected(connectivity):
   input_labels = np.array([
     [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -171,7 +170,43 @@ def test_2d_diagonals(connectivity):
   print(output_labels)
   assert np.all(output_labels == ground_truth)
 
-@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("connectivity", (4, 6))
+def test_2d_diagonals_4_connected(connectivity):
+  input_labels = np.array([
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
+  ground_truth_sauf = np.array([
+    [0,  0,  1, 0,  2,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0],
+    [3,  0,  0, 4,  0,  0,  5,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
+    [0,  7,  0, 0,  8,  0,  0,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
+    [9,  0, 10, 0,  0,  0, 11, 11,  0,  0, 12, 12, 0, 0, 0, 0, 0],
+    [0,  0,  0, 0,  0,  0, 11, 11,  0,  0, 12, 12, 0, 0, 0, 0, 0],
+    [0,  0, 13, 0, 14,  0,  0,  0,  0, 15,  0,  0, 0, 0, 0, 0, 0],
+    [0, 16,  0, 0,  0,  17, 0,  0, 18,  0,  0,  0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
+  ground_truth_bbdt = np.array([
+    [0,  0,  2, 0,  4,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0],
+    [1,  0,  0, 3,  0,  0,  5,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
+    [0,  8,  0, 0, 10,  0,  0,  0,  6,  6,  0,  0, 0, 0, 0, 0, 0],
+    [7,  0,  9, 0,  0,  0, 11, 11,  0,  0, 12, 12, 0, 0, 0, 0, 0],
+    [0,  0,  0, 0,  0,  0, 11, 11,  0,  0, 12, 12, 0, 0, 0, 0, 0],
+    [0,  0, 13, 0, 14,  0,  0,  0,  0, 15,  0,  0, 0, 0, 0, 0, 0],
+    [0, 16,  0, 0,  0,  17, 0,  0, 18,  0,  0,  0, 0, 0, 0, 0, 0],
+  ], dtype=np.uint32)
+
+  output_labels = cc3d.connected_components(input_labels, connectivity=connectivity)
+  print(output_labels)
+  assert np.all(output_labels == ground_truth_sauf) or np.all(output_labels == ground_truth_bbdt)
+
+@pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 def test_2d_cross_with_intruder(connectivity):
   def test(order, ground_truth):
     input_labels = np.zeros( (5,5), dtype=np.uint8, order=order)
@@ -537,3 +572,14 @@ def test_region_graph_6():
   assert res == set([
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
+
+def test_stress_upper_bound_for_binary():
+  labels = np.zeros((256,256,256), dtype=np.bool)
+  for z in range(256):
+    for y in range(256):
+      off = (y + (z % 2)) % 2
+      labels[off::2,y,z] = True
+
+  out = cc3d.connected_components(labels, connectivity=6)
+  assert np.max(out) + 1 == (256**3) // 2 + 1
+
