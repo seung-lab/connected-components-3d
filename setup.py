@@ -28,7 +28,6 @@ setuptools.setup(
   install_requires=['numpy'],
   extras_require={
     ':python_version == "2.7"': ['futures'],
-    ':python_version == "2.6"': ['futures'],
   },
   ext_modules=[
     setuptools.Extension(

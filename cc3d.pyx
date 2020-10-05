@@ -178,9 +178,9 @@ def connected_components(
   cdef int64_t union_find_voxels = even_ceil(data.shape[0]) * even_ceil(data.shape[1]) * even_ceil(data.shape[2])
 
   if data.dtype == np.bool:
-    if connectivity in (4,6,18):
+    if connectivity in (4,6):
       max_labels = min(max_labels, (union_find_voxels // 2) + 1)
-    elif connectivity == 8:
+    elif connectivity == (8,18):
       max_labels = min(max_labels, (union_find_voxels // 4) + 1)
     else: # 26
       max_labels = min(max_labels, (union_find_voxels // 8) + 1)

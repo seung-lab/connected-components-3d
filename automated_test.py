@@ -598,8 +598,22 @@ def test_stress_upper_bound_for_binary_8(size):
     assert np.max(out) + 1 <= (256**2) // 4 + 1    
 
 @pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_18(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels[::2,::2,::2] = True
+  labels[1::2,1::2,::2] = True
+
+  out = cc3d.connected_components(labels, connectivity=26)
+  assert np.max(out) + 1 <= (256**3) // 4 + 1
+
+  for _ in range(10):
+    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
+    out = cc3d.connected_components(labels, connectivity=26)
+    assert np.max(out) + 1 <= (256**2) // 4 + 1
+
+@pytest.mark.parametrize("size", (255,256))
 def test_stress_upper_bound_for_binary_26(size):
-  labels = np.zeros((255,255,255), dtype=np.bool)
+  labels = np.zeros((size,size,size), dtype=np.bool)
   labels[::2,::2,::2] = True
 
   out = cc3d.connected_components(labels, connectivity=26)
