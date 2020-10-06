@@ -617,11 +617,14 @@ OUT* connected_components3d_6(
   */
 
   // Z - 1
+  const int64_t B = -sx - sxy;
   const int64_t E = -sxy;
+  const int64_t D = -1 - sxy;
 
   // Current Z
   const int64_t K = -sx;
   const int64_t M = -1;
+  const int64_t J = -1 - sx;
   // N = 0;
 
   int64_t loc = 0;
@@ -644,17 +647,20 @@ OUT* connected_components3d_6(
         if (x > 0 && cur == in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
 
-          if (y > 0 && cur == in_labels[loc + K]) {
+          if (y > 0 && cur == in_labels[loc + K] && cur != in_labels[loc + J]) {
             equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+            if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+            }
           }
-          if (z > 0 && cur == in_labels[loc + E]) {
+          else if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D]) {
             equivalences.unify(out_labels[loc], out_labels[loc + E]); 
           }
         }
         else if (y > 0 && cur == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
 
-          if (z > 0 && cur == in_labels[loc + E]) {
+          if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + B]) {
             equivalences.unify(out_labels[loc], out_labels[loc + E]); 
           }
         }
