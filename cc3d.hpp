@@ -775,15 +775,17 @@ OUT* connected_components2d_8(
     
   /*
     Layout of mask. We start from e.
-
+      | p |
     a | b | c
-    d | e 
+    d | e |
   */
 
   const int64_t A = -1 - sx;
   const int64_t B = -sx;
   const int64_t C = +1 - sx;
   const int64_t D = -1;
+
+  const int64_t P = -2 * sx;
 
   int64_t loc = 0;
   OUT next_label = 0;
@@ -803,14 +805,16 @@ OUT* connected_components2d_8(
       if (y > 0 && cur == in_labels[loc + B]) {
         out_labels[loc] = out_labels[loc + B];
       }
-      else if (x > 0 && cur == in_labels[loc + D]) {
-        out_labels[loc] = out_labels[loc + D];
-        if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
-          equivalences.unify(out_labels[loc], out_labels[loc + C]);
-        }
-      }
       else if (x > 0 && y > 0 && cur == in_labels[loc + A]) {
         out_labels[loc] = out_labels[loc + A];
+        if (x < sx - 1 && y > 0 && cur == in_labels[loc + C] 
+            && !(y > 1 && cur == in_labels[loc + P])) {
+
+            equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+      }
+      else if (x > 0 && cur == in_labels[loc + D]) {
+        out_labels[loc] = out_labels[loc + D];
         if (x < sx - 1 && y > 0 && cur == in_labels[loc + C]) {
           equivalences.unify(out_labels[loc], out_labels[loc + C]);
         }
