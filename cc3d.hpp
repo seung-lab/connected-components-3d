@@ -694,9 +694,9 @@ OUT* connected_components3d_6_bbdt(
     
   /*
     Layout of forward pass mask (which faces backwards). 
-    N is the current location.
+    B is the current location.
 
-      D E
+    J D E   H I
     A B C   F G
   */
 
@@ -708,6 +708,10 @@ OUT* connected_components3d_6_bbdt(
 
   const int64_t F = -sxy;
   const int64_t G = +1 - sxy;
+
+  const int64_t H = -sx - sxy;
+  const int64_t I = +1 - sx - sxy;
+  const int64_t J = -1 - sx;
 
   int64_t loc = 0;
   OUT next_label = 0;
@@ -721,7 +725,9 @@ OUT* connected_components3d_6_bbdt(
   if (x < sx - 1 && y > 0 && in_labels[loc + C] == in_labels[loc + E]) { \
     out_labels[loc + C] = out_labels[loc + E]; \
     if (x < sx - 1 && z > 0 && in_labels[loc + C] == in_labels[loc + G]) { \
-      equivalences.unify(out_labels[loc + C], out_labels[loc + G]); \
+      if (in_labels[loc + C] != in_labels[loc + I]) { \
+        equivalences.unify(out_labels[loc + C], out_labels[loc + G]); \
+      }\
     } \
   } \
   else if (x < sx - 1 && z > 0 && in_labels[loc + C] == in_labels[loc + G]) { \
@@ -750,9 +756,14 @@ OUT* connected_components3d_6_bbdt(
           if (x > 0 && in_labels[loc + B] == in_labels[loc + A]) {
             out_labels[loc + B] = out_labels[loc + A];
             if (y > 0 && in_labels[loc + B] == in_labels[loc + D]) {
-              equivalences.unify(out_labels[loc + B], out_labels[loc + D]);
+              if (in_labels[loc + B] != in_labels[loc + J]) {
+                equivalences.unify(out_labels[loc + B], out_labels[loc + D]);
+              }
+
               if (z > 0 && in_labels[loc + B] == in_labels[loc + F]) {
-                equivalences.unify(out_labels[loc + B], out_labels[loc + F]);
+                if (in_labels[loc + B] != in_labels[loc + H]) {
+                  equivalences.unify(out_labels[loc + B], out_labels[loc + F]);
+                }
 
                 if (x < sx - 1 && in_labels[loc + C]) {
                   if (x < sx - 1 && in_labels[loc + C] == in_labels[loc + B]) {
@@ -839,7 +850,7 @@ OUT* connected_components3d_6_bbdt(
               if (x < sx - 1 && y > 0 && in_labels[loc + C] == in_labels[loc + E]) {
                 out_labels[loc + C] = out_labels[loc + E];
                 out_labels[loc + B] = out_labels[loc + E];
-                if (z > 0 && in_labels[loc + C] == in_labels[loc + G]) {
+                if (z > 0 && in_labels[loc + C] == in_labels[loc + G] && in_labels[loc + C] != in_labels[loc + I]) {
                   equivalences.unify(out_labels[loc + C], out_labels[loc + G]);
                 }
               }
