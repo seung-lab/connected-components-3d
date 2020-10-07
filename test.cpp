@@ -32,12 +32,17 @@ void print(int *input, int sx, int sy, int sz) {
 
 int main () {
 
-	int *big = new int[512*512*512]();
-	for (int i = 0; i < 512*512*512; i++) {
-		big[i] = 1;
+	size_t sx = 512;
+	size_t sy = 512;
+	size_t sz = 512;
+	size_t voxels = sx * sy * sz;
+
+	int *big = new int[sx*sy*sz]();
+	for (int i = 0; i < voxels; i++) {
+		big[i] = rand() % 10;
 	}
 
-	cc3d::connected_components3d<int, uint16_t>(big, 512,512,512);	
+	cc3d::connected_components3d<int, uint32_t>(big, sx,sy,sz, 26);	
 
 
 	// int twod[25] = {
