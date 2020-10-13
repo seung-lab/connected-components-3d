@@ -83,11 +83,6 @@ This comparison was performed to show what happens when SciPy and `cc3d` are run
 
 ## 10x Head to Head: Random Binary Images  
 
-<p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images.png" alt="Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images. (black) SciPy 1.3.0 (blue) cc3d 1.2.2 (red) cc3d 1.2.2 with max_labels set 100x smaller than image size" /><br>
-Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images. (black) SciPy 1.3.0 (blue) cc3d 1.2.2 (red) cc3d 1.2.2 with max_labels set 100x smaller than image size
-</p>   
-
 ```python
 import numpy as np
 import scipy.ndimage.measurements
@@ -107,13 +102,32 @@ labels = [
 for label in labels:
   # scipy.ndimage.measurements.label(label, structure=s) # black
   cc3d.connected_components(label) # blue
-  # cc3d.connected_components(label, max_labels=(label.size // 100)) # red
 ```
 
-On random binary images, SciPy wins on memory with a peak memory cosumption of about 800 MB vs. cc3d with a peak consumption of about 1150 MB (1.4x). However, SciPy doesn't perform as well as cc3d in running time with an average run time of 1.96 sec versus 1.15 sec. When cc3d's max_labels is set to 100x less than the image size, the memory usage falls to about 875 MB and the runtime falls to 1.07 sec. Bear in mind that 10 binary images are stored in memory at once, inflating the baseline. Each image is about 56MB, so 10 of them are about 560MB. With interpreter overhead, the baseline is somewhere around 600 MB. Therefore, SciPy uses about 200 MB, cc3d uses about 550 MB, and cc3d with max_labels / 100 uses about 275 MB.
+### 26-connected
+
+<p style="font-style: italics;" align="center">
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_26.png" alt="Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
+Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images. (black) SciPy 1.5.2 (blue) cc3d 1.13.0
+</p>   
+
+On random binary images, SciPy marginally wins on memory with a peak memory cosumption of about 790 MB vs. cc3d with a peak consumption of about 800 MB (1.01x). However, SciPy doesn't perform as well as cc3d in running time with an average run time of 2.41 sec versus 1.03 sec per label set. Bear in mind that 10 binary images are stored in memory at once, inflating the baseline. Each image is about 56MB, so 10 of them are about 560MB. With interpreter overhead, the baseline is somewhere around 600 MB. Therefore, they use about 200 MB.
 
 | Trial             | MVx/sec | MB/sec | Rel. Perf. |
 |-------------------|---------|--------|------------|
-| SciPy 1.3.0       | 28.9    | 28.9   | 1.00x      |
-| cc3d 1.2.2        | 49.2    | 49.2   | 1.70x      |
-| cc3d + max_labels | 52.9    | 52.9   | 1.83x      |
+| SciPy 1.5.2       | 23.4    | 23.4   | 1.00x      |
+| cc3d 1.13.0       | 54.7    | 54.7   | 2.34x      |
+
+### 6-connected
+
+<p style="font-style: italics;" align="center">
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_6.png" alt="Fig. 4: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
+Fig. 4: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0
+</p>
+
+Here there's a slight difference in the memory usage. SciPy uses about 850 MB while cc3d uses 930 MB. Accounting for the ~600 MB of baseline, SciPy uses 250 MB and cc3d uses 330 MB (1.32x). At least for cc3d, the reason for additional memory usage is that 6-connectivity requires a larger union-find datastructure to handle the worst case than 26-connectivity (1/2 vs 1/8). The timings are more favorable though. scipy averages 1.35 seconds per volume vs cc3d averages 0.96 seconds per volume. 
+
+| Trial             | MVx/sec | MB/sec | Rel. Perf. |
+|-------------------|---------|--------|------------|
+| SciPy 1.5.2       | 42.2    | 42.2   | 1.00x      |
+| cc3d 1.13.0       | 59.2    | 59.2   | 1.40x      |
