@@ -51,6 +51,12 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     U* out_labels, bool sparse
   )
 
+cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
+  cdef OUT* extract_voxel_connectivity_graph[T,OUT](
+    T* in_labels, 
+    int64_t sx, int64_t sy, int64_t sz,
+    int64_t connectivity, OUT *graph
+  )
   cdef vector[T] extract_region_graph[T](
     T* labels,
     int64_t sx, int64_t sy, int64_t sz,
@@ -75,6 +81,8 @@ cdef int64_t even_ceil(int64_t N):
   if N & 0x1:
     return N << 1
   return N
+
+
 
 def connected_components(
   data, int64_t max_labels=-1, 
@@ -108,7 +116,7 @@ def connected_components(
   Returns: 2D or 3D numpy array remapped to reflect
     the connected components.
   """
-  dims = len(data.shape)
+  cdef int dims = len(data.shape)
   if dims not in (1,2,3):
     raise DimensionError("Only 1D, 2D, and 3D arrays supported. Got: " + str(dims))
 
@@ -125,7 +133,7 @@ def connected_components(
     raise ValueError("Only 6, 18, and 26 connectivities are supported for 3D images. Got: " + str(connectivity))
 
   if data.size == 0:
-    return np.zeros(shape=(0,), dtype=np.uint32)
+    return np.zeros(shape=(0,), dtype=out_dtype)
 
   order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
 
@@ -288,6 +296,136 @@ def connected_components(
   else:
     return out_labels.reshape( (sx), order=order)
 
+def voxel_connectivity_graph(data, int64_t connectivity=26):
+  """
+
+  """
+  cdef int dims = len(data.shape)
+  if dims not in (1,2,3):
+    raise DimensionError("Only 1D, 2D, and 3D arrays supported. Got: " + str(dims))
+
+  if dims == 2 and connectivity not in (4, 8, 6, 18, 26):
+    raise ValueError("Only 4, 8, and 6, 18, 26 connectivities are supported for 2D images. Got: " + str(connectivity))
+  elif dims != 2 and connectivity not in (6, 18, 26):
+    raise ValueError("Only 6, 18, and 26 connectivities are supported for 3D images. Got: " + str(connectivity))
+
+  out_dtype = np.uint32
+  if connectivity in (4, 8, 6):
+    out_dtype = np.uint8
+
+  if data.size == 0:
+    return np.zeros(shape=(0,), dtype=out_dtype)
+
+  order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
+
+  while len(data.shape) < 3:
+    if order == 'C':
+      data = data[np.newaxis, ...]
+    else: # F
+      data = data[..., np.newaxis ]
+
+  if not data.flags['C_CONTIGUOUS'] and not data.flags['F_CONTIGUOUS']:
+    data = np.copy(data, order=order)
+
+  shape = list(data.shape)
+
+  if order == 'C':
+    shape.reverse()
+
+  cdef int sx = shape[0]
+  cdef int sy = shape[1]
+  cdef int sz = shape[2]
+
+  cdef uint8_t[:,:,:] arr_memview8u
+  cdef uint16_t[:,:,:] arr_memview16u
+  cdef uint32_t[:,:,:] arr_memview32u
+  cdef uint64_t[:,:,:] arr_memview64u
+
+  cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
+  cdef cnp.ndarray[uint8_t, ndim=1] graph8 = np.array([], dtype=np.uint8)
+  cdef cnp.ndarray[uint32_t, ndim=1] graph32 = np.array([], dtype=np.uint32)
+
+  if out_dtype == np.uint8:
+    graph8 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    graph = graph8
+  elif out_dtype == np.uint32:
+    graph32 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    graph = graph32
+
+  dtype = data.dtype
+  
+  if dtype in (np.uint64, np.int64):
+    arr_memview64u = data.view(np.uint64)
+    if out_dtype == np.uint8:
+      extract_voxel_connectivity_graph[uint64_t, uint8_t](
+        &arr_memview64u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint8_t*>&graph8[0]
+      )
+    elif out_dtype == np.uint32:
+      extract_voxel_connectivity_graph[uint64_t, uint32_t](
+        &arr_memview64u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint32_t*>&graph32[0]
+      )
+  elif dtype in (np.uint32, np.int32):
+    arr_memview32u = data.view(np.uint32)
+    if out_dtype == np.uint8:
+      extract_voxel_connectivity_graph[uint32_t, uint8_t](
+        &arr_memview32u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint8_t*>&graph8[0]
+      )
+    elif out_dtype == np.uint32:
+      extract_voxel_connectivity_graph[uint32_t, uint32_t](
+        &arr_memview32u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint32_t*>&graph32[0]
+      )
+  elif dtype in (np.uint16, np.int16):
+    arr_memview16u = data.view(np.uint16)
+    if out_dtype == np.uint8:
+      extract_voxel_connectivity_graph[uint16_t, uint8_t](
+        &arr_memview16u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint8_t*>&graph8[0]
+      )
+    elif out_dtype == np.uint32:
+      extract_voxel_connectivity_graph[uint16_t, uint32_t](
+        &arr_memview16u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint32_t*>&graph32[0]
+      )
+  elif dtype in (np.uint8, np.int8, np.bool):
+    arr_memview8u = data.view(np.uint8)
+    if out_dtype == np.uint8:
+      extract_voxel_connectivity_graph[uint8_t, uint8_t](
+        &arr_memview8u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint8_t*>&graph8[0]
+      )
+    elif out_dtype == np.uint32:
+      extract_voxel_connectivity_graph[uint8_t, uint32_t](
+        &arr_memview8u[0,0,0],
+        sx, sy, sz, connectivity, 
+        <uint32_t*>&graph32[0]
+      )
+  else:
+    raise TypeError("Type {} not currently supported.".format(dtype))
+
+  if dims == 3:
+    if order == 'C':
+      return graph.reshape( (sz, sy, sx), order=order)
+    else:
+      return graph.reshape( (sx, sy, sz), order=order)
+  elif dims == 2:
+    if order == 'C':
+      return graph.reshape( (sy, sx), order=order)
+    else:
+      return graph.reshape( (sx, sy), order=order)
+  else:
+    return graph.reshape( (sx), order=order)
+
 def region_graph(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
     int connectivity=26
@@ -300,7 +438,7 @@ def region_graph(
   labels: 3D numpy array of integer segmentation labels
   connectivity: 6, 16, or 26 (default)
 
-  Returns: set of edges
+  Returns: set of edges between labels
   """
   if connectivity not in (6, 18, 26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
