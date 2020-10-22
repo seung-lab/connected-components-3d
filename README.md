@@ -164,7 +164,14 @@ For more information on the history of connected components algorithms, and an e
 
 ## Phantom Labels
 
-In the course of thinking of improvements to several algorithms, we developed a technique we term "Phantom Labeling" for improving SAUF algorithm directly. Phantom Labels are elements of a CCL mask that transmit connectivity information between other elements of the mask but cannot directly pass their value to the current pixel in the first pass.
+In the course of thinking of improvements to several algorithms, we developed a technique we term "Phantom Labeling" for improving the SAUF method directly. 
+
+```
+Definition: Phantom Labels are elements of a CCL mask that 
+transmit connectivity information between other elements of the 
+mask but cannot directly pass their value to the current pixel 
+during the first pass of a SAUF derived algorithm.
+```
 
 Reproducing Fig. 1 again, but with new letters for the more limited problem, the standard SAUF mask appears like so:
 
