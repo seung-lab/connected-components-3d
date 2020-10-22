@@ -642,3 +642,38 @@ def test_region_graph_6():
   assert res == set([
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
+
+def test_voxel_graph_2d():
+  labels = np.ones((3,3), dtype=np.uint8)
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=4)
+  assert graph.dtype == np.uint8
+  assert np.all(graph)
+
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=8)
+  assert graph.dtype == np.uint8
+  assert np.all(graph)
+
+  labels[1,1] = 0
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=4)
+  gt = np.array([
+    [0x0f,       0b00001011, 0x0f      ],
+    [0b00001110, 0x00,       0b00001101],
+    [0x0f,       0b00000111, 0x0f      ]
+  ], dtype=np.uint8)
+  assert np.all(gt == graph)
+
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=8)
+  gt = np.array([
+    [0b11101111, 0b11111011, 0b11011111],
+    [0b11111110, 0x00,       0b11111101],
+    [0b10111111, 0b11110111, 0b01111111]
+  ], dtype=np.uint8)
+  assert np.all(gt == graph)
+
+
+
+
+
+
+
+
