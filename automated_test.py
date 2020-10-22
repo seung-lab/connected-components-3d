@@ -469,6 +469,54 @@ def test_compare_scipy_6(sparse):
 
   assert np.all(cc3d_labels == scipy_labels)
 
+@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
+def test_sixty_four_bit():
+  input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
+  cc3d.connected_components(input_labels, max_labels=3)  
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_6(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  for z in range(labels.shape[2]):
+    for y in range(labels.shape[1]):
+      off = (y + (z % 2)) % 2
+      labels[off::2,y,z] = True
+
+  out = cc3d.connected_components(labels, connectivity=6)
+  assert np.max(out) + 1 <= (256**3) // 2 + 1
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_8(size):
+  labels = np.zeros((size,size), dtype=np.bool)
+  labels[0::2,0::2] = True
+
+  out = cc3d.connected_components(labels, connectivity=8)
+  assert np.max(out) + 1 <= (256**2) // 4 + 1
+
+  for _ in range(10):
+    labels = np.random.randint(0,2, (256,256), dtype=np.bool)
+    out = cc3d.connected_components(labels, connectivity=8)
+    assert np.max(out) + 1 <= (256**2) // 4 + 1    
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_18(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels[::2,::2,::2] = True
+  labels[1::2,1::2,::2] = True
+
+  out = cc3d.connected_components(labels, connectivity=26)
+  assert np.max(out) + 1 <= (256**3) // 4 + 1
+
+  for _ in range(10):
+    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
+    out = cc3d.connected_components(labels, connectivity=26)
+    assert np.max(out) + 1 <= (256**2) // 4 + 1
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_26(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels[::2,::2,::2] = True
+
 @pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
@@ -594,54 +642,3 @@ def test_region_graph_6():
   assert res == set([
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
-
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_6(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
-  for z in range(labels.shape[2]):
-    for y in range(labels.shape[1]):
-      off = (y + (z % 2)) % 2
-      labels[off::2,y,z] = True
-
-  out = cc3d.connected_components(labels, connectivity=6)
-  assert np.max(out) + 1 <= (256**3) // 2 + 1
-
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_8(size):
-  labels = np.zeros((size,size), dtype=np.bool)
-  labels[0::2,0::2] = True
-
-  out = cc3d.connected_components(labels, connectivity=8)
-  assert np.max(out) + 1 <= (256**2) // 4 + 1
-
-  for _ in range(10):
-    labels = np.random.randint(0,2, (256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=8)
-    assert np.max(out) + 1 <= (256**2) // 4 + 1    
-
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_18(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
-  labels[::2,::2,::2] = True
-  labels[1::2,1::2,::2] = True
-
-  out = cc3d.connected_components(labels, connectivity=26)
-  assert np.max(out) + 1 <= (256**3) // 4 + 1
-
-  for _ in range(10):
-    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=26)
-    assert np.max(out) + 1 <= (256**2) // 4 + 1
-
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_26(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
-  labels[::2,::2,::2] = True
-
-  out = cc3d.connected_components(labels, connectivity=26)
-  assert np.max(out) + 1 <= (256**3) // 8 + 1
-
-  for _ in range(10):
-    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=26)
-    assert np.max(out) + 1 <= (256**2) // 8 + 1
