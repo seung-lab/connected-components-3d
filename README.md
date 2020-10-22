@@ -50,7 +50,7 @@ import numpy as np
 labels_in = np.ones((512, 512, 512), dtype=np.int32)
 labels_out = cc3d.connected_components(labels_in) # 26-connected
 
-connectivity = 6 # only 26, 18, and 6 are allowed
+connectivity = 6 # only 4,8 (2D) and 26, 18, and 6 (3D) are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
 # You can adjust the bit width of the output to accomodate
@@ -74,6 +74,14 @@ for segid in range(1, N+1):
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.
 graph = cc3d.region_graph(labels_out, connectivity=connectivity) 
+
+# You can also generate a voxel connectivty graph that encodes
+# which directions are passable from a given voxel as a bitfield.
+# This could also be seen as a method of eroding voxels fractionally
+# based on their label adjacencies.
+# See help(cc3d.voxel_connectivity_graph) for details.
+graph = cc3d.voxel_connectivity_graph(labels, connectivity=connectivity)
+
 ```
 
 If you know approximately how many labels you are going to generate, you can save some memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.
