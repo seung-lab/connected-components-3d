@@ -98,9 +98,9 @@ OUT* extract_voxel_connectivity_graph_3d(
 	) {
 
 	const int64_t sxy = sx * sy;
-	const int64_t voxels = sx * sy;
+	const int64_t voxels = sx * sy * sz;
 
-	const OUT ALL = 0x3ffffff; // 26 free directions
+	const OUT ALL = static_cast<OUT>(0x3ffffff); // 26 free directions
 
 	if (graph == NULL) {
 		graph = new OUT[voxels];
@@ -202,7 +202,7 @@ OUT* extract_voxel_connectivity_graph(
     graph = extract_voxel_connectivity_graph_3d<T, OUT>(
       in_labels, sx, sy, sz, graph
     );
-  	return and_mask<OUT>(0x3ffff, graph, sx, sy, sz);
+  	return and_mask<OUT>(static_cast<OUT>(0x3ffff), graph, sx, sy, sz);
   }
   else if (connectivity == 6) {
     graph = extract_voxel_connectivity_graph_3d<T, OUT>(
