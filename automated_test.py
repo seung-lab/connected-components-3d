@@ -1,4 +1,5 @@
 import pytest
+import sys
 
 import cc3d
 import numpy as np
@@ -469,6 +470,7 @@ def test_compare_scipy_6(sparse):
 
   assert np.all(cc3d_labels == scipy_labels)
 
+@pytest.mark.skipif("sys.maxsize <= 2**33")
 @pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
 def test_sixty_four_bit():
   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
