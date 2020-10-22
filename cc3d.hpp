@@ -647,10 +647,25 @@ OUT* connected_components3d_6(
         if (x > 0 && cur == in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
 
-          if (y > 0 && cur == in_labels[loc + K] && cur != in_labels[loc + J]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + K]); 
-            if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
-              equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+          if (y > 0 && cur == in_labels[loc + K]) { 
+            if (cur == in_labels[loc + J]) {
+              if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
+                equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+              }
+            }
+            else if (z > 0 && cur == in_labels[loc + E]) {
+              if (cur != in_labels[loc + D]) {
+                equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+                if (cur != in_labels[loc + B]) {
+                  equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+                }
+              }
+              else if (cur != in_labels[loc + B]) {
+                equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+              }   
+            }
+            else {
+              equivalences.unify(out_labels[loc], out_labels[loc + K]); 
             }
           }
           else if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D]) {
