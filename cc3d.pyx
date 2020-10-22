@@ -356,21 +356,12 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
   if data.size == 0:
     return np.zeros(shape=(0,), dtype=out_dtype)
 
-  order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
+  data = np.asfortranarray(data)
 
   while len(data.shape) < 3:
-    if order == 'C':
-      data = data[np.newaxis, ...]
-    else: # F
-      data = data[..., np.newaxis ]
-
-  if not data.flags['C_CONTIGUOUS'] and not data.flags['F_CONTIGUOUS']:
-    data = np.copy(data, order=order)
+    data = data[..., np.newaxis ]
 
   shape = list(data.shape)
-
-  if order == 'C':
-    shape.reverse()
 
   cdef int sx = shape[0]
   cdef int sy = shape[1]
@@ -386,10 +377,10 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
   cdef cnp.ndarray[uint32_t, ndim=1] graph32 = np.array([], dtype=np.uint32)
 
   if out_dtype == np.uint8:
-    graph8 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    graph8 = np.zeros( (voxels,), dtype=out_dtype, order='F' )
     graph = graph8
   elif out_dtype == np.uint32:
-    graph32 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    graph32 = np.zeros( (voxels,), dtype=out_dtype, order='F' )
     graph = graph32
 
   dtype = data.dtype
@@ -454,17 +445,11 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
     raise TypeError("Type {} not currently supported.".format(dtype))
 
   if dims == 3:
-    if order == 'C':
-      return graph.reshape( (sz, sy, sx), order=order)
-    else:
-      return graph.reshape( (sx, sy, sz), order=order)
+    return graph.reshape( (sx, sy, sz), order='F')
   elif dims == 2:
-    if order == 'C':
-      return graph.reshape( (sy, sx), order=order)
-    else:
-      return graph.reshape( (sx, sy), order=order)
+    return graph.reshape( (sx, sy), order='F')
   else:
-    return graph.reshape( (sx), order=order)
+    return graph.reshape( (sx), order='F')
 
 def region_graph(
     cnp.ndarray[INTEGER, ndim=3, cast=True] labels,

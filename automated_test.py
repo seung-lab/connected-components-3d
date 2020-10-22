@@ -662,7 +662,7 @@ def test_voxel_graph_2d():
     [0b00001110, 0x00,       0b00001101],
     [0x0f,       0b00000111, 0x0f      ]
   ], dtype=np.uint8)
-  assert np.all(gt == graph)
+  assert np.all(gt.T == graph)
 
   graph = cc3d.voxel_connectivity_graph(labels, connectivity=8)
   gt = np.array([
@@ -670,7 +670,7 @@ def test_voxel_graph_2d():
     [0b11111110, 0x00,       0b11111101],
     [0b10111111, 0b11110111, 0b01111111]
   ], dtype=np.uint8)
-  assert np.all(gt == graph)
+  assert np.all(gt.T == graph)
 
 def test_voxel_graph_3d():
   labels = np.ones((3,3,3), dtype=np.uint8)
@@ -728,6 +728,6 @@ def test_voxel_graph_3d():
     ]
   ], dtype=np.uint32)
   
-  assert np.all(gt == graph)
+  assert np.all(gt.T == graph)
 
 
