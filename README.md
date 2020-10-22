@@ -73,7 +73,7 @@ for segid in range(1, N+1):
 
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.
-graph = cc3d.region_graph(labels_out, connectivity=connectivity) 
+edges = cc3d.region_graph(labels_out, connectivity=connectivity) 
 
 # You can also generate a voxel connectivty graph that encodes
 # which directions are passable from a given voxel as a bitfield.
@@ -114,11 +114,22 @@ uint16_t* cc_labels = cc3d::connected_components3d<int, uint16_t>(
   /*connectivity=*/18 // default is 26 connected
 );
 
+#include "cc3d_graphs.hpp"
+
 // edges is [ e11, e12, e21, e22, ... ]
 std::vector<uint64_t> edges = cc3d::extract_region_graph<uint64_t>(
   labels, /*sx=*/512, /*sy=*/512, /*sz=*/512, 
   /*connectivity=*/18 // default is 26 connected
 );
+
+// graph is a series of bitfields that describe inter-voxel
+// connectivity based on adjacent labels. See "cc3d_graphs.hpp"
+// for details on the bitfield. 
+uint32_t* graph = extract_voxel_connectivity_graph<T>(
+  labels, /*sx=*/512, /*sy=*/512, /*sz=*/512, 
+  /*connectivity=*/6 // default is 26 connected
+);
+
 ```
 
 ## 26-Connected CCL Algorithm
