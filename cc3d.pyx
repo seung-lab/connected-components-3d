@@ -298,7 +298,47 @@ def connected_components(
 
 def voxel_connectivity_graph(data, int64_t connectivity=26):
   """
+  Extracts the voxel connectivity graph from a multi-label image.
+  A voxel is considered connected if the adjacent voxel is the same
+  label.
 
+  This output is a bitfield that represents a directed graph of the 
+  allowed directions for transit between voxels. If a connection is allowed, 
+  the respective direction is set to 1 else it set to 0.
+
+  For 2D connectivity, the output is an 8-bit unsigned integer.
+
+  Bits 1-4: edges     (4,8 way)
+       5-8: corners   (8 way only, zeroed in 4 way)
+
+       8      7      6      5      4      3      2      1
+  ------ ------ ------ ------ ------ ------ ------ ------
+    -x-y    x-y    -xy     xy     -x     +y     -x     +x
+
+  For a 3D 26 and 18 connectivity, the output requires 32-bit unsigned integers,
+    for 6-way the output are 8-bit unsigned integers.
+
+  Bits 1-6: faces     (6,18,26 way)
+      7-19: edges     (18,26 way)
+     18-26: corners   (26 way)
+     26-32: unused (zeroed)
+
+  6x unused, 8 corners, 12 edges, 6 faces
+
+      32     31     30     29     28     27     26     25     24     23     
+  ------ ------ ------ ------ ------ ------ ------ ------ ------ ------
+  unused unused unused unused unused unused -x-y-z  x-y-z -x+y-z +x+y-z
+      22     21     20     19     18     17     16     15     14     13
+  ------ ------ ------ ------ ------ ------ ------ ------ ------ ------
+  -x-y+z +x-y+z -x+y+z    xyz   -y-z    y-z   -x-z    x-z    -yz     yz
+      12     11     10      9      8      7      6      5      4      3
+  ------ ------ ------ ------ ------ ------ ------ ------ ------ ------
+     -xz     xz   -x-y    x-y    -xy     xy     -z     +z     -y     +y  
+       2      1
+  ------ ------
+      -x     +x
+
+  Returns: uint8 or uint32 numpy array the same size as the input
   """
   cdef int dims = len(data.shape)
   if dims not in (1,2,3):
