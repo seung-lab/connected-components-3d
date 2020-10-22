@@ -106,9 +106,9 @@ std::vector<uint64_t> edges = cc3d::extract_region_graph<uint64_t>(
 );
 ```
 
-## Algorithm Description
+## 26-Connected CCL Algorithm
 
-The algorithm contained in this package is an elaboration into 3D images of the 2D image connected components algorithm described by Rosenfeld and Pflatz (RP) in 1968 [1] (which is well illustrated by [this youtube video](https://www.youtube.com/watch?v=ticZclUYy88)) using an equivalency list implemented as Tarjan's Union-Find disjoint set with path compression and balancing [2] and augmented with a decision tree based on work by Wu, Otoo, and Suzuki (WOS). [3] The description below describes the 26-connected algorithm, but once you understand it, deriving 18 and 6 are simple.
+The algorithm contained in this package is an elaboration into 3D images of the 2D image connected components algorithm described by Rosenfeld and Pflatz (RP) in 1968 [1] (which is well illustrated by [this youtube video](https://www.youtube.com/watch?v=ticZclUYy88)) using an equivalency list implemented as Tarjan's Union-Find disjoint set with path compression and balancing [2] and augmented with a decision tree based on work by Wu, Otoo, and Suzuki (WOS), an approach commonly known as Scan plus Array-based Union-Find (SAUF). [3] The description below describes the 26-connected algorithm, but once you understand it, deriving 18 and 6 are simple. However, we recently made some changes that warrant further discursion on 6-connected.
 
 ### First Principles in 2D
 
@@ -160,7 +160,93 @@ The decision tree is then constructed such that each of these coverings will be 
 
 In order to make a reasonably fast implementation, I implemented union-find with path compression. I conservatively used an IDs array qual to the size of the image for the union-find data structure instead of a sparse map. The union-find data structure plus the output labels means the memory consumption will be input + output + rank + equivalences. If your input labels are 32-bit, the memory usage will be 4x the input size. This becomes more problematic when 64-bit labels are used, but if you know something about your data, you can decrease the size of the union-find data structure. I previously used union-by-size but for some reason it merely reduced performance and increased memory usage so it was removed.
 
-For more information on the history of connected components algorithms, and an even faster approach for 2D 8-connected components, consult Grana et al's paper on Block Based Decision Trees. [5]
+For more information on the history of connected components algorithms, and an even faster approach for 2D 8-connected components, consult Grana et al's paper on Block Based Decision Trees. [5,7]
+
+## Phantom Labels
+
+In the course of thinking of improvements to several algorithms, we developed a technique we term "Phantom Labeling" for improving SAUF algorithm directly. Phantom Labels are elements of a CCL mask that transmit connectivity information between other elements of the mask but cannot directly pass their value to the current pixel in the first pass.
+
+Reproducing Fig. 1 again, but with new letters for the more limited problem, the standard SAUF mask appears like so:
+
+Fig. 3: Mask for an 8-connected plane. 
+
+| a | b | c |
+|---|---|---|
+| d | x | . |
+| . | . | . |
+
+This results in a decision tree like so assuming x is a foreground pixel.
+
+```
+if b:
+    x := b
+elif a:
+    x := a 
+    if c:
+        unify(a,c)
+elif d:
+    x := d
+    if c: 
+        unify(c,d)
+elif c:
+    x := c
+else:
+    x := new label
+```
+
+There is an opportunity here for eliminating up to half of the unify calls, one of the more expensive operations in modern CCL by slightly modifying the mask:
+
+Fig. 4: 8-connected mask modified to include phantom label P. 
+
+| . | P | . |
+|---|---|---|
+| a | b | c |
+| d | x | . |
+| . | . | . |
+
+This results in a modified decision tree.  
+
+```
+if b:
+    x := b
+elif a:
+    x := a 
+    if c and not P: <--- change here
+        unify(a,c)
+elif d:
+    x := d
+    if c: 
+        unify(c,d)
+elif c:
+    x := c
+else:
+    x := new label
+```
+
+The novelty of this technique is unclear, but it is very simple to apply and results in substantial speed ups for the 4 and 6 connected problems, a minor improvement for 8-connected, and is readily compatible with the multi-label approach unlike block based approaches.
+
+## 4 and 6-Connected CCL Algorithm
+
+Here is where the phantom label technique shines. It's a bit harder to find 4 and 6 connected algorithms in the literature, I assume because many of the techniques invented for the 8-way problem, such as the Union-Find data structure for the equivalency table and run-based approaches, are applicable to the simpler problem. However, the SAUF decision tree approach was lacking as every pixel required a unify call in the 4-way problem and two in the 6-way problem.
+
+Fig. 5: 4-connected mask modified to include phantom label P. 
+
+| P | b | . |
+|---|---|---|
+| a | x | . |
+
+```
+if a:
+    x := a
+    if b and not P:
+        unify(a,b)
+elif b:
+    x := b
+else:
+    x := new label
+```
+
+This gives a decent improvement on the order of 10-20%. If you're lucky, you might not incur even a single label merge operation. In the 6-way problem, there are three phantom labels that can be exploited and the improvement is closer to 50% on our data, a fairly substantial amount. Again, with luck you might avoid any unify operations at all.
 
 ## References
 
