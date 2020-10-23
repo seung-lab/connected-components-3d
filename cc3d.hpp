@@ -649,8 +649,10 @@ OUT* connected_components3d_6(
 
           if (y > 0 && cur == in_labels[loc + K] && cur != in_labels[loc + J]) {
             equivalences.unify(out_labels[loc], out_labels[loc + K]); 
-            if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
-              equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+            if (z > 0 && cur == in_labels[loc + E]) {
+              if (cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
+                equivalences.unify(out_labels[loc], out_labels[loc + E]);
+              }
             }
           }
           else if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D]) {
