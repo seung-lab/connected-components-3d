@@ -64,16 +64,25 @@ public:
   DisjointSet () {
     length = 65536; // 2^16, some "reasonable" starting size
     ids = new T[length]();
+    if (!ids) { 
+      throw std::runtime_error("Failed to allocate memory for the Union-Find datastructure for connected components.");
+    }
   }
 
   DisjointSet (size_t len) {
     length = len;
     ids = new T[length]();
+    if (!ids) { 
+      throw std::runtime_error("Failed to allocate memory for the Union-Find datastructure for connected components.");
+    }
   }
 
   DisjointSet (const DisjointSet &cpy) {
     length = cpy.length;
     ids = new T[length]();
+    if (!ids) { 
+      throw std::runtime_error("Failed to allocate memory for the Union-Find datastructure for connected components.");
+    }
 
     for (int i = 0; i < length; i++) {
       ids[i] = cpy.ids[i];
@@ -262,6 +271,10 @@ OUT* connected_components3d_26(
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
+  }
+
+  if (!out_labels) { 
+    throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
      
   /*
@@ -458,6 +471,9 @@ OUT* connected_components3d_18(
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
   }
+  if (!out_labels) { 
+    throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
+  }
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -604,6 +620,9 @@ OUT* connected_components3d_6(
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
   }
+  if (!out_labels) { 
+    throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
+  }
     
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -701,6 +720,9 @@ OUT* connected_components2d_4(
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
   }
+  if (!out_labels) { 
+    throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
+  }
     
   /*
     Layout of forward pass mask. 
@@ -771,6 +793,9 @@ OUT* connected_components2d_8(
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
+  }
+  if (!out_labels) { 
+    throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
     
   /*
