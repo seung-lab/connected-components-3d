@@ -229,6 +229,10 @@ OUT* relabel(
     const int64_t num_labels, DisjointSet<uint32_t> &equivalences
   ) {
 
+  if (num_labels == 0) {
+    return out_labels;
+  }
+
   OUT label;
   OUT* renumber = new OUT[num_labels + 1]();
   OUT next_label = 1;

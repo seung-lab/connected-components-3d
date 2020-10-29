@@ -467,6 +467,12 @@ def test_compare_scipy_6():
 
   assert np.all(cc3d_labels == scipy_labels)
 
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+def test_all_zeros_3d(connectivity, dtype):
+  labels = np.zeros((256,256,256), dtype=dtype)
+  out = cc3d.connected_components(labels)
+  assert np.all(out == 0)
 
 # def test_sixty_four_bit():
 #   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
