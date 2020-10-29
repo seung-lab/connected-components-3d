@@ -55,7 +55,8 @@ labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
 # You can adjust the bit width of the output to accomodate
 # different expected image statistics with memory usage tradeoffs.
-# uint16, uint32 (default), and uint64 are supported.
+# uint16, uint32 (default), and uint64 are supported. Note that
+# uint16 will limit you to 2^16 provisional labels.
 labels_out = cc3d.connected_components(labels_in, out_dtype=np.uint16)
 
 # You can extract individual components like so:

@@ -77,7 +77,8 @@ cdef int64_t even_ceil(int64_t N):
 
 def connected_components(
   data, int64_t max_labels=-1, 
-  int64_t connectivity=26, out_dtype=np.uint32
+  int64_t connectivity=26, out_dtype=np.uint32,
+  sparse=False
 ):
   """
   ndarray connected_components(
@@ -99,6 +100,9 @@ def connected_components(
       If the input image is 2D, you may specify 4 (pixel faces) or
         8 (+corners).
     out_dtype: Sets the output data type of the output.
+    sparse: (bool) if the dataset is known to be sparse
+      perform some optimizations that can either reduce memory
+      or increase speed.
   
   Returns: 2D or 3D numpy array remapped to reflect
     the connected components.

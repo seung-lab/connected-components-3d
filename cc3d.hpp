@@ -151,6 +151,18 @@ public:
   // Will be O(n).
 };
 
+template <typename T>
+size_t num_foreground(
+  T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz
+) {
+  const int64_t voxels = sx * sy * sz;
+  size_t count = 0;
+  for (int64_t i = 0; i < voxels; i++) {
+    count += static_cast<size_t>(in_labels[i] > 0);
+  }
+  return count;
+}
+
 // This is the original Wu et al decision tree but without
 // any copy operations, only union find. We can decompose the problem
 // into the z - 1 problem unified with the original 2D algorithm.
@@ -868,25 +880,25 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity,
-    OUT *out_labels = NULL
+    OUT *out_labels = NULL, const bool sparse = false
   ) {
 
   if (connectivity == 26) {
     return connected_components3d_26<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels
+      max_labels, out_labels, sparse
     );
   }
   else if (connectivity == 18) {
     return connected_components3d_18<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels
+      max_labels, out_labels, sparse
     );
   }
   else if (connectivity == 6) {
     return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels
+      max_labels, out_labels, sparse
     );
   }
   else if (connectivity == 8) {
@@ -895,7 +907,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_8<T,OUT>(
       in_labels, sx, sy,
-      max_labels, out_labels
+      max_labels, out_labels, sparse
     );
   }
   else if (connectivity == 4) {
@@ -904,7 +916,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, out_labels
+      max_labels, out_labels, sparse
     );
   }
   else {
@@ -916,10 +928,10 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity=26
+    const int64_t connectivity=26, const bool sparse = false
   ) {
   const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity);
+  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity, sparse);
 }
 
 // REGION GRAPH BELOW HERE
