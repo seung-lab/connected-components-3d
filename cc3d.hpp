@@ -52,6 +52,7 @@
 #include <stdexcept>
 #include <unordered_set>
 #include <vector>
+#include <limits>
 
 namespace cc3d {
 
