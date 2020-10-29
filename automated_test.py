@@ -469,9 +469,11 @@ def test_compare_scipy_6():
 
 @pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
-def test_all_zeros_3d(connectivity, dtype):
-  labels = np.zeros((256,256,256), dtype=dtype)
-  out = cc3d.connected_components(labels)
+@pytest.mark.parametrize("out_dtype", OUT_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_all_zeros_3d(connectivity, dtype, out_dtype, order):
+  labels = np.zeros((128,128,128), dtype=dtype, order=order)
+  out = cc3d.connected_components(labels, out_dtype=out_dtype)
   assert np.all(out == 0)
 
 # def test_sixty_four_bit():
