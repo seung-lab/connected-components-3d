@@ -229,7 +229,7 @@ OUT* relabel(
     const int64_t num_labels, DisjointSet<uint32_t> &equivalences
   ) {
 
-  if (num_labels == 0) {
+  if (num_labels <= 1) {
     return out_labels;
   }
 

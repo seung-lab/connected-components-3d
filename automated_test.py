@@ -476,6 +476,16 @@ def test_all_zeros_3d(connectivity, dtype, out_dtype, order):
   out = cc3d.connected_components(labels, out_dtype=out_dtype)
   assert np.all(out == 0)
 
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("out_dtype", OUT_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+@pytest.mark.parametrize("lbl", (1, 100, 7))
+def test_all_single_foreground(connectivity, dtype, out_dtype, order, lbl):
+  labels = np.zeros((64,64,64), dtype=dtype, order=order) + lbl
+  out = cc3d.connected_components(labels, out_dtype=out_dtype)
+  assert np.all(out == 1)
+
 # def test_sixty_four_bit():
 #   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
 #   cc3d.connected_components(input_labels, max_labels=0)  
