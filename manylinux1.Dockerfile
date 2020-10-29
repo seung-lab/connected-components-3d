@@ -5,7 +5,7 @@ ADD . /cc3d
 
 WORKDIR "/cc3d"
 
-ENV CC "g++"
+ENV CXX "g++"
 
 RUN rm -rf *.so build __pycache__ dist 
 
