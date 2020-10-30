@@ -287,7 +287,7 @@ OUT* connected_components3d_26(
     assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
   }
 
-  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
+  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
@@ -494,7 +494,7 @@ OUT* connected_components3d_18(
     assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
   }
 
-  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
+  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
@@ -654,7 +654,7 @@ OUT* connected_components3d_6(
     assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
   }
 
-  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
+  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
@@ -767,7 +767,7 @@ OUT* connected_components2d_4(
     assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
   }
 
-  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
+  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
@@ -852,7 +852,7 @@ OUT* connected_components2d_8(
     assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
   }
 
-  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
+  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
