@@ -59,6 +59,12 @@ labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 # uint16 will limit you to 2^16 provisional labels.
 labels_out = cc3d.connected_components(labels_in, out_dtype=np.uint16)
 
+# If you know that the number of foreground voxels is relatively
+# low, you can save memory and sometimes time by enabling sparse mode
+# which will shrink the memory allocation of the Union-Find datastructure
+# to exactly match the number of foreground voxels if not lower.
+labels_out = cc3d.connected_components(labels_in, sparse=True)
+
 # You can extract individual components like so:
 N = np.max(labels_out)
 for segid in range(1, N+1):
