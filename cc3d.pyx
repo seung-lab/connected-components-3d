@@ -32,6 +32,7 @@ from libc.stdint cimport (
   int8_t, int16_t, int32_t, int64_t,
   uint8_t, uint16_t, uint32_t, uint64_t,
 )
+from libcpp cimport bool
 from cpython cimport array 
 import array
 import sys
@@ -47,7 +48,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity,
-    U* out_labels
+    U* out_labels, bool sparse
   )
 
   cdef vector[T] extract_region_graph[T](
@@ -77,7 +78,8 @@ cdef int64_t even_ceil(int64_t N):
 
 def connected_components(
   data, int64_t max_labels=-1, 
-  int64_t connectivity=26, out_dtype=np.uint32
+  int64_t connectivity=26, out_dtype=np.uint32,
+  sparse=False
 ):
   """
   ndarray connected_components(
@@ -99,6 +101,9 @@ def connected_components(
       If the input image is 2D, you may specify 4 (pixel faces) or
         8 (+corners).
     out_dtype: Sets the output data type of the output.
+    sparse: (bool) if the dataset is known to be sparse
+      perform some optimizations that can either reduce memory
+      or increase speed.
   
   Returns: 2D or 3D numpy array remapped to reflect
     the connected components.
@@ -193,19 +198,19 @@ def connected_components(
       connected_components3d[uint64_t, uint16_t](
         &arr_memview64u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], <bool>sparse
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint64_t, uint32_t](
         &arr_memview64u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], <bool>sparse
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint64_t, uint64_t](
         &arr_memview64u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], <bool>sparse
       )
   elif dtype in (np.uint32, np.int32):
     arr_memview32u = data.view(np.uint32)
@@ -213,19 +218,19 @@ def connected_components(
       connected_components3d[uint32_t, uint16_t](
         &arr_memview32u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], <bool>sparse
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint32_t, uint32_t](
         &arr_memview32u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], <bool>sparse
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint32_t, uint64_t](
         &arr_memview32u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], <bool>sparse
       )
   elif dtype in (np.uint16, np.int16):
     arr_memview16u = data.view(np.uint16)
@@ -233,19 +238,19 @@ def connected_components(
       connected_components3d[uint16_t, uint16_t](
         &arr_memview16u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], <bool>sparse
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint16_t, uint32_t](
         &arr_memview16u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], <bool>sparse
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint16_t, uint64_t](
         &arr_memview16u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], <bool>sparse
       )
   elif dtype in (np.uint8, np.int8, np.bool):
     arr_memview8u = data.view(np.uint8)
@@ -253,19 +258,19 @@ def connected_components(
       connected_components3d[uint8_t, uint16_t](
         &arr_memview8u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], <bool>sparse
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint8_t, uint32_t](
         &arr_memview8u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], <bool>sparse
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint8_t, uint64_t](
         &arr_memview8u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], <bool>sparse
       )
   else:
     raise TypeError("Type {} not currently supported.".format(dtype))
