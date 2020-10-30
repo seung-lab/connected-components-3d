@@ -412,7 +412,8 @@ def test_max_labels_nonsensical():
   assert np.all(real_labels == negative_labels)
 
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
-def test_compare_scipy_26(out_dtype):
+@pytest.mark.parametrize("sparse", (True, False))
+def test_compare_scipy_26(out_dtype, sparse):
   import scipy.ndimage.measurements
 
   sx, sy, sz = 128, 128, 128
@@ -424,7 +425,7 @@ def test_compare_scipy_26(out_dtype):
     [[1,1,1], [1,1,1], [1,1,1]]
   ]
 
-  cc3d_labels = cc3d.connected_components(labels, connectivity=26, out_dtype=out_dtype)
+  cc3d_labels = cc3d.connected_components(labels, connectivity=26, out_dtype=out_dtype, sparse=sparse)
   scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
 
   print(cc3d_labels)
@@ -432,7 +433,8 @@ def test_compare_scipy_26(out_dtype):
 
   assert np.all(cc3d_labels == scipy_labels)
 
-def test_compare_scipy_18():
+@pytest.mark.parametrize("sparse", (True, False))
+def test_compare_scipy_18(sparse):
   import scipy.ndimage.measurements
 
   sx, sy, sz = 256, 256, 256
@@ -444,7 +446,7 @@ def test_compare_scipy_18():
     [[0,1,0], [1,1,1], [0,1,0]]
   ]
 
-  cc3d_labels = cc3d.connected_components(labels, connectivity=18)
+  cc3d_labels = cc3d.connected_components(labels, connectivity=18, sparse=sparse)
   scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
 
   print(cc3d_labels)
@@ -452,14 +454,14 @@ def test_compare_scipy_18():
 
   assert np.all(cc3d_labels == scipy_labels)
 
-
-def test_compare_scipy_6():
+@pytest.mark.parametrize("sparse", (True, False))
+def test_compare_scipy_6(sparse):
   import scipy.ndimage.measurements
 
   sx, sy, sz = 256, 256, 256
   labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
 
-  cc3d_labels = cc3d.connected_components(labels, connectivity=6)
+  cc3d_labels = cc3d.connected_components(labels, connectivity=6, sparse=sparse)
   scipy_labels, wow = scipy.ndimage.measurements.label(labels)
 
   print(cc3d_labels)
@@ -471,9 +473,10 @@ def test_compare_scipy_6():
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
 @pytest.mark.parametrize("order", ("C", "F"))
-def test_all_zeros_3d(connectivity, dtype, out_dtype, order):
+@pytest.mark.parametrize("sparse", (True, False))
+def test_all_zeros_3d(connectivity, dtype, out_dtype, order, sparse):
   labels = np.zeros((128,128,128), dtype=dtype, order=order)
-  out = cc3d.connected_components(labels, out_dtype=out_dtype)
+  out = cc3d.connected_components(labels, out_dtype=out_dtype, sparse=sparse)
   assert np.all(out == 0)
 
 @pytest.mark.parametrize("connectivity", (8, 18, 26))
@@ -481,9 +484,10 @@ def test_all_zeros_3d(connectivity, dtype, out_dtype, order):
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
 @pytest.mark.parametrize("order", ("C", "F"))
 @pytest.mark.parametrize("lbl", (1, 100, 7))
-def test_all_single_foreground(connectivity, dtype, out_dtype, order, lbl):
+@pytest.mark.parametrize("sparse", (True, False))
+def test_all_single_foreground(connectivity, dtype, out_dtype, order, lbl, sparse):
   labels = np.zeros((64,64,64), dtype=dtype, order=order) + lbl
-  out = cc3d.connected_components(labels, out_dtype=out_dtype)
+  out = cc3d.connected_components(labels, out_dtype=out_dtype, sparse=sparse)
   assert np.all(out == 1)
 
 # def test_sixty_four_bit():
