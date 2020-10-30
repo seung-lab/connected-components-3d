@@ -136,7 +136,7 @@ Here there's a slight difference in the memory usage. SciPy uses about 850 MB wh
 
 <p style="font-style: italics;" align="center">
 <img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode." /><br>
-Fig. 4: Different configurations run against a uint32 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode.
+Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode.
 </p>   
 
 Sometimes empty data shows up in your pipeline. Sometimes a lot of it. How do your libraries handle it? At full speed? Slower? Faster than normal?  
