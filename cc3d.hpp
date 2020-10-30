@@ -158,7 +158,7 @@ size_t num_foreground(
   const int64_t voxels = sx * sy * sz;
   size_t count = 0;
   for (int64_t i = 0; i < voxels; i++) {
-    count += static_cast<size_t>(in_labels[i] > 0);
+    count += static_cast<size_t>(in_labels[i] != 0);
   }
   return count;
 }
@@ -275,24 +275,34 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_26(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
   ) {
 
 	const int64_t sxy = sx * sy;
 	const int64_t voxels = sxy * sz;
 
+  int64_t assumed_foreground = voxels;
+
+  if (sparse) {
+    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
+  }
+
+  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
-  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));  
-  
-  DisjointSet<uint32_t> equivalences(max_labels);
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
   }
-
   if (!out_labels) { 
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
+
+  if (assumed_foreground == 0) {
+    return out_labels;
+  }
+
+  DisjointSet<uint32_t> equivalences(max_labels);
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -472,16 +482,21 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_18(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
   ) {
 
   const int64_t sxy = sx * sy;
   const int64_t voxels = sxy * sz;
 
+  int64_t assumed_foreground = voxels;
+
+  if (sparse) {
+    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
+  }
+
+  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
-
-  DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -489,6 +504,12 @@ OUT* connected_components3d_18(
   if (!out_labels) { 
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
+
+  if (assumed_foreground == 0) {
+    return out_labels;
+  }
+
+  DisjointSet<uint32_t> equivalences(max_labels);
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -621,16 +642,21 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
   ) {
 
   const int64_t sxy = sx * sy;
   const int64_t voxels = sxy * sz;
 
+  int64_t assumed_foreground = voxels;
+
+  if (sparse) {
+    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
+  }
+
+  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
-
-  DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -638,7 +664,13 @@ OUT* connected_components3d_6(
   if (!out_labels) { 
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
-    
+
+  if (assumed_foreground == 0) {
+    return out_labels;
+  }
+
+  DisjointSet<uint32_t> equivalences(max_labels);
+
   /*
     Layout of forward pass mask (which faces backwards). 
     N is the current location.
@@ -724,15 +756,20 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
   ) {
 
   const int64_t voxels = sx * sy;
 
+  int64_t assumed_foreground = voxels;
+
+  if (sparse) {
+    assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
+  }
+
+  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
-
-  DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -740,6 +777,12 @@ OUT* connected_components2d_4(
   if (!out_labels) { 
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
+
+  if (assumed_foreground == 0) {
+    return out_labels;
+  }
+
+  DisjointSet<uint32_t> equivalences(max_labels);
     
   /*
     Layout of forward pass mask. 
@@ -798,15 +841,20 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_8(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
   ) {
 
   const int64_t voxels = sx * sy;
 
+  int64_t assumed_foreground = voxels;
+
+  if (sparse) {
+    assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
+  }
+
+  max_labels = std::min(max_labels, static_cast<size_t>(assumed_foreground));
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
-
-  DisjointSet<uint32_t> equivalences(max_labels);
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -814,7 +862,13 @@ OUT* connected_components2d_8(
   if (!out_labels) { 
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
-    
+
+  if (assumed_foreground == 0) {
+    return out_labels;
+  }
+  
+  DisjointSet<uint32_t> equivalences(max_labels);
+
   /*
     Layout of mask. We start from e.
       | p |
