@@ -81,7 +81,7 @@ This comparison was performed to show what happens when SciPy and `cc3d` are run
 | cc3d 1.2.2        | 335.5   | 671.1  | 15.3x      |
 
 
-## 10x Head to Head: Random Binary Images  
+# 10x Head to Head: Random Binary Images  
 
 ```python
 import numpy as np
@@ -104,7 +104,7 @@ for label in labels:
   cc3d.connected_components(label) # blue
 ```
 
-### 26-connected
+## 26-connected
 
 <p style="font-style: italics;" align="center">
 <img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_26.png" alt="Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
@@ -118,7 +118,7 @@ On random binary images, SciPy marginally wins on memory with a peak memory cosu
 | SciPy 1.5.2       | 23.4    | 23.4   | 1.00x      |
 | cc3d 1.13.0       | 54.7    | 54.7   | 2.34x      |
 
-### 6-connected
+## 6-connected
 
 <p style="font-style: italics;" align="center">
 <img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_6.png" alt="Fig. 4: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
@@ -131,3 +131,33 @@ Here there's a slight difference in the memory usage. SciPy uses about 850 MB wh
 |-------------------|---------|--------|------------|
 | SciPy 1.5.2       | 42.2    | 42.2   | 1.00x      |
 | cc3d 1.13.0       | 59.2    | 59.2   | 1.40x      |
+
+# 10x Head to Head: Black Cube
+
+<p style="font-style: italics;" align="center">
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode." /><br>
+Fig. 4: Different configurations run against a uint32 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode.
+</p>   
+
+Sometimes empty data shows up in your pipeline. Sometimes a lot of it. How do your libraries handle it? At full speed? Slower? Faster than normal?  
+
+Here we show scipy versus cc3d in normal and sparse modes of operation using 26 connectivity. cc3d 1.14.0 contains optimizations for handling this case. In all modes, cc3d will skip the relabeling pass if provisional labels total fewer than two. In sparse mode, it will also skip the decision tree pass and memory allocation of data structures as well if it detects zero foreground voxels.  
+
+We can see how this bears out. In black, scipy runs at a brisk and reasonable clip. In data not shown, it appears to have some optimization for black voxels as it runs more slowly on a solid color non-zero cube. cc3d with sparse off rushes through the decision tree and skips the relabeling. With sparse on, it skips everything except the scan for foreground labels.
+
+The worst memory usage is by cc3d with sparse mode off. Scipy and cc3d are approximately equal in memory usage with sparse mode on.  
+
+
+| Trial             | MVx/sec | Rel. Perf. |
+|-------------------|---------|------------|
+| SciPy 1.5.2       |  101    |  1.00x     |
+| cc3d 1.14.0       |  339    |  3.36x     |
+| cc3d 1.14.0 sparse| 1107    | 10.96x     |
+
+
+
+
+
+
+
+
