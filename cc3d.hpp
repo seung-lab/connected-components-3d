@@ -156,7 +156,7 @@ size_t num_transitions(
   T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz
 ) {
   const int64_t voxels = sx * sy * sz;
-  size_t count = 0;
+  size_t count = (in_labels[0] != 0);
   for (int64_t i = 1; i < voxels; i++) {
     count += static_cast<size_t>(in_labels[i] != in_labels[i - 1] && in_labels[i] != 0);
   }
