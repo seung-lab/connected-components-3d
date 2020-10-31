@@ -1,4 +1,5 @@
 import pytest
+import sys
 
 import cc3d
 import numpy as np
@@ -469,6 +470,55 @@ def test_compare_scipy_6(sparse):
 
   assert np.all(cc3d_labels == scipy_labels)
 
+@pytest.mark.skipif("sys.maxsize <= 2**33")
+@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
+def test_sixty_four_bit():
+  input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
+  cc3d.connected_components(input_labels, max_labels=3)  
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_6(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  for z in range(labels.shape[2]):
+    for y in range(labels.shape[1]):
+      off = (y + (z % 2)) % 2
+      labels[off::2,y,z] = True
+
+  out = cc3d.connected_components(labels, connectivity=6)
+  assert np.max(out) + 1 <= (256**3) // 2 + 1
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_8(size):
+  labels = np.zeros((size,size), dtype=np.bool)
+  labels[0::2,0::2] = True
+
+  out = cc3d.connected_components(labels, connectivity=8)
+  assert np.max(out) + 1 <= (256**2) // 4 + 1
+
+  for _ in range(10):
+    labels = np.random.randint(0,2, (256,256), dtype=np.bool)
+    out = cc3d.connected_components(labels, connectivity=8)
+    assert np.max(out) + 1 <= (256**2) // 4 + 1    
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_18(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels[::2,::2,::2] = True
+  labels[1::2,1::2,::2] = True
+
+  out = cc3d.connected_components(labels, connectivity=26)
+  assert np.max(out) + 1 <= (256**3) // 4 + 1
+
+  for _ in range(10):
+    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
+    out = cc3d.connected_components(labels, connectivity=26)
+    assert np.max(out) + 1 <= (256**2) // 4 + 1
+
+@pytest.mark.parametrize("size", (255,256))
+def test_stress_upper_bound_for_binary_26(size):
+  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels[::2,::2,::2] = True
+
 @pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("out_dtype", OUT_TYPES)
@@ -595,53 +645,89 @@ def test_region_graph_6():
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
 
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_6(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
-  for z in range(labels.shape[2]):
-    for y in range(labels.shape[1]):
-      off = (y + (z % 2)) % 2
-      labels[off::2,y,z] = True
+def test_voxel_graph_2d():
+  labels = np.ones((3,3), dtype=np.uint8)
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=4)
+  assert graph.dtype == np.uint8
+  assert np.all(graph)
 
-  out = cc3d.connected_components(labels, connectivity=6)
-  assert np.max(out) + 1 <= (256**3) // 2 + 1
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=8)
+  assert graph.dtype == np.uint8
+  assert np.all(graph)
 
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_8(size):
-  labels = np.zeros((size,size), dtype=np.bool)
-  labels[0::2,0::2] = True
+  labels[1,1] = 0
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=4)
+  gt = np.array([
+    [0x0f,       0b00001011, 0x0f      ],
+    [0b00001110, 0x00,       0b00001101],
+    [0x0f,       0b00000111, 0x0f      ]
+  ], dtype=np.uint8)
+  assert np.all(gt.T == graph)
 
-  out = cc3d.connected_components(labels, connectivity=8)
-  assert np.max(out) + 1 <= (256**2) // 4 + 1
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=8)
+  gt = np.array([
+    [0b11101111, 0b11111011, 0b11011111],
+    [0b11111110, 0x00,       0b11111101],
+    [0b10111111, 0b11110111, 0b01111111]
+  ], dtype=np.uint8)
+  assert np.all(gt.T == graph)
 
-  for _ in range(10):
-    labels = np.random.randint(0,2, (256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=8)
-    assert np.max(out) + 1 <= (256**2) // 4 + 1    
+def test_voxel_graph_3d():
+  labels = np.ones((3,3,3), dtype=np.uint8)
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=26)
+  assert graph.dtype == np.uint32
+  assert np.all(graph)
 
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_18(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
-  labels[::2,::2,::2] = True
-  labels[1::2,1::2,::2] = True
+  E = {
+    (-1,-1,-1): 0b01111111111111111111111111,
+    (+1,-1,-1): 0b10111111111111111111111111,
+    (-1,+1,-1): 0b11011111111111111111111111,
+    (+1,+1,-1): 0b11101111111111111111111111,
+    (-1,-1,+1): 0b11110111111111111111111111,
+    (+1,-1,+1): 0b11111011111111111111111111,
+    (-1,+1,+1): 0b11111101111111111111111111,
+    (+1,+1,+1): 0b11111110111111111111111111,
+    ( 0,-1,-1): 0b11111111011111111111111111,
+    ( 0,+1,-1): 0b11111111101111111111111111,
+    (-1, 0,-1): 0b11111111110111111111111111,
+    (+1, 0,-1): 0b11111111111011111111111111,
+    ( 0,-1,+1): 0b11111111111101111111111111,
+    ( 0,+1,+1): 0b11111111111110111111111111,
+    (-1, 0,+1): 0b11111111111111011111111111,
+    (+1, 0,+1): 0b11111111111111101111111111,
+    (-1,-1, 0): 0b11111111111111110111111111,
+    (+1,-1, 0): 0b11111111111111111011111111,
+    (-1,+1, 0): 0b11111111111111111101111111,
+    (+1,+1, 0): 0b11111111111111111110111111,
+    ( 0, 0,-1): 0b11111111111111111111011111,
+    ( 0, 0,+1): 0b11111111111111111111101111,
+    ( 0,-1, 0): 0b11111111111111111111110111,
+    ( 0,+1, 0): 0b11111111111111111111111011,
+    (-1, 0, 0): 0b11111111111111111111111101,
+    (+1, 0, 0): 0b11111111111111111111111110,
+  }
 
-  out = cc3d.connected_components(labels, connectivity=26)
-  assert np.max(out) + 1 <= (256**3) // 4 + 1
 
-  for _ in range(10):
-    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=26)
-    assert np.max(out) + 1 <= (256**2) // 4 + 1
+  labels[1,1,1] = 0
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=26)
+  gt = np.array([
+    [
+      [ E[(1, 1,1)], E[(0, 1,1)], E[(-1, 1,1)] ],
+      [ E[(1, 0,1)], E[(0, 0,1)], E[(-1, 0,1)] ],
+      [ E[(1,-1,1)], E[(0,-1,1)], E[(-1,-1,1)] ],
+    ],
+    [
+      [ E[(1, 1,0)], E[(0,1,0)], E[(-1, 1,0)] ],
+      [ E[(1, 0,0)], 0x00,       E[(-1, 0,0)] ],
+      [ E[(1,-1,0)], E[(0,-1,0)], E[(-1,-1,0)] ]    
+    ],
+    [
+      [ E[(1,1,-1)], E[(0,1,-1)], E[(-1,1,-1)] ],
+      [ E[(1,0,-1)], E[(0,0,-1)], E[(-1,0,-1)] ],
+      [ E[(1,-1,-1)], E[(0,-1,-1)], E[(-1,-1,-1)] ]
+    ]
+  ], dtype=np.uint32)
+  
+  assert np.all(gt.T == graph)
 
-@pytest.mark.parametrize("size", (255,256))
-def test_stress_upper_bound_for_binary_26(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
-  labels[::2,::2,::2] = True
 
-  out = cc3d.connected_components(labels, connectivity=26)
-  assert np.max(out) + 1 <= (256**3) // 8 + 1
-
-  for _ in range(10):
-    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=26)
-    assert np.max(out) + 1 <= (256**2) // 8 + 1
