@@ -152,13 +152,13 @@ public:
 };
 
 template <typename T>
-size_t num_foreground(
+size_t num_transitions(
   T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz
 ) {
   const int64_t voxels = sx * sy * sz;
   size_t count = 0;
-  for (int64_t i = 0; i < voxels; i++) {
-    count += static_cast<size_t>(in_labels[i] != 0);
+  for (int64_t i = 1; i < voxels; i++) {
+    count += static_cast<size_t>(in_labels[i] != in_labels[i - 1] && in_labels[i] != 0);
   }
   return count;
 }
@@ -284,7 +284,7 @@ OUT* connected_components3d_26(
   int64_t assumed_foreground = voxels;
 
   if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
+    assumed_foreground = num_transitions<T>(in_labels, sx, sy, sz);
   }
 
   max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
@@ -491,7 +491,7 @@ OUT* connected_components3d_18(
   int64_t assumed_foreground = voxels;
 
   if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
+    assumed_foreground = num_transitions<T>(in_labels, sx, sy, sz);
   }
 
   max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
@@ -651,7 +651,7 @@ OUT* connected_components3d_6(
   int64_t assumed_foreground = voxels;
 
   if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
+    assumed_foreground = num_transitions<T>(in_labels, sx, sy, sz);
   }
 
   max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
@@ -764,7 +764,7 @@ OUT* connected_components2d_4(
   int64_t assumed_foreground = voxels;
 
   if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
+    assumed_foreground = num_transitions<T>(in_labels, sx, sy, 1);
   }
 
   max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
@@ -849,7 +849,7 @@ OUT* connected_components2d_8(
   int64_t assumed_foreground = voxels;
 
   if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
+    assumed_foreground = num_transitions<T>(in_labels, sx, sy, 1);
   }
 
   max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
