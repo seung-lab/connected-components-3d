@@ -41,8 +41,6 @@ python setup.py develop
 
 ## Python Use
 
-Important limitation: Only label values less than or equal to the size of the image in voxels (pixels) are supported currently. If you want to use larger values, consider using [fastremap.renumber](https://github.com/seung-lab/fastremap/).
-
 ```python
 import cc3d
 import numpy as np
@@ -53,20 +51,20 @@ labels_out = cc3d.connected_components(labels_in) # 26-connected
 connectivity = 6 # only 4,8 (2D) and 26, 18, and 6 (3D) are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
-# You can adjust the bit width of the output to accomodate
-# different expected image statistics with memory usage tradeoffs.
-# uint16, uint32 (default), and uint64 are supported. Note that
-# uint16 will limit you to 2^16 provisional labels.
-labels_out = cc3d.connected_components(labels_in, out_dtype=np.uint16)
+# We use a third pass to estimate the number of provisional labels prior 
+# to running CCL. This is usually faster and lower memory for large datasets. 
+# If you have a special situation, you can switch this feature off. Note that
+# np.bool datatypes can use fewer labels without this estimation scan.
+labels_out = cc3d.connected_components(labels_in, zeroth_pass=False)
 
-# If you know that the number of foreground voxels is relatively
-# low, you can save memory and sometimes time by enabling sparse mode
-# which will shrink the memory allocation of the Union-Find datastructure
-# to exactly match the number of foreground voxels if not lower.
-labels_out = cc3d.connected_components(labels_in, sparse=True)
+# You can extract the number of labels (which is also the maximum 
+# label value) like so:
+labels_out, N = cc3d.connected_components(labels_in, return_N=True) # free
+# -- OR -- 
+labels_out = cc3d.connected_components(labels_in) 
+N = np.max(labels_out) # costs a full read
 
 # You can extract individual components like so:
-N = np.max(labels_out)
 for segid in range(1, N+1):
   extracted_image = labels_out * (labels_out == segid)
   process(extracted_image)
@@ -84,7 +82,7 @@ graph = cc3d.voxel_connectivity_graph(labels, connectivity=connectivity)
 
 ```
 
-If you know approximately how many labels you are going to generate, you can save some memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.
+If you know approximately how many labels you are going to generate, you can save some memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.  *This option is only recommended for expert users.*
 
 ```python
 labels_out = connected_components(labels_in, max_labels=20000)

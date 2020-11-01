@@ -56,6 +56,8 @@
 
 namespace cc3d {
 
+static size_t _dummy_N;
+
 template <typename T>
 class DisjointSet {
 public:
@@ -110,8 +112,8 @@ public:
 
   void add(T p) {
     if (p >= length) {
-      printf("Connected Components Error: Label %d cannot be mapped to union-find array of length %lu.\n", p, length);
-      throw "maximum length exception";
+      printf("Connected Components Error: Label %lli cannot be mapped to union-find array of length %lu.\n", static_cast<long long int>(p), length);
+      throw std::runtime_error("maximum length exception");
     }
 
     if (ids[p] == 0) {
@@ -152,13 +154,13 @@ public:
 };
 
 template <typename T>
-size_t num_foreground(
-  T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz
-) {
-  const int64_t voxels = sx * sy * sz;
+size_t zeroth_pass(T* in_labels, const int64_t sx, const int64_t voxels) {
   size_t count = 0;
-  for (int64_t i = 0; i < voxels; i++) {
-    count += static_cast<size_t>(in_labels[i] != 0);
+  for (int64_t loc = 0; loc < voxels; loc += sx) {
+    count += (in_labels[loc] != 0);
+    for (int64_t x = 1; x < sx; x++) {
+      count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+    }
   }
   return count;
 }
@@ -174,7 +176,7 @@ inline void unify2d(
     const int64_t x, const int64_t y, 
     const int64_t sx, const int64_t sy, 
     const T* in_labels, const OUT* out_labels,
-    DisjointSet<uint32_t> &equivalences  
+    DisjointSet<OUT> &equivalences  
   ) {
 
   if (y > 0 && cur == in_labels[loc - sx]) {
@@ -205,7 +207,7 @@ inline void unify2d_rt(
     const int64_t x, const int64_t y, 
     const int64_t sx, const int64_t sy, 
     const T* in_labels, const OUT* out_labels,
-    DisjointSet<uint32_t> &equivalences  
+    DisjointSet<OUT> &equivalences  
   ) {
 
   if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx]) {
@@ -219,7 +221,7 @@ inline void unify2d_lt(
     const int64_t x, const int64_t y, 
     const int64_t sx, const int64_t sy, 
     const T* in_labels, const OUT* out_labels,
-    DisjointSet<uint32_t> &equivalences  
+    DisjointSet<OUT> &equivalences  
   ) {
 
   if (x > 0 && cur == in_labels[loc - 1]) {
@@ -238,7 +240,8 @@ inline void unify2d_lt(
 template <typename OUT = uint32_t>
 OUT* relabel(
     OUT* out_labels, const int64_t voxels,
-    const int64_t num_labels, DisjointSet<uint32_t> &equivalences
+    const int64_t num_labels, DisjointSet<OUT> &equivalences,
+    size_t &N
   ) {
 
   if (num_labels <= 1) {
@@ -268,6 +271,7 @@ OUT* relabel(
 
   delete[] renumber;
 
+  N = next_label - 1;
   return out_labels;
 }
 
@@ -275,21 +279,11 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_26(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
+    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
 	const int64_t sxy = sx * sy;
 	const int64_t voxels = sxy * sz;
-
-  int64_t assumed_foreground = voxels;
-
-  if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
-  }
-
-  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
-  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -298,11 +292,15 @@ OUT* connected_components3d_26(
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
 
-  if (assumed_foreground == 0) {
+  if (max_labels == 0) {
     return out_labels;
   }
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  max_labels++;
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+  
+  DisjointSet<OUT> equivalences(max_labels);
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -475,28 +473,18 @@ OUT* connected_components3d_26(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_18(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
+    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   const int64_t sxy = sx * sy;
   const int64_t voxels = sxy * sz;
-
-  int64_t assumed_foreground = voxels;
-
-  if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
-  }
-
-  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
-  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -505,11 +493,16 @@ OUT* connected_components3d_18(
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
 
-  if (assumed_foreground == 0) {
+  if (max_labels == 0) {
     return out_labels;
   }
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  max_labels++;
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+  
+  DisjointSet<OUT> equivalences(max_labels);
+
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -635,28 +628,18 @@ OUT* connected_components3d_18(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
+    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   const int64_t sxy = sx * sy;
   const int64_t voxels = sxy * sz;
-
-  int64_t assumed_foreground = voxels;
-
-  if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, sz);
-  }
-
-  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
-  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -665,11 +648,15 @@ OUT* connected_components3d_6(
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
 
-  if (assumed_foreground == 0) {
+  if (max_labels == 0) {
     return out_labels;
   }
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  max_labels++;
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+  
+  DisjointSet<OUT> equivalences(max_labels);
 
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -744,7 +731,7 @@ OUT* connected_components3d_6(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 
@@ -756,20 +743,11 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
-    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
+    size_t max_labels, OUT *out_labels = NULL,
+    size_t &N = _dummy_N
   ) {
 
   const int64_t voxels = sx * sy;
-
-  int64_t assumed_foreground = voxels;
-
-  if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
-  }
-
-  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
-  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -778,11 +756,15 @@ OUT* connected_components2d_4(
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
 
-  if (assumed_foreground == 0) {
+  if (max_labels == 0) {
     return out_labels;
   }
 
-  DisjointSet<uint32_t> equivalences(max_labels);
+  max_labels++;
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+  
+  DisjointSet<OUT> equivalences(max_labels);
     
   /*
     Layout of forward pass mask. 
@@ -829,7 +811,7 @@ OUT* connected_components2d_4(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 // K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
@@ -841,20 +823,11 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_8(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
-    size_t max_labels, OUT *out_labels = NULL, const bool sparse = false
+    size_t max_labels, OUT *out_labels = NULL,
+    size_t &N = _dummy_N
   ) {
 
   const int64_t voxels = sx * sy;
-
-  int64_t assumed_foreground = voxels;
-
-  if (sparse) {
-    assumed_foreground = num_foreground<T>(in_labels, sx, sy, 1);
-  }
-
-  max_labels = std::min(max_labels, 1 + static_cast<size_t>(assumed_foreground));
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
-  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -863,11 +836,15 @@ OUT* connected_components2d_8(
     throw std::runtime_error("Failed to allocate out_labels memory for connected components.");
   }
 
-  if (assumed_foreground == 0) {
+  if (max_labels == 0) {
     return out_labels;
   }
+
+  max_labels++;
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
-  DisjointSet<uint32_t> equivalences(max_labels);
+  DisjointSet<OUT> equivalences(max_labels);
 
   /*
     Layout of mask. We start from e.
@@ -926,7 +903,7 @@ OUT* connected_components2d_8(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -934,25 +911,25 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity,
-    OUT *out_labels = NULL, const bool sparse = false
+    OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   if (connectivity == 26) {
     return connected_components3d_26<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, sparse
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 18) {
     return connected_components3d_18<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, sparse
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 6) {
     return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, sparse
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 8) {
@@ -961,7 +938,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_8<T,OUT>(
       in_labels, sx, sy,
-      max_labels, out_labels, sparse
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 4) {
@@ -970,7 +947,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, out_labels, sparse
+      max_labels, out_labels, N
     );
   }
   else {
@@ -982,10 +959,10 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity=26, const bool sparse = false
+    const int64_t connectivity=26, size_t &N = _dummy_N
   ) {
   const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity, sparse);
+  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity, NULL, N);
 }
 
 
