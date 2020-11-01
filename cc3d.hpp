@@ -962,7 +962,7 @@ OUT* connected_components3d(
     const int64_t connectivity=26, size_t &N = _dummy_N
   ) {
   const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity, N);
+  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity, NULL, N);
 }
 
 
