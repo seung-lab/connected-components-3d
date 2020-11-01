@@ -542,10 +542,6 @@ def test_all_single_foreground(connectivity, dtype, order, lbl):
   out = cc3d.connected_components(labels)
   assert np.all(out == 1)
 
-# def test_sixty_four_bit():
-#   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
-#   cc3d.connected_components(input_labels, max_labels=0)  
-
 def test_region_graph_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 

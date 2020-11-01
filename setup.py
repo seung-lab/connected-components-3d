@@ -25,7 +25,7 @@ setuptools.setup(
   name="connected-components-3d",
   version="1.14.0",
   setup_requires=['pbr', 'numpy'],
-  install_requires=['numpy', 'fastremap'],
+  install_requires=['numpy'],
   extras_require={
     ':python_version == "2.7"': ['futures'],
   },

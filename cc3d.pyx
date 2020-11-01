@@ -4,7 +4,7 @@ with 26-connectivity and handling for multiple labels.
 
 Author: William Silversmith
 Affiliation: Seung Lab, Princeton Neuroscience Institute
-Date: August 2018 - June 2019
+Date: August 2018 - October 2020
 
 ---
 This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,9 @@ the source code for free here:
 https://github.com/seung-lab/connected-components-3d
 """
 
-cimport cython
+import operator
+from functools import reduce
+
 from libc.stdlib cimport calloc, free
 from libc.stdint cimport (
   int8_t, int16_t, int32_t, int64_t,
@@ -38,12 +40,9 @@ from cpython cimport array
 import array
 import sys
 
-from libcpp.pair cimport pair
 from libcpp.vector cimport vector
 cimport numpy as cnp
 import numpy as np
-
-import fastremap
 
 __VERSION__ = '1.14.0'
 
@@ -54,7 +53,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     int64_t max_labels, int64_t connectivity,
     U* out_labels
   )
-  cdef pair[size_t,bool] zeroth_pass[T](
+  cdef size_t zeroth_pass[T](
     T* in_labels, int64_t sx, int64_t voxels
   )
 
@@ -84,6 +83,37 @@ class DimensionError(Exception):
   """The array has the wrong number of dimensions."""
   pass
 
+# from https://github.com/seung-lab/fastremap/blob/master/fastremap.pyx
+def reshape(arr, shape, order=None):
+  """
+  If the array is contiguous, attempt an in place reshape
+  rather than potentially making a copy.
+  Required:
+    arr: The input numpy array.
+    shape: The desired shape (must be the same size as arr)
+  Optional: 
+    order: 'C', 'F', or None (determine automatically)
+  Returns: reshaped array
+  """
+  if order is None:
+    if arr.flags['F_CONTIGUOUS']:
+      order = 'F'
+    elif arr.flags['C_CONTIGUOUS']:
+      order = 'C'
+    else:
+      return arr.reshape(shape)
+
+  cdef int nbytes = np.dtype(arr.dtype).itemsize
+
+  if order == 'C':
+    strides = [ reduce(operator.mul, shape[i:]) * nbytes for i in range(1, len(shape)) ]
+    strides += [ nbytes ]
+    return np.lib.stride_tricks.as_strided(arr, shape=shape, strides=strides)
+  else:
+    strides = [ reduce(operator.mul, shape[:i]) * nbytes for i in range(1, len(shape)) ]
+    strides = [ nbytes ] + strides
+    return np.lib.stride_tricks.as_strided(arr, shape=shape, strides=strides)
+
 cdef int64_t even_ceil(int64_t N):
   if N & 0x1:
     return N << 1
@@ -97,7 +127,7 @@ def compute_zeroth_pass(data):
 
   dtype = data.dtype
   sx = data.shape[0]
-  data = fastremap.reshape(data, (data.size,))
+  data = reshape(data, (data.size,))
 
   if dtype in (np.uint64, np.int64):
     arr_memview64u = data.view(np.uint64)
@@ -138,17 +168,11 @@ def connected_components(
       If the input image is 2D, you may specify 4 (pixel faces) or
         8 (+corners).
     zeroth_pass (bool): if True, perform a preliminary pass to
-      compute an estimate of the number of provisional labels and
-      whether the numerical value of the labels are larger than
-      the size of the array, necessitating an expensive 
-      renumbering operation which will be automatically performed
-      on a copy of the input image.
+      compute an estimate of the number of provisional labels.
 
-      Essentially, the hope is that this extra pass will reduce
-      memory usage, improve execution time by avoiding unnecesary
-      memory initializations, and allow any input image, not just 
-      those understood to conform to the limitations of this 
-      CCL algorithm.
+      The hope is that this extra pass will reduce memory usage 
+      and improve execution time by avoiding unnecesary
+      memory initializations.
 
       For some high performance situations with known quantities, it 
       may make more sense to provide a manual estimate of max_labels 
@@ -203,38 +227,17 @@ def connected_components(
   cdef uint32_t[:,:,:] arr_memview32u
   cdef uint64_t[:,:,:] arr_memview64u
 
-  cdef uint64_t voxels = <uint64_t>sx * <uint64_t>sy * <uint64_t>sz
+  cdef int64_t voxels = <int64_t>sx * <int64_t>sy * <int64_t>sz
   cdef cnp.ndarray[uint16_t, ndim=1] out_labels16 = np.array([], dtype=np.uint16)
   cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
   cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
   if max_labels <= 0:
     max_labels = voxels
+  max_labels = min(max_labels, voxels)
 
-  big = False
   if zeroth_pass:
-    num_t, big = compute_zeroth_pass(data)
-    max_labels = min(max_labels, num_t + 1)
-
-  if big:
-    data, _ = fastremap.renumber(data, in_place=False)
-
-  if max_labels < np.iinfo(np.uint16).max:
-    out_dtype = np.uint16
-  elif max_labels < np.iinfo(np.uint32).max:
-    out_dtype = np.uint32
-  else:
-    out_dtype = np.uint64
-
-  if out_dtype == np.uint16:
-    out_labels16 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
-    out_labels = out_labels16
-  elif out_dtype == np.uint32:
-    out_labels32 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
-    out_labels = out_labels32
-  elif out_dtype == np.uint64:
-    out_labels64 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
-    out_labels = out_labels64
+    max_labels = min(max_labels, compute_zeroth_pass(data) + 1)
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
@@ -255,6 +258,23 @@ def connected_components(
       max_labels = min(max_labels, (union_find_voxels // 4) + 1)
     else: # 26
       max_labels = min(max_labels, (union_find_voxels // 8) + 1)
+
+  if max_labels < np.iinfo(np.uint16).max:
+    out_dtype = np.uint16
+  elif max_labels < np.iinfo(np.uint32).max:
+    out_dtype = np.uint32
+  else:
+    out_dtype = np.uint64
+
+  if out_dtype == np.uint16:
+    out_labels16 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    out_labels = out_labels16
+  elif out_dtype == np.uint32:
+    out_labels32 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    out_labels = out_labels32
+  elif out_dtype == np.uint64:
+    out_labels64 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    out_labels = out_labels64
 
   dtype = data.dtype
   

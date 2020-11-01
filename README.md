@@ -41,8 +41,6 @@ python setup.py develop
 
 ## Python Use
 
-Important limitation: Only label values less than or equal to the size of the image in voxels (pixels) are supported currently. If you want to use larger values, consider using [fastremap.renumber](https://github.com/seung-lab/fastremap/).
-
 ```python
 import cc3d
 import numpy as np
@@ -53,17 +51,11 @@ labels_out = cc3d.connected_components(labels_in) # 26-connected
 connectivity = 6 # only 4,8 (2D) and 26, 18, and 6 (3D) are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
-# You can adjust the bit width of the output to accomodate
-# different expected image statistics with memory usage tradeoffs.
-# uint16, uint32 (default), and uint64 are supported. Note that
-# uint16 will limit you to 2^16 provisional labels.
-labels_out = cc3d.connected_components(labels_in, out_dtype=np.uint16)
-
 # If you know that the number of foreground voxels is relatively
 # low, you can save memory and sometimes time by enabling sparse mode
 # which will shrink the memory allocation of the Union-Find datastructure
 # to exactly match the number of foreground voxels if not lower.
-labels_out = cc3d.connected_components(labels_in, sparse=True)
+labels_out = cc3d.connected_components(labels_in, zeroth_pass=False)
 
 # You can extract individual components like so:
 N = np.max(labels_out)

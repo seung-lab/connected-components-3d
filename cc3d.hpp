@@ -152,17 +152,15 @@ public:
 };
 
 template <typename T>
-std::pair<size_t, bool> zeroth_pass(T* in_labels, const int64_t sx, const int64_t voxels) {
+size_t zeroth_pass(T* in_labels, const int64_t sx, const int64_t voxels) {
   size_t count = 0;
-  bool big = false;
   for (int64_t loc = 0; loc < voxels; loc += sx) {
     count += (in_labels[loc] != 0);
     for (int64_t x = 1; x < sx; x++) {
       count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
-      big |= static_cast<int64_t>(in_labels[loc + x]) > voxels; 
     }
   }
-  return std::pair<size_t, bool>(count, big);
+  return count;
 }
 
 // This is the original Wu et al decision tree but without
