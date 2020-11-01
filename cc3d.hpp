@@ -110,8 +110,8 @@ public:
 
   void add(T p) {
     if (p >= length) {
-      printf("Connected Components Error: Label %llu cannot be mapped to union-find array of length %lu.\n", p, length);
-      throw "maximum length exception";
+      printf("Connected Components Error: Label %lli cannot be mapped to union-find array of length %lu.\n", static_cast<long long int>(p), length);
+      throw std::runtime_error("maximum length exception");
     }
 
     if (ids[p] == 0) {
