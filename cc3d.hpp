@@ -152,12 +152,17 @@ public:
 };
 
 template <typename T>
-size_t num_transitions(T* in_labels, const int64_t voxels) {
-  size_t count = (in_labels[0] != 0);
-  for (int64_t i = 1; i < voxels; i++) {
-    count += static_cast<size_t>(in_labels[i] != in_labels[i - 1] && in_labels[i] != 0);
+std::pair<size_t, bool> zeroth_pass(T* in_labels, const int64_t sx, const int64_t voxels) {
+  size_t count = 0;
+  bool big = false;
+  for (int64_t loc = 0; loc < voxels; loc += sx) {
+    count += (in_labels[loc] != 0);
+    for (int64_t x = 1; x < sx; x++) {
+      count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+      big |= static_cast<int64_t>(in_labels[loc + x]) > voxels; 
+    }
   }
-  return count;
+  return std::pair<size_t, bool>(count, big);
 }
 
 // This is the original Wu et al decision tree but without

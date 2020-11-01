@@ -27,6 +27,7 @@ the source code for free here:
 https://github.com/seung-lab/connected-components-3d
 """
 
+cimport cython
 from libc.stdlib cimport calloc, free
 from libc.stdint cimport (
   int8_t, int16_t, int32_t, int64_t,
@@ -37,9 +38,12 @@ from cpython cimport array
 import array
 import sys
 
+from libcpp.pair cimport pair
 from libcpp.vector cimport vector
 cimport numpy as cnp
 import numpy as np
+
+import fastremap
 
 __VERSION__ = '1.14.0'
 
@@ -48,9 +52,11 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity,
-    U* out_labels, bool sparse
+    U* out_labels
   )
-  cdef size_t num_transitions[T](T* in_labels, int64_t voxels)
+  cdef pair[size_t,bool] zeroth_pass[T](
+    T* in_labels, int64_t sx, int64_t voxels
+  )
 
 cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
   cdef OUT* extract_voxel_connectivity_graph[T,OUT](
@@ -83,31 +89,35 @@ cdef int64_t even_ceil(int64_t N):
     return N << 1
   return N
 
-def compute_transitions(data):
+def compute_zeroth_pass(data):
   cdef uint8_t[:] arr_memview8u
   cdef uint16_t[:] arr_memview16u
   cdef uint32_t[:] arr_memview32u
   cdef uint64_t[:] arr_memview64u
 
   dtype = data.dtype
-  data = data.reshape((data.size,))
+  sx = data.shape[0]
+  data = fastremap.reshape(data, (data.size,))
 
   if dtype in (np.uint64, np.int64):
     arr_memview64u = data.view(np.uint64)
-    return num_transitions[uint64_t](&arr_memview64u[0], data.size)
+    return zeroth_pass[uint64_t](&arr_memview64u[0], sx, data.size)
   elif dtype in (np.uint32, np.int32):
     arr_memview32u = data.view(np.uint32)
-    return num_transitions[uint32_t](&arr_memview32u[0], data.size)
+    return zeroth_pass[uint32_t](&arr_memview32u[0], sx, data.size)
   elif dtype in (np.uint16, np.int16):
     arr_memview16u = data.view(np.uint16)
-    return num_transitions[uint16_t](&arr_memview16u[0], data.size)
+    return zeroth_pass[uint16_t](&arr_memview16u[0], sx, data.size)
   elif dtype in (np.uint8, np.int8, np.bool):
     arr_memview8u = data.view(np.uint8)
-    return num_transitions[uint8_t](&arr_memview8u[0], data.size)
+    return zeroth_pass[uint8_t](&arr_memview8u[0], sx, data.size)
   else:
     raise TypeError("Type {} not currently supported.".format(dtype))
 
-def connected_components(data, int64_t connectivity=26):
+def connected_components(
+  data, int64_t max_labels=-1, 
+  int64_t connectivity=26, bool zeroth_pass=True
+):
   """
   ndarray connected_components(data, int64_t connectivity=26)
 
@@ -117,10 +127,34 @@ def connected_components(data, int64_t connectivity=26):
   Required:
     data: Input weights in a 2D or 3D numpy array. 
   Optional:
+    max_labels (int): save memory by predicting the maximum
+      number of possible labels that might be output.
+      Defaults to number of voxels.
     connectivity (int): 
       For 3D images, 6 (voxel faces), 18 (+edges), or 26 (+corners)
       If the input image is 2D, you may specify 4 (pixel faces) or
         8 (+corners).
+    zeroth_pass (bool): if True, perform a preliminary pass to
+      compute an estimate of the number of provisional labels and
+      whether the numerical value of the labels are larger than
+      the size of the array, necessitating an expensive 
+      renumbering operation which will be automatically performed
+      on a copy of the input image.
+
+      Essentially, the hope is that this extra pass will reduce
+      memory usage, improve execution time by avoiding unnecesary
+      memory initializations, and allow any input image, not just 
+      those understood to conform to the limitations of this 
+      CCL algorithm.
+
+      For some high performance situations with known quantities, it 
+      may make more sense to provide a manual estimate of max_labels 
+      and switch this off, but unless you know what you're doing keep
+      this enabled.
+
+      The name "zeroth pass" is in reference to the Rosenfeld and Pfaltz
+      two-pass scheme which consists of a scan for equivalences and then
+      a second pass for relabeling that this CCL variant is derived from.
     
   Returns: 2D or 3D numpy array remapped to reflect
     the connected components.
@@ -167,7 +201,16 @@ def connected_components(data, int64_t connectivity=26):
   cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
   cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
-  max_labels = compute_transitions(data)
+  if max_labels <= 0:
+    max_labels = voxels
+
+  big = False
+  if zeroth_pass:
+    num_t, big = compute_zeroth_pass(data)
+    max_labels = min(max_labels, num_t + 1)
+
+  if big:
+    data, _ = fastremap.renumber(data, in_place=False)
 
   if max_labels < np.iinfo(np.uint16).max:
     out_dtype = np.uint16
