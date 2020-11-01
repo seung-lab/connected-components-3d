@@ -51,7 +51,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity,
-    U* out_labels
+    U* out_labels, size_t &N
   )
   cdef size_t zeroth_pass[T](
     T* in_labels, int64_t sx, int64_t voxels
@@ -146,12 +146,14 @@ def compute_zeroth_pass(data):
 
 def connected_components(
   data, int64_t max_labels=-1, 
-  int64_t connectivity=26, bool zeroth_pass=True
+  int64_t connectivity=26, bool zeroth_pass=True,
+  bool return_N=False
 ):
   """
   ndarray connected_components(
     data, max_labels=-1, 
-    connectivity=26, zeroth_pass=True
+    connectivity=26, zeroth_pass=True,
+    return_N=False
   )
 
   Connected components applied to 3D images with 
@@ -182,13 +184,21 @@ def connected_components(
       The name "zeroth pass" is in reference to the Rosenfeld and Pfaltz
       two-pass scheme which consists of a scan for equivalences and then
       a second pass for relabeling that this CCL variant is derived from.
-    
-  Returns: 1D, 2D or 3D numpy array remapped to reflect
+    return_N (bool): if True, also return the number of connected components
+      as the second argument of a return tuple.
+
+  let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
 
     The data type will be automatically determined as uint16, uint32, 
     or uint64 depending on the estimate of the number of provisional 
     labels required.
+  
+  let N = number of connected components
+
+  Returns:
+    if return_N: (OUT, N)
+    else: OUT
   """
   cdef int dims = len(data.shape)
   if dims not in (1,2,3):
@@ -277,6 +287,8 @@ def connected_components(
     out_labels = out_labels64
 
   dtype = data.dtype
+
+  cdef size_t N = 0
   
   if dtype in (np.uint64, np.int64):
     arr_memview64u = data.view(np.uint64)
@@ -284,19 +296,19 @@ def connected_components(
       connected_components3d[uint64_t, uint16_t](
         &arr_memview64u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], N
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint64_t, uint32_t](
         &arr_memview64u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], N
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint64_t, uint64_t](
         &arr_memview64u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], N
       )
   elif dtype in (np.uint32, np.int32):
     arr_memview32u = data.view(np.uint32)
@@ -304,19 +316,19 @@ def connected_components(
       connected_components3d[uint32_t, uint16_t](
         &arr_memview32u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], N
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint32_t, uint32_t](
         &arr_memview32u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], N
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint32_t, uint64_t](
         &arr_memview32u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], N
       )
   elif dtype in (np.uint16, np.int16):
     arr_memview16u = data.view(np.uint16)
@@ -324,19 +336,19 @@ def connected_components(
       connected_components3d[uint16_t, uint16_t](
         &arr_memview16u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], N
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint16_t, uint32_t](
         &arr_memview16u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], N
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint16_t, uint64_t](
         &arr_memview16u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], N
       )
   elif dtype in (np.uint8, np.int8, np.bool):
     arr_memview8u = data.view(np.uint8)
@@ -344,35 +356,39 @@ def connected_components(
       connected_components3d[uint8_t, uint16_t](
         &arr_memview8u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint16_t*>&out_labels16[0]
+        <uint16_t*>&out_labels16[0], N
       )
     elif out_dtype == np.uint32:
       connected_components3d[uint8_t, uint32_t](
         &arr_memview8u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint32_t*>&out_labels32[0]
+        <uint32_t*>&out_labels32[0], N
       )
     elif out_dtype == np.uint64:
       connected_components3d[uint8_t, uint64_t](
         &arr_memview8u[0,0,0],
         sx, sy, sz, max_labels, connectivity,
-        <uint64_t*>&out_labels64[0]
+        <uint64_t*>&out_labels64[0], N
       )
   else:
     raise TypeError("Type {} not currently supported.".format(dtype))
 
   if dims == 3:
     if order == 'C':
-      return out_labels.reshape( (sz, sy, sx), order=order)
+      out_labels = out_labels.reshape( (sz, sy, sx), order=order)
     else:
-      return out_labels.reshape( (sx, sy, sz), order=order)
+      out_labels = out_labels.reshape( (sx, sy, sz), order=order)
   elif dims == 2:
     if order == 'C':
-      return out_labels.reshape( (sy, sx), order=order)
+      out_labels = out_labels.reshape( (sy, sx), order=order)
     else:
-      return out_labels.reshape( (sx, sy), order=order)
+      out_labels = out_labels.reshape( (sx, sy), order=order)
   else:
-    return out_labels.reshape( (sx), order=order)
+    out_labels = out_labels.reshape( (sx), order=order)
+
+  if return_N:
+    return (out_labels, N)
+  return out_labels
 
 def voxel_connectivity_graph(data, int64_t connectivity=26):
   """

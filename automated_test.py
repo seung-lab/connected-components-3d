@@ -422,12 +422,13 @@ def test_compare_scipy_26():
     [[1,1,1], [1,1,1], [1,1,1]]
   ]
 
-  cc3d_labels = cc3d.connected_components(labels, connectivity=26)
-  scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
+  cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=26, return_N=True)
+  scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels, structure=structure)
 
   print(cc3d_labels)
   print(scipy_labels)
 
+  assert Ncc3d == Nscipy
   assert np.all(cc3d_labels == scipy_labels)
 
 def test_compare_scipy_18():
@@ -442,12 +443,13 @@ def test_compare_scipy_18():
     [[0,1,0], [1,1,1], [0,1,0]]
   ]
 
-  cc3d_labels = cc3d.connected_components(labels, connectivity=18)
-  scipy_labels, wow = scipy.ndimage.measurements.label(labels, structure=structure)
+  cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=18, return_N=True)
+  scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels, structure=structure)
 
   print(cc3d_labels)
   print(scipy_labels)
 
+  assert Ncc3d == Nscipy
   assert np.all(cc3d_labels == scipy_labels)
 
 def test_compare_scipy_6():
@@ -456,12 +458,13 @@ def test_compare_scipy_6():
   sx, sy, sz = 256, 256, 256
   labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
 
-  cc3d_labels = cc3d.connected_components(labels, connectivity=6)
-  scipy_labels, wow = scipy.ndimage.measurements.label(labels)
+  cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=6, return_N=True)
+  scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels)
 
   print(cc3d_labels)
   print(scipy_labels)
 
+  assert Ncc3d == Nscipy
   assert np.all(cc3d_labels == scipy_labels)
 
 @pytest.mark.skipif("sys.maxsize <= 2**33")

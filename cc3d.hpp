@@ -56,6 +56,8 @@
 
 namespace cc3d {
 
+static size_t _dummy_N;
+
 template <typename T>
 class DisjointSet {
 public:
@@ -238,7 +240,8 @@ inline void unify2d_lt(
 template <typename OUT = uint32_t>
 OUT* relabel(
     OUT* out_labels, const int64_t voxels,
-    const int64_t num_labels, DisjointSet<OUT> &equivalences
+    const int64_t num_labels, DisjointSet<OUT> &equivalences,
+    size_t &N
   ) {
 
   if (num_labels <= 1) {
@@ -268,6 +271,7 @@ OUT* relabel(
 
   delete[] renumber;
 
+  N = next_label - 1;
   return out_labels;
 }
 
@@ -275,7 +279,7 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_26(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
 	const int64_t sxy = sx * sy;
@@ -469,14 +473,14 @@ OUT* connected_components3d_26(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_18(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   const int64_t sxy = sx * sy;
@@ -624,14 +628,14 @@ OUT* connected_components3d_18(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   const int64_t sxy = sx * sy;
@@ -727,7 +731,7 @@ OUT* connected_components3d_6(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 
@@ -739,7 +743,8 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL,
+    size_t &N = _dummy_N
   ) {
 
   const int64_t voxels = sx * sy;
@@ -806,7 +811,7 @@ OUT* connected_components2d_4(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 // K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
@@ -818,7 +823,8 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_8(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
-    size_t max_labels, OUT *out_labels = NULL
+    size_t max_labels, OUT *out_labels = NULL,
+    size_t &N = _dummy_N
   ) {
 
   const int64_t voxels = sx * sy;
@@ -897,7 +903,7 @@ OUT* connected_components2d_8(
     }
   }
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -905,25 +911,25 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity,
-    OUT *out_labels = NULL
+    OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   if (connectivity == 26) {
     return connected_components3d_26<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 18) {
     return connected_components3d_18<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 6) {
     return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 8) {
@@ -932,7 +938,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_8<T,OUT>(
       in_labels, sx, sy,
-      max_labels, out_labels
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 4) {
@@ -941,7 +947,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, out_labels
+      max_labels, out_labels, N
     );
   }
   else {
@@ -953,10 +959,10 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity=26
+    const int64_t connectivity=26, size_t &N = _dummy_N
   ) {
   const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity);
+  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity, N);
 }
 
 
