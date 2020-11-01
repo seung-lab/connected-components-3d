@@ -119,7 +119,10 @@ def connected_components(
   int64_t connectivity=26, bool zeroth_pass=True
 ):
   """
-  ndarray connected_components(data, int64_t connectivity=26)
+  ndarray connected_components(
+    data, max_labels=-1, 
+    connectivity=26, zeroth_pass=True
+  )
 
   Connected components applied to 3D images with 
   handling for multiple labels.
@@ -156,8 +159,12 @@ def connected_components(
       two-pass scheme which consists of a scan for equivalences and then
       a second pass for relabeling that this CCL variant is derived from.
     
-  Returns: 2D or 3D numpy array remapped to reflect
-    the connected components.
+  Returns: 1D, 2D or 3D numpy array remapped to reflect
+    the connected components sequentially numbered from 1 to N. 
+
+    The data type will be automatically determined as uint16, uint32, 
+    or uint64 depending on the estimate of the number of provisional 
+    labels required.
   """
   cdef int dims = len(data.shape)
   if dims not in (1,2,3):
