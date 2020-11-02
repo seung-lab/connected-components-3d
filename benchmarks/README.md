@@ -161,17 +161,19 @@ The worst memory usage is by cc3d with sparse mode off. Scipy and cc3d are appro
 cc3d has been steadily improving over time. To celebrate the release of 2.0.0, we show plots of peak memory usage and megavoxels per second vs version. Better scores in these charts trend down and right, indicating lower peak memory pressure and faster execution.
 
 <p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_connectomics_over_time.png" alt="Fig. 5: cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
-Fig. 5: cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
+<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_connectomics_over_time.png" alt="Fig. 5: 26-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
+Fig. 5: 26-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
 </p>   
 
 <p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_random_binary_image.png" alt="Fig. 6: cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset." /><br>
-Fig. 6: cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset.
+<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_random_binary_image.png" alt="Fig. 6: 26-way cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset." /><br>
+Fig. 6: 26-way cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset.
 </p>   
 
-
-
+<p style="font-style: italics;" align="center">
+<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_6-way_connectomics_over_time.png" alt="Fig. 7: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
+Fig. 7: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
+</p>   
 
 
 
