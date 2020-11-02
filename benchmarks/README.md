@@ -139,6 +139,8 @@ Here there's a slight difference in the memory usage. SciPy uses about 850 MB wh
 Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode.
 </p>   
 
+*Note: From 2.0.0 onward, the `zeroth_pass` argument will have a similar effect as the defunct sparse argument.*
+
 Sometimes empty data shows up in your pipeline. Sometimes a lot of it. How do your libraries handle it? At full speed? Slower? Faster than normal?  
 
 Here we show scipy versus cc3d in normal and sparse modes of operation using 26 connectivity. cc3d 1.14.0 contains optimizations for handling this case. In all modes, cc3d will skip the relabeling pass if provisional labels total fewer than two. In sparse mode, it will also skip the decision tree pass and memory allocation of data structures as well if it detects zero foreground voxels.  
