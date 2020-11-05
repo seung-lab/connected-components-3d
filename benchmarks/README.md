@@ -135,24 +135,24 @@ Here there's a slight difference in the memory usage. SciPy uses about 850 MB wh
 # 10x Head to Head: Black Cube
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode." /><br>
-Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode.
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 2.0.0 with zeroth_pass off (red) cc3d 2.0.0 with zeroth_pass on." /><br>
+Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 2.0.0 with zeroth_pass off (red) cc3d 2.0.0 with zeroth_pass on.
 </p>   
 
 Sometimes empty data shows up in your pipeline. Sometimes a lot of it. How do your libraries handle it? At full speed? Slower? Faster than normal?  
 
-Here we show scipy versus cc3d in normal and sparse modes of operation using 26 connectivity. cc3d 1.14.0 contains optimizations for handling this case. In all modes, cc3d will skip the relabeling pass if provisional labels total fewer than two. In sparse mode, it will also skip the decision tree pass and memory allocation of data structures as well if it detects zero foreground voxels.  
+Here we show scipy versus cc3d with `zeroth_pass` enabled and disabled using 26 connectivity. cc3d 2.0.0 contains optimizations for handling this case. In all modes, cc3d will skip the relabeling pass if provisional labels total fewer than two. In zeroth_pass mode, it will also skip the decision tree pass and memory allocation of data structures as well if it estimates zero  provisional voxels.  
 
-We can see how this bears out. In black, scipy runs at a brisk and reasonable clip. In data not shown, it appears to have some optimization for black voxels as it runs more slowly on a solid color non-zero cube. cc3d with sparse off rushes through the decision tree and skips the relabeling. With sparse on, it skips everything except the scan for foreground labels.
+We can see how this bears out. In black, scipy runs at a brisk and reasonable clip. In data not shown, it appears to have some optimization for black voxels as it runs more slowly on a solid color non-zero cube. cc3d with zeroth_pass off rushes through the decision tree and skips the relabeling. With zeroth_pass on, it skips everything except the scan for foreground labels.
 
-The worst memory usage is by cc3d with sparse mode off. Scipy and cc3d are approximately equal in memory usage with sparse mode on.  
+Scipy and cc3d are approximately equal in memory usage with zeroth_pass off, but cc3d wins with it on.  
 
 
 | Trial             | MVx/sec | Rel. Perf. |
 |-------------------|---------|------------|
-| SciPy 1.5.2       |  101    |  1.00x     |
-| cc3d 1.14.0       |  339    |  3.36x     |
-| cc3d 1.14.0 sparse| 1107    | 10.96x     |
+| SciPy 1.5.2       |  102    |  1.0x      |
+| cc3d 1.14.0 off   |  336    |  3.3x      |
+| cc3d 1.14.0 on    |  557    |  5.5x      |
 
 
 
