@@ -47,8 +47,8 @@ In this test, `cc3d_test` was run to completion in 225 seconds after loading the
 # 10x Head to Head: Connectomics Data
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://github.com/seung-lab/connected-components-3d/blob/master/benchmarks/cc3d_vs_scipy_single_label_10x.png" alt="Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.3.0 (blue) cc3d 1.2.2" /><br>
-Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.3.0 (blue) cc3d 1.2.2
+<img height=384 src="https://github.com/seung-lab/connected-components-3d/blob/master/benchmarks/cc3d_vs_scipy_single_label_10x.png" alt="Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.5.2 (blue) cc3d 2.0.0" /><br>
+Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.5.2 (blue) cc3d 2.0.0
 </p> 
 
 ```python
@@ -73,12 +73,12 @@ for i in tqdm(range(10)):
   scipy.ndimage.measurements.label(labels, structure=s)
 ```
 
-This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. `cc3d` performs each iteration in 0.4 seconds while SciPy takes about 6.1 seconds. In previous experiments (not shown) on dense labels, `cc3d` takes about 1.3 seconds per an iteration, so it becomes faster when the volume is less dense. While in previous versions, cc3d used many times more memory than scipy in this experiment, as of version 1.2.2, the memory usage is much more comparable though SciPy is still in the lead.
+This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. `cc3d` performs each iteration in 0.4 seconds while SciPy takes about 6.1 seconds. In previous experiments (not shown) on dense labels, `cc3d` takes about 7.6 seconds per an iteration, so it becomes faster when the volume is less dense. While in previous versions, cc3d used many times more memory than scipy in this experiment, as of version 2.0.0, the memory usage is now better than SciPy due to estimating the necessary number of provisional labels before executing.
 
-| Trial             | MVx/sec | MB/sec | Rel. Perf. |
-|-------------------|---------|--------|------------|
-| SciPy 1.3.0       | 22.0    | 44.0   | 1.00x      |
-| cc3d 1.2.2        | 335.5   | 671.1  | 15.3x      |
+| Trial             | MVx/sec | Rel. Perf. |
+|-------------------|---------|------------|
+| SciPy 1.5.2       | 17.8    | 1.00x      |
+| cc3d 2.0.0        | 323.8   | 18.2x      |
 
 
 # 10x Head to Head: Random Binary Images  
@@ -139,8 +139,6 @@ Here there's a slight difference in the memory usage. SciPy uses about 850 MB wh
 Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.14.0 (red) cc3d 1.14.0 in sparse mode.
 </p>   
 
-*Note: From 2.0.0 onward, the `zeroth_pass` argument will have a similar effect as the defunct sparse argument.*
-
 Sometimes empty data shows up in your pipeline. Sometimes a lot of it. How do your libraries handle it? At full speed? Slower? Faster than normal?  
 
 Here we show scipy versus cc3d in normal and sparse modes of operation using 26 connectivity. cc3d 1.14.0 contains optimizations for handling this case. In all modes, cc3d will skip the relabeling pass if provisional labels total fewer than two. In sparse mode, it will also skip the decision tree pass and memory allocation of data structures as well if it detects zero foreground voxels.  
@@ -156,24 +154,9 @@ The worst memory usage is by cc3d with sparse mode off. Scipy and cc3d are appro
 | cc3d 1.14.0       |  339    |  3.36x     |
 | cc3d 1.14.0 sparse| 1107    | 10.96x     |
 
-# Historical Performance
 
-cc3d has been steadily improving over time. To celebrate the release of 2.0.0, we show plots of peak memory usage and megavoxels per second vs version. Better scores in these charts trend down and right, indicating lower peak memory pressure and faster execution.
 
-<p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_connectomics_over_time.png" alt="Fig. 5: 26-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
-Fig. 5: 26-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
-</p>   
 
-<p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_random_binary_image.png" alt="Fig. 6: 26-way cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset." /><br>
-Fig. 6: 26-way cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset.
-</p>   
-
-<p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_6-way_connectomics_over_time.png" alt="Fig. 7: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
-Fig. 7: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
-</p>   
 
 
 
