@@ -22,7 +22,7 @@ namespace cc3d {
 
 //      8      7      6      5      4      3      2      1
 // ------ ------ ------ ------ ------ ------ ------ ------
-//   -x-y    x-y    -xy     xy     -x     +y     -x     +x
+//   -x-y    x-y    -xy     xy     -y     +y     -x     +x
 
 template <typename T, typename OUT = uint8_t>
 OUT* extract_voxel_connectivity_graph_2d(
