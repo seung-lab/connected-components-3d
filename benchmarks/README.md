@@ -151,8 +151,8 @@ Scipy and cc3d are approximately equal in memory usage with zeroth_pass off, but
 | Trial             | MVx/sec | Rel. Perf. |
 |-------------------|---------|------------|
 | SciPy 1.5.2       |  102    |  1.0x      |
-| cc3d 1.14.0 off   |  336    |  3.3x      |
-| cc3d 1.14.0 on    |  557    |  5.5x      |
+| cc3d 2.0.0 off    |  336    |  3.3x      |
+| cc3d 2.0.0 on     |  557    |  5.5x      |
 
 # Historical Performance
 
