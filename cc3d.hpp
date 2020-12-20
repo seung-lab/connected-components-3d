@@ -383,12 +383,42 @@ OUT* connected_components3d_26(
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (x > 0 && z > 0 && cur == in_labels[loc + D]) {
-          out_labels[loc] = out_labels[loc + D];
-          unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+        else if (x > 0 && cur == in_labels[loc + M]) {
+          out_labels[loc] = out_labels[loc + M];
 
           if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
             equivalences.unify(out_labels[loc], out_labels[loc + F]);
+          }
+          else if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
+
+            if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + I]);
+            }
+          }
+          else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + C]);
+
+            if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + I]);
+            }
+          }
+          else if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + I]);
+          }
+        }
+        else if (x > 0 && z > 0 && cur == in_labels[loc + D]) {
+          out_labels[loc] = out_labels[loc + D];
+
+          if (x < sx - 1 && z > 0 && cur == in_labels[loc + F]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + F]);
+          }
+          else if (x < sx - 1 && y > 0 && cur == in_labels[loc + L]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + L]);
+
+            if (x < sx - 1 && y < sy - 1 && z > 0 && cur == in_labels[loc + I]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + I]);
+            }
           }
           else if (x < sx - 1 && y > 0 && z > 0 && cur == in_labels[loc + C]) {
             equivalences.unify(out_labels[loc], out_labels[loc + C]);
