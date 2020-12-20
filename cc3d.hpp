@@ -338,8 +338,7 @@ OUT* connected_components3d_26(
   // record equivalences in a disjoint set.
   for (int32_t z = 0; z < sz; z++) {
     for (int32_t y = 0; y < sy; y++) {
-      for (int32_t x = 0; x < sx; x++) {
-        loc = x + sx * (y + sy * z);
+      for (int32_t x = 0; x < sx; x++, loc++) {
         const T cur = in_labels[loc];
 
         if (cur == 0) {
