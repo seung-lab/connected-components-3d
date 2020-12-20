@@ -349,7 +349,7 @@ OUT* connected_components3d_26(
         if (z > 0 && cur == in_labels[loc + E]) {
           out_labels[loc] = out_labels[loc + E];
         }
-        else if (z > 0 && y > 0 && cur == in_labels[loc + K]) {
+        else if (y > 0 && cur == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
 
           if (y < sy - 1 && z > 0 && cur == in_labels[loc + H]) {
