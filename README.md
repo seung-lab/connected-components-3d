@@ -72,7 +72,7 @@ for segid in range(1, N+1):
 
 # If a read-only image is ok, this approach is MUCH faster.
 # Set binary=True to yield binary images instead of numbered images.
-for label, image in cc3d.series(labels_out, binary=False):
+for label, image in cc3d.series(labels_out, binary=False, in_place=True):
   process(image)
 
 # We also include a region adjacency graph function 
