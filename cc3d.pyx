@@ -639,7 +639,7 @@ def erase(
   """
   return draw(0, runs, image)
 
-def series(labels, binary=False):
+def series(labels, binary=False, in_place=False):
   """Returns an iterator that """
   all_runs = runs(labels)
   order = 'F' if labels.flags['F_CONTIGUOUS'] else 'C'
@@ -648,12 +648,20 @@ def series(labels, binary=False):
   if binary:
     dtype = np.bool
 
-  img = np.zeros(labels.shape, dtype=dtype, order=order)
-
   class ImageIterator():
     def __len__(self):
       return len(all_runs) - int(0 in all_runs)
     def __iter__(self):
+      for key, rns in all_runs.items():
+        if key == 0:
+          continue
+        img = np.zeros(labels.shape, dtype=dtype, order=order)
+        draw(key, rns, img)
+        yield (key, img)
+
+  class InPlaceImageIterator(ImageIterator):
+    def __iter__(self):
+      img = np.zeros(labels.shape, dtype=dtype, order=order)
       for key, rns in all_runs.items():
         if key == 0:
           continue
@@ -663,4 +671,6 @@ def series(labels, binary=False):
         img.setflags(write=1)
         erase(rns, img)
 
+  if in_place:
+    return InPlaceImageIterator()
   return ImageIterator()
