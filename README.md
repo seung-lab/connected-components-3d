@@ -64,10 +64,16 @@ labels_out, N = cc3d.connected_components(labels_in, return_N=True) # free
 labels_out = cc3d.connected_components(labels_in) 
 N = np.max(labels_out) # costs a full read
 
-# You can extract individual components like so:
+# You can extract individual components using numpy operators
+# This approach is slow, but makes a mutable copy.
 for segid in range(1, N+1):
   extracted_image = labels_out * (labels_out == segid)
   process(extracted_image)
+
+# If a read-only image is ok, this approach is MUCH faster.
+# Set binary=True to yield binary images instead of numbered images.
+for label, image in cc3d.series(labels_out, binary=False):
+  process(image)
 
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.

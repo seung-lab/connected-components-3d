@@ -41,6 +41,8 @@ import array
 import sys
 
 from libcpp.vector cimport vector
+from libcpp.map cimport map as mapcpp
+from libcpp.utility cimport pair as cpp_pair
 cimport numpy as cnp
 import numpy as np
 
@@ -68,12 +70,23 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
     int64_t sx, int64_t sy, int64_t sz,
     int64_t connectivity,
   )
+  cdef mapcpp[T, vector[cpp_pair[size_t,size_t]]] extract_runs[T](
+    T* labels, size_t sx, size_t sy, size_t sz
+  )
+  void set_run_voxels[T](
+    T key,
+    vector[cpp_pair[size_t, size_t]] all_runs,
+    T* labels, size_t voxels
+  )
 
-ctypedef fused INTEGER:
+ctypedef fused UINT:
   uint8_t
   uint16_t
   uint32_t
   uint64_t
+
+ctypedef fused INTEGER:
+  UINT
   int8_t
   int16_t
   int32_t
@@ -580,4 +593,74 @@ def region_graph(
 
   return output
 
+## These below functions are concerned with fast rendering
+## of a densely labeled image into a series of binary images.
 
+def runs(
+    cnp.ndarray[uint32_t, ndim=3, cast=True] labels
+  ):
+  """
+  Returns a dictionary describing where each label is located.
+  Use this data in conjunction with render and erase.
+  """
+  return extract_runs[uint32_t](&labels[0,0,0], labels.size)
+
+def draw(
+  label, 
+  vector[cpp_pair[size_t, size_t]] runs,
+  cnp.ndarray[UINT, ndim=3, cast=True] image
+):
+  """
+  Draws label onto the provided image according to 
+  runs.
+  """
+  if image.dtype == np.bool:
+    set_run_voxels[uint8_t](1, runs, <uint8_t*>&image[0,0,0], image.size)
+  elif image.dtype == np.uint8:
+    set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
+  elif image.dtype == np.uint16:
+    set_run_voxels[uint16_t](label, runs, <uint16_t*>&image[0,0,0], image.size)
+  elif image.dtype == np.uint32:
+    set_run_voxels[uint32_t](label, runs, <uint32_t*>&image[0,0,0], image.size)
+  elif image.dtype == np.uint64:  
+    set_run_voxels[uint64_t](label, runs, <uint64_t*>&image[0,0,0], image.size)
+  else:
+    raise TypeError("Unsupported type: " + str(image.dtype))
+
+  return image
+
+def erase( 
+  vector[cpp_pair[size_t, size_t]] runs, 
+  cnp.ndarray[UINT, ndim=3, cast=True] image
+):
+  """
+  Erases (sets to 0) part of the provided image according to 
+  runs.
+  """
+  return draw(0, runs, image)
+
+def series(labels, binary=False):
+  """Returns an iterator that """
+  all_runs = runs(labels)
+  order = 'F' if labels.flags['F_CONTIGUOUS'] else 'C'
+
+  dtype = labels.dtype
+  if binary:
+    dtype = np.bool
+
+  img = np.zeros(labels.shape, dtype=dtype, order=order)
+
+  class ImageIterator():
+    def __len__(self):
+      return len(all_runs) - int(0 in all_runs)
+    def __iter__(self):
+      for key, rns in all_runs.items():
+        if key == 0:
+          continue
+        draw(key, rns, img)
+        img.setflags(write=0)
+        yield (key, img)
+        img.setflags(write=1)
+        erase(rns, img)
+
+  return ImageIterator()
