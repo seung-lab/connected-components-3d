@@ -136,7 +136,7 @@ OUT* extract_voxel_connectivity_graph_3d(
 				}
 				if (x < sx - 1 && y > 0 && cur != labels[loc - sx + 1]) {
 					graph[loc     ] &= 0b11111111111111111111111011111111; // 9
- 					graph[loc-sx+1] &= 0b11111111111111111111111101111111; // 8
+					graph[loc-sx+1] &= 0b11111111111111111111111101111111; // 8
 				}
 				if (x > 0 && y > 0 && z > 0 && cur != labels[loc - sxy - sx - 1]) {
 					graph[loc         ] &= 0b11111101111111111111111111111111; // 26
@@ -187,49 +187,49 @@ inline T* and_mask(T mask, T* graph, int64_t sx, int64_t sy, int64_t sz = 1) {
 
 template <typename T, typename OUT = uint32_t>
 OUT* extract_voxel_connectivity_graph(
-    T* in_labels, 
-    const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity, OUT *graph = NULL
-  ) {
+		T* in_labels, 
+		const int64_t sx, const int64_t sy, const int64_t sz,
+		const int64_t connectivity, OUT *graph = NULL
+	) {
 
 
-  if (connectivity == 26) {
-    return extract_voxel_connectivity_graph_3d<T, OUT>(
-      in_labels, sx, sy, sz, graph
-    );
-  }
-  else if (connectivity == 18) {
-    graph = extract_voxel_connectivity_graph_3d<T, OUT>(
-      in_labels, sx, sy, sz, graph
-    );
-  	return and_mask<OUT>(static_cast<OUT>(0x3ffff), graph, sx, sy, sz);
-  }
-  else if (connectivity == 6) {
-    graph = extract_voxel_connectivity_graph_3d<T, OUT>(
-      in_labels, sx, sy, sz, graph
-    );
-   return and_mask<OUT>(0b00111111, graph, sx, sy, sz);
-  }
-  else if (connectivity == 8) {
-    if (sz != 1) {
-      throw std::runtime_error("sz must be 1 for 2D connectivities.");
-    }
-    return extract_voxel_connectivity_graph_2d<T, OUT>(
-      in_labels, sx, sy, graph
-    );
-  }
-  else if (connectivity == 4) {
-    if (sz != 1) {
-      throw std::runtime_error("sz must be 1 for 2D connectivities.");
-    }
-    graph = extract_voxel_connectivity_graph_2d<T, OUT>(
-      in_labels, sx, sy, graph
-    );
-    return and_mask<OUT>(0b00001111, graph, sx, sy);
-  }
-  else {
-    throw std::runtime_error("Only 4 and 8 2D and 6, 18, and 26 3D connectivities are supported.");
-  }
+	if (connectivity == 26) {
+		return extract_voxel_connectivity_graph_3d<T, OUT>(
+			in_labels, sx, sy, sz, graph
+		);
+	}
+	else if (connectivity == 18) {
+		graph = extract_voxel_connectivity_graph_3d<T, OUT>(
+			in_labels, sx, sy, sz, graph
+		);
+		return and_mask<OUT>(static_cast<OUT>(0x3ffff), graph, sx, sy, sz);
+	}
+	else if (connectivity == 6) {
+		graph = extract_voxel_connectivity_graph_3d<T, OUT>(
+			in_labels, sx, sy, sz, graph
+		);
+	 return and_mask<OUT>(0b00111111, graph, sx, sy, sz);
+	}
+	else if (connectivity == 8) {
+		if (sz != 1) {
+			throw std::runtime_error("sz must be 1 for 2D connectivities.");
+		}
+		return extract_voxel_connectivity_graph_2d<T, OUT>(
+			in_labels, sx, sy, graph
+		);
+	}
+	else if (connectivity == 4) {
+		if (sz != 1) {
+			throw std::runtime_error("sz must be 1 for 2D connectivities.");
+		}
+		graph = extract_voxel_connectivity_graph_2d<T, OUT>(
+			in_labels, sx, sy, graph
+		);
+		return and_mask<OUT>(0b00001111, graph, sx, sy);
+	}
+	else {
+		throw std::runtime_error("Only 4 and 8 2D and 6, 18, and 26 3D connectivities are supported.");
+	}
 }
 
 inline void compute_neighborhood(
