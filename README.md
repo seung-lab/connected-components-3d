@@ -70,8 +70,10 @@ for segid in range(1, N+1):
   extracted_image = labels_out * (labels_out == segid)
   process(extracted_image)
 
-# If a read-only image is ok, this approach is MUCH faster.
-# Set binary=True to yield binary images instead of numbered images.
+# If a read-only image is ok, this approach is MUCH faster
+# if the image has many contiguous regions. A random image 
+# can be slower. binary=True yields binary images instead
+# of numbered images.
 for label, image in cc3d.series(labels_out, binary=False, in_place=True):
   process(image)
 
