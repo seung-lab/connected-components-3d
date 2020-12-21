@@ -1343,8 +1343,8 @@ struct __pyx_defaults15 {
  *   return draw(0, runs, image)
  * 
  * def series(labels, binary=False, in_place=False):             # <<<<<<<<<<<<<<
- *   """Returns an iterator that """
- *   all_runs = runs(labels)
+ *   """
+ *   Returns an iterator that extracts each label from a dense labeling.
  */
 struct __pyx_obj_4cc3d___pyx_scope_struct__series {
   PyObject_HEAD
@@ -1355,7 +1355,7 @@ struct __pyx_obj_4cc3d___pyx_scope_struct__series {
 };
 
 
-/* "cc3d.pyx":654
+/* "cc3d.pyx":666
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):             # <<<<<<<<<<<<<<
@@ -1376,7 +1376,7 @@ struct __pyx_obj_4cc3d___pyx_scope_struct_1___iter__ {
 };
 
 
-/* "cc3d.pyx":663
+/* "cc3d.pyx":675
  * 
  *   class InPlaceImageIterator(ImageIterator):
  *     def __iter__(self):             # <<<<<<<<<<<<<<
@@ -18682,13 +18682,13 @@ static PyObject *__pyx_pf_4cc3d_52erase(CYTHON_UNUSED PyObject *__pyx_self, std:
  *   return draw(0, runs, image)
  * 
  * def series(labels, binary=False, in_place=False):             # <<<<<<<<<<<<<<
- *   """Returns an iterator that """
- *   all_runs = runs(labels)
+ *   """
+ *   Returns an iterator that extracts each label from a dense labeling.
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_4cc3d_17series(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_4cc3d_16series[] = "Returns an iterator that ";
+static char __pyx_doc_4cc3d_16series[] = "\n  Returns an iterator that extracts each label from a dense labeling.\n\n  binary: create a binary image from each component (otherwise use the\n    same dtype and label value for the mask)\n  in_place: much faster but the resulting image will be read-only\n\n  Example:\n  for label, img in cc3d.series(labels, binary=False, in_place=False):\n    process(img)\n\n  Returns: iterator\n  ";
 static PyMethodDef __pyx_mdef_4cc3d_17series = {"series", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_4cc3d_17series, METH_VARARGS|METH_KEYWORDS, __pyx_doc_4cc3d_16series};
 static PyObject *__pyx_pw_4cc3d_17series(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_labels = 0;
@@ -18769,7 +18769,7 @@ static PyObject *__pyx_pw_4cc3d_17series(PyObject *__pyx_self, PyObject *__pyx_a
   return __pyx_r;
 }
 
-/* "cc3d.pyx":652
+/* "cc3d.pyx":664
  * 
  *   class ImageIterator():
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -18808,7 +18808,7 @@ static PyObject *__pyx_pf_4cc3d_6series_13ImageIterator___len__(PyObject *__pyx_
   __pyx_outer_scope = (struct __pyx_obj_4cc3d___pyx_scope_struct__series *) __Pyx_CyFunction_GetClosure(__pyx_self);
   __pyx_cur_scope = __pyx_outer_scope;
 
-  /* "cc3d.pyx":653
+  /* "cc3d.pyx":665
  *   class ImageIterator():
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)             # <<<<<<<<<<<<<<
@@ -18816,21 +18816,21 @@ static PyObject *__pyx_pf_4cc3d_6series_13ImageIterator___len__(PyObject *__pyx_
  *       for key, rns in all_runs.items():
  */
   __Pyx_XDECREF(__pyx_r);
-  if (unlikely(!__pyx_cur_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 653, __pyx_L1_error) }
+  if (unlikely(!__pyx_cur_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 665, __pyx_L1_error) }
   __pyx_t_1 = __pyx_cur_scope->__pyx_v_all_runs;
   __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 653, __pyx_L1_error)
+  __pyx_t_2 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 665, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyInt_FromSsize_t(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 653, __pyx_L1_error)
+  __pyx_t_1 = PyInt_FromSsize_t(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 665, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (unlikely(!__pyx_cur_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 653, __pyx_L1_error) }
-  __pyx_t_3 = (__Pyx_PySequence_ContainsTF(__pyx_int_0, __pyx_cur_scope->__pyx_v_all_runs, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 653, __pyx_L1_error)
-  __pyx_t_4 = __Pyx_PyBool_FromLong(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 653, __pyx_L1_error)
+  if (unlikely(!__pyx_cur_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 665, __pyx_L1_error) }
+  __pyx_t_3 = (__Pyx_PySequence_ContainsTF(__pyx_int_0, __pyx_cur_scope->__pyx_v_all_runs, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 665, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyBool_FromLong(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 665, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyInt_Type)), __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 653, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyInt_Type)), __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 665, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyNumber_Subtract(__pyx_t_1, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 653, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Subtract(__pyx_t_1, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 665, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -18838,7 +18838,7 @@ static PyObject *__pyx_pf_4cc3d_6series_13ImageIterator___len__(PyObject *__pyx_
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "cc3d.pyx":652
+  /* "cc3d.pyx":664
  * 
  *   class ImageIterator():
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -18860,7 +18860,7 @@ static PyObject *__pyx_pf_4cc3d_6series_13ImageIterator___len__(PyObject *__pyx_
 }
 static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value); /* proto */
 
-/* "cc3d.pyx":654
+/* "cc3d.pyx":666
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):             # <<<<<<<<<<<<<<
@@ -18894,7 +18894,7 @@ static PyObject *__pyx_pf_4cc3d_6series_13ImageIterator_2__iter__(PyObject *__py
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_4cc3d___pyx_scope_struct_1___iter__ *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 654, __pyx_L1_error)
+    __PYX_ERR(0, 666, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -18905,7 +18905,7 @@ static PyObject *__pyx_pf_4cc3d_6series_13ImageIterator_2__iter__(PyObject *__py
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_self);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_self);
   {
-    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4cc3d_6series_13ImageIterator_4generator, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_iter, __pyx_n_s_series_locals_ImageIterator___it, __pyx_n_s_cc3d); if (unlikely(!gen)) __PYX_ERR(0, 654, __pyx_L1_error)
+    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4cc3d_6series_13ImageIterator_4generator, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_iter, __pyx_n_s_series_locals_ImageIterator___it, __pyx_n_s_cc3d); if (unlikely(!gen)) __PYX_ERR(0, 666, __pyx_L1_error)
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -18948,9 +18948,9 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 654, __pyx_L1_error)
+  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 666, __pyx_L1_error)
 
-  /* "cc3d.pyx":655
+  /* "cc3d.pyx":667
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):
  *       for key, rns in all_runs.items():             # <<<<<<<<<<<<<<
@@ -18958,12 +18958,12 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
  *           continue
  */
   __pyx_t_2 = 0;
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 655, __pyx_L1_error) }
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 667, __pyx_L1_error) }
   if (unlikely(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "items");
-    __PYX_ERR(0, 655, __pyx_L1_error)
+    __PYX_ERR(0, 667, __pyx_L1_error)
   }
-  __pyx_t_5 = __Pyx_dict_iterator(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs, 0, __pyx_n_s_items, (&__pyx_t_3), (&__pyx_t_4)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 655, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_dict_iterator(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs, 0, __pyx_n_s_items, (&__pyx_t_3), (&__pyx_t_4)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 667, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_1);
   __pyx_t_1 = __pyx_t_5;
@@ -18971,7 +18971,7 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
   while (1) {
     __pyx_t_7 = __Pyx_dict_iter_next(__pyx_t_1, __pyx_t_3, &__pyx_t_2, &__pyx_t_5, &__pyx_t_6, NULL, __pyx_t_4);
     if (unlikely(__pyx_t_7 == 0)) break;
-    if (unlikely(__pyx_t_7 == -1)) __PYX_ERR(0, 655, __pyx_L1_error)
+    if (unlikely(__pyx_t_7 == -1)) __PYX_ERR(0, 667, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_key);
@@ -18983,20 +18983,20 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
     __Pyx_GIVEREF(__pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "cc3d.pyx":656
+    /* "cc3d.pyx":668
  *     def __iter__(self):
  *       for key, rns in all_runs.items():
  *         if key == 0:             # <<<<<<<<<<<<<<
  *           continue
  *         img = np.zeros(labels.shape, dtype=dtype, order=order)
  */
-    __pyx_t_6 = __Pyx_PyInt_EqObjC(__pyx_cur_scope->__pyx_v_key, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 656, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyInt_EqObjC(__pyx_cur_scope->__pyx_v_key, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 668, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 656, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 668, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     if (__pyx_t_8) {
 
-      /* "cc3d.pyx":657
+      /* "cc3d.pyx":669
  *       for key, rns in all_runs.items():
  *         if key == 0:
  *           continue             # <<<<<<<<<<<<<<
@@ -19005,7 +19005,7 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
  */
       goto __pyx_L4_continue;
 
-      /* "cc3d.pyx":656
+      /* "cc3d.pyx":668
  *     def __iter__(self):
  *       for key, rns in all_runs.items():
  *         if key == 0:             # <<<<<<<<<<<<<<
@@ -19014,33 +19014,33 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
  */
     }
 
-    /* "cc3d.pyx":658
+    /* "cc3d.pyx":670
  *         if key == 0:
  *           continue
  *         img = np.zeros(labels.shape, dtype=dtype, order=order)             # <<<<<<<<<<<<<<
  *         draw(key, rns, img)
  *         yield (key, img)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 658, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 670, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_zeros); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 658, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_zeros); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 670, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels)) { __Pyx_RaiseClosureNameError("labels"); __PYX_ERR(0, 658, __pyx_L1_error) }
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels, __pyx_n_s_shape); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 658, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels)) { __Pyx_RaiseClosureNameError("labels"); __PYX_ERR(0, 670, __pyx_L1_error) }
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels, __pyx_n_s_shape); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 670, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 658, __pyx_L1_error)
+    __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 670, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __Pyx_GIVEREF(__pyx_t_6);
     PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_6);
     __pyx_t_6 = 0;
-    __pyx_t_6 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 658, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 670, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype)) { __Pyx_RaiseClosureNameError("dtype"); __PYX_ERR(0, 658, __pyx_L1_error) }
-    if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_dtype, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype) < 0) __PYX_ERR(0, 658, __pyx_L1_error)
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_order)) { __Pyx_RaiseClosureNameError("order"); __PYX_ERR(0, 658, __pyx_L1_error) }
-    if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_order, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_order) < 0) __PYX_ERR(0, 658, __pyx_L1_error)
-    __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_9, __pyx_t_6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 658, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype)) { __Pyx_RaiseClosureNameError("dtype"); __PYX_ERR(0, 670, __pyx_L1_error) }
+    if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_dtype, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype) < 0) __PYX_ERR(0, 670, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_order)) { __Pyx_RaiseClosureNameError("order"); __PYX_ERR(0, 670, __pyx_L1_error) }
+    if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_order, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_order) < 0) __PYX_ERR(0, 670, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_9, __pyx_t_6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 670, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
@@ -19050,14 +19050,14 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
     __Pyx_GIVEREF(__pyx_t_10);
     __pyx_t_10 = 0;
 
-    /* "cc3d.pyx":659
+    /* "cc3d.pyx":671
  *           continue
  *         img = np.zeros(labels.shape, dtype=dtype, order=order)
  *         draw(key, rns, img)             # <<<<<<<<<<<<<<
  *         yield (key, img)
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_draw); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 659, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_draw); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 671, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_9 = NULL;
     __pyx_t_7 = 0;
@@ -19074,7 +19074,7 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_6)) {
       PyObject *__pyx_temp[4] = {__pyx_t_9, __pyx_cur_scope->__pyx_v_key, __pyx_cur_scope->__pyx_v_rns, __pyx_cur_scope->__pyx_v_img};
-      __pyx_t_10 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 671, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_GOTREF(__pyx_t_10);
     } else
@@ -19082,13 +19082,13 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_6)) {
       PyObject *__pyx_temp[4] = {__pyx_t_9, __pyx_cur_scope->__pyx_v_key, __pyx_cur_scope->__pyx_v_rns, __pyx_cur_scope->__pyx_v_img};
-      __pyx_t_10 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_7, 3+__pyx_t_7); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 671, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_GOTREF(__pyx_t_10);
     } else
     #endif
     {
-      __pyx_t_5 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 671, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       if (__pyx_t_9) {
         __Pyx_GIVEREF(__pyx_t_9); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_9); __pyx_t_9 = NULL;
@@ -19102,21 +19102,21 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
       __Pyx_INCREF(__pyx_cur_scope->__pyx_v_img);
       __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_img);
       PyTuple_SET_ITEM(__pyx_t_5, 2+__pyx_t_7, __pyx_cur_scope->__pyx_v_img);
-      __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_5, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 659, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_5, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 671, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-    /* "cc3d.pyx":660
+    /* "cc3d.pyx":672
  *         img = np.zeros(labels.shape, dtype=dtype, order=order)
  *         draw(key, rns, img)
  *         yield (key, img)             # <<<<<<<<<<<<<<
  * 
  *   class InPlaceImageIterator(ImageIterator):
  */
-    __pyx_t_10 = PyTuple_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 660, __pyx_L1_error)
+    __pyx_t_10 = PyTuple_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 672, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_INCREF(__pyx_cur_scope->__pyx_v_key);
     __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_key);
@@ -19144,13 +19144,13 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
     __pyx_t_2 = __pyx_cur_scope->__pyx_t_1;
     __pyx_t_3 = __pyx_cur_scope->__pyx_t_2;
     __pyx_t_4 = __pyx_cur_scope->__pyx_t_3;
-    if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 660, __pyx_L1_error)
+    if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 672, __pyx_L1_error)
     __pyx_L4_continue:;
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   CYTHON_MAYBE_UNUSED_VAR(__pyx_cur_scope);
 
-  /* "cc3d.pyx":654
+  /* "cc3d.pyx":666
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):             # <<<<<<<<<<<<<<
@@ -19180,7 +19180,7 @@ static PyObject *__pyx_gb_4cc3d_6series_13ImageIterator_4generator(__pyx_Corouti
 }
 static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value); /* proto */
 
-/* "cc3d.pyx":663
+/* "cc3d.pyx":675
  * 
  *   class InPlaceImageIterator(ImageIterator):
  *     def __iter__(self):             # <<<<<<<<<<<<<<
@@ -19214,7 +19214,7 @@ static PyObject *__pyx_pf_4cc3d_6series_20InPlaceImageIterator___iter__(PyObject
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_4cc3d___pyx_scope_struct_2___iter__ *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 663, __pyx_L1_error)
+    __PYX_ERR(0, 675, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -19225,7 +19225,7 @@ static PyObject *__pyx_pf_4cc3d_6series_20InPlaceImageIterator___iter__(PyObject
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_self);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_self);
   {
-    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_iter, __pyx_n_s_series_locals_InPlaceImageIterat, __pyx_n_s_cc3d); if (unlikely(!gen)) __PYX_ERR(0, 663, __pyx_L1_error)
+    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_iter, __pyx_n_s_series_locals_InPlaceImageIterat, __pyx_n_s_cc3d); if (unlikely(!gen)) __PYX_ERR(0, 675, __pyx_L1_error)
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -19268,35 +19268,35 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 663, __pyx_L1_error)
+  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 675, __pyx_L1_error)
 
-  /* "cc3d.pyx":664
+  /* "cc3d.pyx":676
  *   class InPlaceImageIterator(ImageIterator):
  *     def __iter__(self):
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)             # <<<<<<<<<<<<<<
  *       for key, rns in all_runs.items():
  *         if key == 0:
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 664, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 676, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 664, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 676, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels)) { __Pyx_RaiseClosureNameError("labels"); __PYX_ERR(0, 664, __pyx_L1_error) }
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 664, __pyx_L1_error)
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels)) { __Pyx_RaiseClosureNameError("labels"); __PYX_ERR(0, 676, __pyx_L1_error) }
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_labels, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 676, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 664, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 676, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 664, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 676, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype)) { __Pyx_RaiseClosureNameError("dtype"); __PYX_ERR(0, 664, __pyx_L1_error) }
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype) < 0) __PYX_ERR(0, 664, __pyx_L1_error)
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_order)) { __Pyx_RaiseClosureNameError("order"); __PYX_ERR(0, 664, __pyx_L1_error) }
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_order, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_order) < 0) __PYX_ERR(0, 664, __pyx_L1_error)
-  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_3, __pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 664, __pyx_L1_error)
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype)) { __Pyx_RaiseClosureNameError("dtype"); __PYX_ERR(0, 676, __pyx_L1_error) }
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_dtype) < 0) __PYX_ERR(0, 676, __pyx_L1_error)
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_order)) { __Pyx_RaiseClosureNameError("order"); __PYX_ERR(0, 676, __pyx_L1_error) }
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_order, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_order) < 0) __PYX_ERR(0, 676, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_3, __pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 676, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -19305,7 +19305,7 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
   __pyx_cur_scope->__pyx_v_img = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "cc3d.pyx":665
+  /* "cc3d.pyx":677
  *     def __iter__(self):
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)
  *       for key, rns in all_runs.items():             # <<<<<<<<<<<<<<
@@ -19313,12 +19313,12 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
  *           continue
  */
   __pyx_t_5 = 0;
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 665, __pyx_L1_error) }
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs)) { __Pyx_RaiseClosureNameError("all_runs"); __PYX_ERR(0, 677, __pyx_L1_error) }
   if (unlikely(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "items");
-    __PYX_ERR(0, 665, __pyx_L1_error)
+    __PYX_ERR(0, 677, __pyx_L1_error)
   }
-  __pyx_t_1 = __Pyx_dict_iterator(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs, 0, __pyx_n_s_items, (&__pyx_t_6), (&__pyx_t_7)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 665, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_dict_iterator(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_all_runs, 0, __pyx_n_s_items, (&__pyx_t_6), (&__pyx_t_7)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 677, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_4);
   __pyx_t_4 = __pyx_t_1;
@@ -19326,7 +19326,7 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
   while (1) {
     __pyx_t_8 = __Pyx_dict_iter_next(__pyx_t_4, __pyx_t_6, &__pyx_t_5, &__pyx_t_1, &__pyx_t_3, NULL, __pyx_t_7);
     if (unlikely(__pyx_t_8 == 0)) break;
-    if (unlikely(__pyx_t_8 == -1)) __PYX_ERR(0, 665, __pyx_L1_error)
+    if (unlikely(__pyx_t_8 == -1)) __PYX_ERR(0, 677, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_key);
@@ -19338,20 +19338,20 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
     __Pyx_GIVEREF(__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "cc3d.pyx":666
+    /* "cc3d.pyx":678
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)
  *       for key, rns in all_runs.items():
  *         if key == 0:             # <<<<<<<<<<<<<<
  *           continue
  *         draw(key, rns, img)
  */
-    __pyx_t_3 = __Pyx_PyInt_EqObjC(__pyx_cur_scope->__pyx_v_key, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 666, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyInt_EqObjC(__pyx_cur_scope->__pyx_v_key, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 678, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_9 < 0)) __PYX_ERR(0, 666, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_9 < 0)) __PYX_ERR(0, 678, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (__pyx_t_9) {
 
-      /* "cc3d.pyx":667
+      /* "cc3d.pyx":679
  *       for key, rns in all_runs.items():
  *         if key == 0:
  *           continue             # <<<<<<<<<<<<<<
@@ -19360,7 +19360,7 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
  */
       goto __pyx_L4_continue;
 
-      /* "cc3d.pyx":666
+      /* "cc3d.pyx":678
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)
  *       for key, rns in all_runs.items():
  *         if key == 0:             # <<<<<<<<<<<<<<
@@ -19369,14 +19369,14 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
  */
     }
 
-    /* "cc3d.pyx":668
+    /* "cc3d.pyx":680
  *         if key == 0:
  *           continue
  *         draw(key, rns, img)             # <<<<<<<<<<<<<<
  *         img.setflags(write=0)
  *         yield (key, img)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_draw); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 668, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_draw); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 680, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_2 = NULL;
     __pyx_t_8 = 0;
@@ -19393,7 +19393,7 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[4] = {__pyx_t_2, __pyx_cur_scope->__pyx_v_key, __pyx_cur_scope->__pyx_v_rns, __pyx_cur_scope->__pyx_v_img};
-      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 668, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 680, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_GOTREF(__pyx_t_3);
     } else
@@ -19401,13 +19401,13 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[4] = {__pyx_t_2, __pyx_cur_scope->__pyx_v_key, __pyx_cur_scope->__pyx_v_rns, __pyx_cur_scope->__pyx_v_img};
-      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 668, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 680, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_GOTREF(__pyx_t_3);
     } else
     #endif
     {
-      __pyx_t_10 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 668, __pyx_L1_error)
+      __pyx_t_10 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 680, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       if (__pyx_t_2) {
         __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_t_2); __pyx_t_2 = NULL;
@@ -19421,39 +19421,39 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
       __Pyx_INCREF(__pyx_cur_scope->__pyx_v_img);
       __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_img);
       PyTuple_SET_ITEM(__pyx_t_10, 2+__pyx_t_8, __pyx_cur_scope->__pyx_v_img);
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_10, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 668, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_10, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 680, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "cc3d.pyx":669
+    /* "cc3d.pyx":681
  *           continue
  *         draw(key, rns, img)
  *         img.setflags(write=0)             # <<<<<<<<<<<<<<
  *         yield (key, img)
  *         img.setflags(write=1)
  */
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_img, __pyx_n_s_setflags); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 669, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_img, __pyx_n_s_setflags); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 681, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 669, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 681, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_write, __pyx_int_0) < 0) __PYX_ERR(0, 669, __pyx_L1_error)
-    __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 669, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_write, __pyx_int_0) < 0) __PYX_ERR(0, 681, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 681, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
-    /* "cc3d.pyx":670
+    /* "cc3d.pyx":682
  *         draw(key, rns, img)
  *         img.setflags(write=0)
  *         yield (key, img)             # <<<<<<<<<<<<<<
  *         img.setflags(write=1)
  *         erase(rns, img)
  */
-    __pyx_t_10 = PyTuple_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 670, __pyx_L1_error)
+    __pyx_t_10 = PyTuple_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 682, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __Pyx_INCREF(__pyx_cur_scope->__pyx_v_key);
     __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_key);
@@ -19481,34 +19481,34 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
     __pyx_t_5 = __pyx_cur_scope->__pyx_t_1;
     __pyx_t_6 = __pyx_cur_scope->__pyx_t_2;
     __pyx_t_7 = __pyx_cur_scope->__pyx_t_3;
-    if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 670, __pyx_L1_error)
+    if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 682, __pyx_L1_error)
 
-    /* "cc3d.pyx":671
+    /* "cc3d.pyx":683
  *         img.setflags(write=0)
  *         yield (key, img)
  *         img.setflags(write=1)             # <<<<<<<<<<<<<<
  *         erase(rns, img)
  * 
  */
-    __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_img, __pyx_n_s_setflags); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 671, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_img, __pyx_n_s_setflags); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 683, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
-    __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 671, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 683, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_write, __pyx_int_1) < 0) __PYX_ERR(0, 671, __pyx_L1_error)
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 671, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_write, __pyx_int_1) < 0) __PYX_ERR(0, 683, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 683, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "cc3d.pyx":672
+    /* "cc3d.pyx":684
  *         yield (key, img)
  *         img.setflags(write=1)
  *         erase(rns, img)             # <<<<<<<<<<<<<<
  * 
  *   if in_place:
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_erase); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 672, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_erase); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 684, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_10 = NULL;
     __pyx_t_8 = 0;
@@ -19525,7 +19525,7 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[3] = {__pyx_t_10, __pyx_cur_scope->__pyx_v_rns, __pyx_cur_scope->__pyx_v_img};
-      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 672, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 684, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
       __Pyx_GOTREF(__pyx_t_3);
     } else
@@ -19533,13 +19533,13 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[3] = {__pyx_t_10, __pyx_cur_scope->__pyx_v_rns, __pyx_cur_scope->__pyx_v_img};
-      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 672, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 684, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
       __Pyx_GOTREF(__pyx_t_3);
     } else
     #endif
     {
-      __pyx_t_2 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 672, __pyx_L1_error)
+      __pyx_t_2 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 684, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       if (__pyx_t_10) {
         __Pyx_GIVEREF(__pyx_t_10); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_10); __pyx_t_10 = NULL;
@@ -19550,7 +19550,7 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
       __Pyx_INCREF(__pyx_cur_scope->__pyx_v_img);
       __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_img);
       PyTuple_SET_ITEM(__pyx_t_2, 1+__pyx_t_8, __pyx_cur_scope->__pyx_v_img);
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 672, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 684, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     }
@@ -19561,7 +19561,7 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   CYTHON_MAYBE_UNUSED_VAR(__pyx_cur_scope);
 
-  /* "cc3d.pyx":663
+  /* "cc3d.pyx":675
  * 
  *   class InPlaceImageIterator(ImageIterator):
  *     def __iter__(self):             # <<<<<<<<<<<<<<
@@ -19594,8 +19594,8 @@ static PyObject *__pyx_gb_4cc3d_6series_20InPlaceImageIterator_2generator1(__pyx
  *   return draw(0, runs, image)
  * 
  * def series(labels, binary=False, in_place=False):             # <<<<<<<<<<<<<<
- *   """Returns an iterator that """
- *   all_runs = runs(labels)
+ *   """
+ *   Returns an iterator that extracts each label from a dense labeling.
  */
 
 static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_labels, PyObject *__pyx_v_binary, PyObject *__pyx_v_in_place) {
@@ -19625,14 +19625,14 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_labels);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_labels);
 
-  /* "cc3d.pyx":644
- * def series(labels, binary=False, in_place=False):
- *   """Returns an iterator that """
+  /* "cc3d.pyx":656
+ *   Returns: iterator
+ *   """
  *   all_runs = runs(labels)             # <<<<<<<<<<<<<<
  *   order = 'F' if labels.flags['F_CONTIGUOUS'] else 'C'
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_runs); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 644, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_runs); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 656, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
@@ -19646,26 +19646,26 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
   }
   __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_cur_scope->__pyx_v_labels) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_cur_scope->__pyx_v_labels);
   __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 644, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 656, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_cur_scope->__pyx_v_all_runs = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "cc3d.pyx":645
- *   """Returns an iterator that """
+  /* "cc3d.pyx":657
+ *   """
  *   all_runs = runs(labels)
  *   order = 'F' if labels.flags['F_CONTIGUOUS'] else 'C'             # <<<<<<<<<<<<<<
  * 
  *   dtype = labels.dtype
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_labels, __pyx_n_s_flags); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 645, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_labels, __pyx_n_s_flags); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 657, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_t_2, __pyx_n_u_F_CONTIGUOUS); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 645, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_t_2, __pyx_n_u_F_CONTIGUOUS); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 657, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 645, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 657, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_4) {
     __Pyx_INCREF(__pyx_n_u_F);
@@ -19678,39 +19678,39 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
   __pyx_cur_scope->__pyx_v_order = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "cc3d.pyx":647
+  /* "cc3d.pyx":659
  *   order = 'F' if labels.flags['F_CONTIGUOUS'] else 'C'
  * 
  *   dtype = labels.dtype             # <<<<<<<<<<<<<<
  *   if binary:
  *     dtype = np.bool
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_labels, __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_labels, __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 659, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_cur_scope->__pyx_v_dtype = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "cc3d.pyx":648
+  /* "cc3d.pyx":660
  * 
  *   dtype = labels.dtype
  *   if binary:             # <<<<<<<<<<<<<<
  *     dtype = np.bool
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_binary); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 648, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_binary); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 660, __pyx_L1_error)
   if (__pyx_t_4) {
 
-    /* "cc3d.pyx":649
+    /* "cc3d.pyx":661
  *   dtype = labels.dtype
  *   if binary:
  *     dtype = np.bool             # <<<<<<<<<<<<<<
  * 
  *   class ImageIterator():
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 661, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_bool); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_bool); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 661, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_cur_scope->__pyx_v_dtype);
@@ -19718,7 +19718,7 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
     __Pyx_GIVEREF(__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "cc3d.pyx":648
+    /* "cc3d.pyx":660
  * 
  *   dtype = labels.dtype
  *   if binary:             # <<<<<<<<<<<<<<
@@ -19727,90 +19727,90 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
  */
   }
 
-  /* "cc3d.pyx":651
+  /* "cc3d.pyx":663
  *     dtype = np.bool
  * 
  *   class ImageIterator():             # <<<<<<<<<<<<<<
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)
  */
-  __pyx_t_3 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_ImageIterator, __pyx_n_s_series_locals_ImageIterator, (PyObject *) NULL, __pyx_n_s_cc3d, (PyObject *) NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 651, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_ImageIterator, __pyx_n_s_series_locals_ImageIterator, (PyObject *) NULL, __pyx_n_s_cc3d, (PyObject *) NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 663, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
 
-  /* "cc3d.pyx":652
+  /* "cc3d.pyx":664
  * 
  *   class ImageIterator():
  *     def __len__(self):             # <<<<<<<<<<<<<<
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_4cc3d_6series_13ImageIterator_1__len__, 0, __pyx_n_s_series_locals_ImageIterator___le, ((PyObject*)__pyx_cur_scope), __pyx_n_s_cc3d, __pyx_d, ((PyObject *)__pyx_codeobj__10)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 652, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_4cc3d_6series_13ImageIterator_1__len__, 0, __pyx_n_s_series_locals_ImageIterator___le, ((PyObject*)__pyx_cur_scope), __pyx_n_s_cc3d, __pyx_d, ((PyObject *)__pyx_codeobj__10)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 664, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_len, __pyx_t_1) < 0) __PYX_ERR(0, 652, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_len, __pyx_t_1) < 0) __PYX_ERR(0, 664, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cc3d.pyx":654
+  /* "cc3d.pyx":666
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):             # <<<<<<<<<<<<<<
  *       for key, rns in all_runs.items():
  *         if key == 0:
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_4cc3d_6series_13ImageIterator_3__iter__, 0, __pyx_n_s_series_locals_ImageIterator___it, ((PyObject*)__pyx_cur_scope), __pyx_n_s_cc3d, __pyx_d, ((PyObject *)__pyx_codeobj__12)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_4cc3d_6series_13ImageIterator_3__iter__, 0, __pyx_n_s_series_locals_ImageIterator___it, ((PyObject*)__pyx_cur_scope), __pyx_n_s_cc3d, __pyx_d, ((PyObject *)__pyx_codeobj__12)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 666, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_iter, __pyx_t_1) < 0) __PYX_ERR(0, 654, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_iter, __pyx_t_1) < 0) __PYX_ERR(0, 666, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cc3d.pyx":651
+  /* "cc3d.pyx":663
  *     dtype = np.bool
  * 
  *   class ImageIterator():             # <<<<<<<<<<<<<<
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)
  */
-  __pyx_t_1 = __Pyx_Py3ClassCreate(((PyObject*)&__Pyx_DefaultClassType), __pyx_n_s_ImageIterator, __pyx_empty_tuple, __pyx_t_3, NULL, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 651, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Py3ClassCreate(((PyObject*)&__Pyx_DefaultClassType), __pyx_n_s_ImageIterator, __pyx_empty_tuple, __pyx_t_3, NULL, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 663, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_ImageIterator = __pyx_t_1;
   __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "cc3d.pyx":662
+  /* "cc3d.pyx":674
  *         yield (key, img)
  * 
  *   class InPlaceImageIterator(ImageIterator):             # <<<<<<<<<<<<<<
  *     def __iter__(self):
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)
  */
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 674, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_v_ImageIterator);
   __Pyx_GIVEREF(__pyx_v_ImageIterator);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_v_ImageIterator);
-  __pyx_t_1 = __Pyx_CalculateMetaclass(NULL, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CalculateMetaclass(NULL, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 674, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_Py3MetaclassPrepare(__pyx_t_1, __pyx_t_3, __pyx_n_s_InPlaceImageIterator, __pyx_n_s_series_locals_InPlaceImageIterat_2, (PyObject *) NULL, __pyx_n_s_cc3d, (PyObject *) NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Py3MetaclassPrepare(__pyx_t_1, __pyx_t_3, __pyx_n_s_InPlaceImageIterator, __pyx_n_s_series_locals_InPlaceImageIterat_2, (PyObject *) NULL, __pyx_n_s_cc3d, (PyObject *) NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 674, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
 
-  /* "cc3d.pyx":663
+  /* "cc3d.pyx":675
  * 
  *   class InPlaceImageIterator(ImageIterator):
  *     def __iter__(self):             # <<<<<<<<<<<<<<
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)
  *       for key, rns in all_runs.items():
  */
-  __pyx_t_5 = __Pyx_CyFunction_New(&__pyx_mdef_4cc3d_6series_20InPlaceImageIterator_1__iter__, 0, __pyx_n_s_series_locals_InPlaceImageIterat, ((PyObject*)__pyx_cur_scope), __pyx_n_s_cc3d, __pyx_d, ((PyObject *)__pyx_codeobj__14)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 663, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_CyFunction_New(&__pyx_mdef_4cc3d_6series_20InPlaceImageIterator_1__iter__, 0, __pyx_n_s_series_locals_InPlaceImageIterat, ((PyObject*)__pyx_cur_scope), __pyx_n_s_cc3d, __pyx_d, ((PyObject *)__pyx_codeobj__14)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 675, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_iter, __pyx_t_5) < 0) __PYX_ERR(0, 663, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_iter, __pyx_t_5) < 0) __PYX_ERR(0, 675, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "cc3d.pyx":662
+  /* "cc3d.pyx":674
  *         yield (key, img)
  * 
  *   class InPlaceImageIterator(ImageIterator):             # <<<<<<<<<<<<<<
  *     def __iter__(self):
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)
  */
-  __pyx_t_5 = __Pyx_Py3ClassCreate(__pyx_t_1, __pyx_n_s_InPlaceImageIterator, __pyx_t_3, __pyx_t_2, NULL, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_Py3ClassCreate(__pyx_t_1, __pyx_n_s_InPlaceImageIterator, __pyx_t_3, __pyx_t_2, NULL, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 674, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_v_InPlaceImageIterator = __pyx_t_5;
   __pyx_t_5 = 0;
@@ -19818,30 +19818,30 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "cc3d.pyx":674
+  /* "cc3d.pyx":686
  *         erase(rns, img)
  * 
  *   if in_place:             # <<<<<<<<<<<<<<
  *     return InPlaceImageIterator()
  *   return ImageIterator()
  */
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_in_place); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 674, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_in_place); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 686, __pyx_L1_error)
   if (__pyx_t_4) {
 
-    /* "cc3d.pyx":675
+    /* "cc3d.pyx":687
  * 
  *   if in_place:
  *     return InPlaceImageIterator()             # <<<<<<<<<<<<<<
  *   return ImageIterator()
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_v_InPlaceImageIterator); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 675, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_v_InPlaceImageIterator); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 687, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_r = __pyx_t_3;
     __pyx_t_3 = 0;
     goto __pyx_L0;
 
-    /* "cc3d.pyx":674
+    /* "cc3d.pyx":686
  *         erase(rns, img)
  * 
  *   if in_place:             # <<<<<<<<<<<<<<
@@ -19850,13 +19850,13 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
  */
   }
 
-  /* "cc3d.pyx":676
+  /* "cc3d.pyx":688
  *   if in_place:
  *     return InPlaceImageIterator()
  *   return ImageIterator()             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_v_ImageIterator); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 676, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_v_ImageIterator); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 688, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
@@ -19866,8 +19866,8 @@ static PyObject *__pyx_pf_4cc3d_16series(CYTHON_UNUSED PyObject *__pyx_self, PyO
  *   return draw(0, runs, image)
  * 
  * def series(labels, binary=False, in_place=False):             # <<<<<<<<<<<<<<
- *   """Returns an iterator that """
- *   all_runs = runs(labels)
+ *   """
+ *   Returns an iterator that extracts each label from a dense labeling.
  */
 
   /* function exit code */
@@ -36311,41 +36311,41 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "cc3d.pyx":652
+  /* "cc3d.pyx":664
  * 
  *   class ImageIterator():
  *     def __len__(self):             # <<<<<<<<<<<<<<
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):
  */
-  __pyx_tuple__9 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 652, __pyx_L1_error)
+  __pyx_tuple__9 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 664, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
-  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_len, 652, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 652, __pyx_L1_error)
+  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_len, 664, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 664, __pyx_L1_error)
 
-  /* "cc3d.pyx":654
+  /* "cc3d.pyx":666
  *     def __len__(self):
  *       return len(all_runs) - int(0 in all_runs)
  *     def __iter__(self):             # <<<<<<<<<<<<<<
  *       for key, rns in all_runs.items():
  *         if key == 0:
  */
-  __pyx_tuple__11 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_key, __pyx_n_s_rns, __pyx_n_s_img); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 654, __pyx_L1_error)
+  __pyx_tuple__11 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_key, __pyx_n_s_rns, __pyx_n_s_img); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 666, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_iter, 654, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 654, __pyx_L1_error)
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_iter, 666, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 666, __pyx_L1_error)
 
-  /* "cc3d.pyx":663
+  /* "cc3d.pyx":675
  * 
  *   class InPlaceImageIterator(ImageIterator):
  *     def __iter__(self):             # <<<<<<<<<<<<<<
  *       img = np.zeros(labels.shape, dtype=dtype, order=order)
  *       for key, rns in all_runs.items():
  */
-  __pyx_tuple__13 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_img, __pyx_n_s_key, __pyx_n_s_rns); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 663, __pyx_L1_error)
+  __pyx_tuple__13 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_img, __pyx_n_s_key, __pyx_n_s_rns); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 675, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
-  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_iter, 663, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 663, __pyx_L1_error)
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cc3d_pyx, __pyx_n_s_iter, 675, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 675, __pyx_L1_error)
 
   /* "../.virtualenvs/cc3d/lib/python3.8/site-packages/numpy/__init__.pxd":884
  *         __pyx_import_array()
@@ -36661,8 +36661,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *   return draw(0, runs, image)
  * 
  * def series(labels, binary=False, in_place=False):             # <<<<<<<<<<<<<<
- *   """Returns an iterator that """
- *   all_runs = runs(labels)
+ *   """
+ *   Returns an iterator that extracts each label from a dense labeling.
  */
   __pyx_tuple__51 = PyTuple_Pack(8, __pyx_n_s_labels, __pyx_n_s_binary, __pyx_n_s_in_place, __pyx_n_s_all_runs, __pyx_n_s_order, __pyx_n_s_dtype, __pyx_n_s_ImageIterator, __pyx_n_s_InPlaceImageIterator); if (unlikely(!__pyx_tuple__51)) __PYX_ERR(0, 642, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__51);
@@ -36807,7 +36807,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_4cc3d___pyx_scope_struct__series.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_4cc3d___pyx_scope_struct__series = &__pyx_type_4cc3d___pyx_scope_struct__series;
-  if (PyType_Ready(&__pyx_type_4cc3d___pyx_scope_struct_1___iter__) < 0) __PYX_ERR(0, 654, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_4cc3d___pyx_scope_struct_1___iter__) < 0) __PYX_ERR(0, 666, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_4cc3d___pyx_scope_struct_1___iter__.tp_print = 0;
   #endif
@@ -36815,7 +36815,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_4cc3d___pyx_scope_struct_1___iter__.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_4cc3d___pyx_scope_struct_1___iter__ = &__pyx_type_4cc3d___pyx_scope_struct_1___iter__;
-  if (PyType_Ready(&__pyx_type_4cc3d___pyx_scope_struct_2___iter__) < 0) __PYX_ERR(0, 663, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_4cc3d___pyx_scope_struct_2___iter__) < 0) __PYX_ERR(0, 675, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_4cc3d___pyx_scope_struct_2___iter__.tp_print = 0;
   #endif
@@ -37519,8 +37519,8 @@ if (!__Pyx_RefNanny) {
  *   return draw(0, runs, image)
  * 
  * def series(labels, binary=False, in_place=False):             # <<<<<<<<<<<<<<
- *   """Returns an iterator that """
- *   all_runs = runs(labels)
+ *   """
+ *   Returns an iterator that extracts each label from a dense labeling.
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4cc3d_17series, NULL, __pyx_n_s_cc3d); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 642, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);

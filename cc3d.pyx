@@ -640,7 +640,19 @@ def erase(
   return draw(0, runs, image)
 
 def series(labels, binary=False, in_place=False):
-  """Returns an iterator that """
+  """
+  Returns an iterator that extracts each label from a dense labeling.
+
+  binary: create a binary image from each component (otherwise use the
+    same dtype and label value for the mask)
+  in_place: much faster but the resulting image will be read-only
+
+  Example:
+  for label, img in cc3d.series(labels, binary=False, in_place=False):
+    process(img)
+
+  Returns: iterator
+  """
   all_runs = runs(labels)
   order = 'F' if labels.flags['F_CONTIGUOUS'] else 'C'
 
