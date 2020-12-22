@@ -467,11 +467,11 @@ def test_compare_scipy_6():
   assert Ncc3d == Nscipy
   assert np.all(cc3d_labels == scipy_labels)
 
-@pytest.mark.skipif("sys.maxsize <= 2**33")
-@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
-def test_sixty_four_bit():
-  input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
-  cc3d.connected_components(input_labels, max_labels=3)  
+# @pytest.mark.skipif("sys.maxsize <= 2**33")
+# @pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
+# def test_sixty_four_bit():
+#   input_labels = np.ones((1626,1626,1626), dtype=np.uint8)
+#   cc3d.connected_components(input_labels, max_labels=3)  
 
 @pytest.mark.parametrize("size", (255,256))
 @pytest.mark.parametrize("zeroth_pass", (True,False))
@@ -544,6 +544,20 @@ def test_all_single_foreground(connectivity, dtype, order, lbl):
   labels = np.zeros((64,64,64), dtype=dtype, order=order) + lbl
   out = cc3d.connected_components(labels)
   assert np.all(out == 1)
+
+@pytest.mark.parametrize("dtype", OUT_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+@pytest.mark.parametrize("in_place", (True, False))
+@pytest.mark.parametrize("dims", (1,2,3))
+def test_each(dtype, order, in_place, dims):
+  shape = [128] * dims
+  labels = np.random.randint(0,3, shape, dtype=dtype)
+
+  for label, img in cc3d.each(labels, binary=False, in_place=in_place):
+    assert np.all(img == (label * (labels == label)))
+
+  for label, img in cc3d.each(labels, binary=True, in_place=in_place):
+    assert np.all(img == (labels == label))
 
 def test_region_graph_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
