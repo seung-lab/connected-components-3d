@@ -597,14 +597,21 @@ def region_graph(
 ## of a densely labeled image into a series of binary images.
 
 def runs(
-    cnp.ndarray[uint32_t, ndim=3, cast=True] labels
+    cnp.ndarray[UINT, ndim=3, cast=True] labels
   ):
   """
   Returns a dictionary describing where each label is located.
   Use this data in conjunction with render and erase.
   """
-  return extract_runs[uint32_t](&labels[0,0,0], labels.size)
-
+  if labels.dtype == np.uint16:
+    return extract_runs[uint16_t](<uint16_t*>&labels[0,0,0], labels.size)
+  elif labels.dtype == np.uint32:
+    return extract_runs[uint32_t](<uint32_t*>&labels[0,0,0], labels.size)
+  elif labels.dtype == np.uint64:
+    return extract_runs[uint64_t](<uint64_t*>&labels[0,0,0], labels.size)
+  else:
+    raise TypeError("Unsupported type: " + str(labels.dtype))
+    
 def draw(
   label, 
   vector[cpp_pair[size_t, size_t]] runs,

@@ -545,6 +545,16 @@ def test_all_single_foreground(connectivity, dtype, order, lbl):
   out = cc3d.connected_components(labels)
   assert np.all(out == 1)
 
+@pytest.mark.parametrize("dtype", OUT_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+# @pytest.mark.parametrize("binary", (True, False))
+@pytest.mark.parametrize("in_place", (True, False))
+def test_series(dtype, order, in_place):
+  labels = np.random.randint(0,3, (128,128,128), dtype=dtype)
+
+  for label, img in cc3d.series(labels, binary=False, in_place=in_place):
+    assert np.all(img == (label * (labels == label)))
+
 def test_region_graph_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
