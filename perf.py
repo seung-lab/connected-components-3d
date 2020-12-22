@@ -12,6 +12,11 @@ def cc3d_test_multilabel(labels):
   for segid in tqdm(range(1, N+1)):
     extracted = (res == segid)
 
+def cc3d_test_multilabel_series(labels):
+  res = cc3d.connected_components(labels)
+  for label, img in tqdm(cc3d.series(res, in_place=True)):
+    pass
+
 def ndimage_test_multilabel(labels):
   s = [
     [[1,1,1], [1,1,1], [1,1,1]],

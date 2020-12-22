@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <unordered_set>
+#include <map>
 #include <vector>
 
 namespace cc3d {
@@ -346,6 +347,59 @@ std::vector<T> extract_region_graph(
 	}
 
 	return output;
+}
+
+template <typename T>
+std::map<T, std::vector<std::pair<size_t, size_t>>> 
+extract_runs(T* labels, const size_t voxels) {
+	std::map<T, std::vector<std::pair<size_t, size_t>>> runs;
+	if (voxels == 0) {
+		return runs;
+	}
+
+	size_t cur = labels[0];
+	size_t start = 0; // of run
+
+	if (voxels == 1) {
+		runs[cur].push_back(std::pair<size_t,size_t>(0,1));
+		return runs;
+	}
+
+	size_t loc = 1;
+	for (loc = 1; loc < voxels; loc++) {
+		if (labels[loc] != cur) {
+			runs[cur].push_back(std::pair<size_t,size_t>(start,loc));
+			cur = labels[loc];
+			start = loc;
+		}
+	}
+
+	if (loc > start) {
+		runs[cur].push_back(std::pair<size_t,size_t>(start,voxels));
+	}
+
+	return runs;
+}
+
+template <typename T>
+void set_run_voxels(
+	const T val,
+	const std::vector<std::pair<size_t, size_t>> runs,
+	T* labels, const size_t voxels
+) {
+	for (std::pair<size_t, size_t> run : runs) {
+		if (
+			run.first < 0 || run.second > voxels 
+			|| run.second < 0 || run.second > voxels
+			|| run.first >= run.second
+		) {
+			throw std::runtime_error("Invalid run.");
+		}
+
+		for (size_t loc = run.first; loc < run.second; loc++) {
+			labels[loc] = val;
+		}
+	}
 }
 
 };
