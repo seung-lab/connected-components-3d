@@ -74,7 +74,7 @@ for segid in range(1, N+1):
 # if the image has many contiguous regions. A random image 
 # can be slower. binary=True yields binary images instead
 # of numbered images.
-for label, image in cc3d.series(labels_out, binary=False, in_place=True):
+for label, image in cc3d.each(labels_out, binary=False, in_place=True):
   process(image)
 
 # We also include a region adjacency graph function 
