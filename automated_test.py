@@ -554,6 +554,9 @@ def test_series(dtype, order, in_place):
 
   for label, img in cc3d.series(labels, binary=False, in_place=in_place):
     assert np.all(img == (label * (labels == label)))
+  
+  for label, img in cc3d.series(labels, binary=True, in_place=in_place):
+    assert np.all(img == (labels == label))
 
 def test_region_graph_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )

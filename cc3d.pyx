@@ -603,7 +603,9 @@ def runs(
   Returns a dictionary describing where each label is located.
   Use this data in conjunction with render and erase.
   """
-  if labels.dtype == np.uint16:
+  if labels.dtype in (np.uint8, np.bool):
+    return extract_runs[uint8_t](<uint8_t*>&labels[0,0,0], labels.size)
+  elif labels.dtype == np.uint16:
     return extract_runs[uint16_t](<uint16_t*>&labels[0,0,0], labels.size)
   elif labels.dtype == np.uint32:
     return extract_runs[uint32_t](<uint32_t*>&labels[0,0,0], labels.size)
@@ -622,7 +624,7 @@ def draw(
   runs.
   """
   if image.dtype == np.bool:
-    set_run_voxels[uint8_t](1, runs, <uint8_t*>&image[0,0,0], image.size)
+    set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
   elif image.dtype == np.uint8:
     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
   elif image.dtype == np.uint16:
