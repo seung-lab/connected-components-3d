@@ -1989,6 +1989,9 @@ static CYTHON_INLINE int __Pyx_PyList_Append(PyObject* list, PyObject* x) {
 static int __Pyx__ArgTypeTest(PyObject *obj, PyTypeObject *type, const char *name, int exact);
 
 #define __Pyx_BufPtrStrided3d(type, buf, i0, s0, i1, s1, i2, s2) (type)((char*)buf + i0 * s0 + i1 * s1 + i2 * s2)
+/* PyIntCompare.proto */
+static CYTHON_INLINE PyObject* __Pyx_PyInt_NeObjC(PyObject *op1, PyObject *op2, long intval, long inplace);
+
 /* None.proto */
 static CYTHON_INLINE void __Pyx_RaiseClosureNameError(const char *varname);
 
@@ -17468,7 +17471,7 @@ static PyObject *__pyx_pf_4cc3d_46draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_image), __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 626, __pyx_L1_error)
@@ -17488,11 +17491,12 @@ static PyObject *__pyx_pf_4cc3d_46draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
     /* "cc3d.pyx":627
  *   """
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  */
-    __pyx_t_2 = PyObject_RichCompare(__pyx_v_label, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_NeObjC(__pyx_v_label, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __pyx_t_5 = __Pyx_PyInt_As_uint8_t(__pyx_t_2); if (unlikely((__pyx_t_5 == ((uint8_t)-1)) && PyErr_Occurred())) __PYX_ERR(0, 627, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_6 = 0;
@@ -17525,7 +17529,7 @@ static PyObject *__pyx_pf_4cc3d_46draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
     goto __pyx_L3;
@@ -17533,7 +17537,7 @@ static PyObject *__pyx_pf_4cc3d_46draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
   /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -17553,7 +17557,7 @@ static PyObject *__pyx_pf_4cc3d_46draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
   if (__pyx_t_4) {
 
     /* "cc3d.pyx":629
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint16:
@@ -17588,7 +17592,7 @@ static PyObject *__pyx_pf_4cc3d_46draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
     /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -17975,7 +17979,7 @@ static PyObject *__pyx_pf_4cc3d_48draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_image), __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 626, __pyx_L1_error)
@@ -17995,11 +17999,12 @@ static PyObject *__pyx_pf_4cc3d_48draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
     /* "cc3d.pyx":627
  *   """
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  */
-    __pyx_t_2 = PyObject_RichCompare(__pyx_v_label, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_NeObjC(__pyx_v_label, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __pyx_t_5 = __Pyx_PyInt_As_uint8_t(__pyx_t_2); if (unlikely((__pyx_t_5 == ((uint8_t)-1)) && PyErr_Occurred())) __PYX_ERR(0, 627, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_6 = 0;
@@ -18032,7 +18037,7 @@ static PyObject *__pyx_pf_4cc3d_48draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
     goto __pyx_L3;
@@ -18040,7 +18045,7 @@ static PyObject *__pyx_pf_4cc3d_48draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
   /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -18060,7 +18065,7 @@ static PyObject *__pyx_pf_4cc3d_48draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
   if (__pyx_t_4) {
 
     /* "cc3d.pyx":629
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint16:
@@ -18095,7 +18100,7 @@ static PyObject *__pyx_pf_4cc3d_48draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
     /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -18482,7 +18487,7 @@ static PyObject *__pyx_pf_4cc3d_50draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_image), __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 626, __pyx_L1_error)
@@ -18502,11 +18507,12 @@ static PyObject *__pyx_pf_4cc3d_50draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
     /* "cc3d.pyx":627
  *   """
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  */
-    __pyx_t_2 = PyObject_RichCompare(__pyx_v_label, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_NeObjC(__pyx_v_label, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __pyx_t_5 = __Pyx_PyInt_As_uint8_t(__pyx_t_2); if (unlikely((__pyx_t_5 == ((uint8_t)-1)) && PyErr_Occurred())) __PYX_ERR(0, 627, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_6 = 0;
@@ -18539,7 +18545,7 @@ static PyObject *__pyx_pf_4cc3d_50draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
     goto __pyx_L3;
@@ -18547,7 +18553,7 @@ static PyObject *__pyx_pf_4cc3d_50draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
   /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -18567,7 +18573,7 @@ static PyObject *__pyx_pf_4cc3d_50draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
   if (__pyx_t_4) {
 
     /* "cc3d.pyx":629
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint16:
@@ -18602,7 +18608,7 @@ static PyObject *__pyx_pf_4cc3d_50draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
     /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -18989,7 +18995,7 @@ static PyObject *__pyx_pf_4cc3d_52draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_image), __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 626, __pyx_L1_error)
@@ -19009,11 +19015,12 @@ static PyObject *__pyx_pf_4cc3d_52draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
     /* "cc3d.pyx":627
  *   """
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  */
-    __pyx_t_2 = PyObject_RichCompare(__pyx_v_label, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_NeObjC(__pyx_v_label, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 627, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __pyx_t_5 = __Pyx_PyInt_As_uint8_t(__pyx_t_2); if (unlikely((__pyx_t_5 == ((uint8_t)-1)) && PyErr_Occurred())) __PYX_ERR(0, 627, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_6 = 0;
@@ -19046,7 +19053,7 @@ static PyObject *__pyx_pf_4cc3d_52draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
  *   runs.
  *   """
  *   if image.dtype == np.bool:             # <<<<<<<<<<<<<<
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  */
     goto __pyx_L3;
@@ -19054,7 +19061,7 @@ static PyObject *__pyx_pf_4cc3d_52draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
   /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -19074,7 +19081,7 @@ static PyObject *__pyx_pf_4cc3d_52draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
   if (__pyx_t_4) {
 
     /* "cc3d.pyx":629
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)             # <<<<<<<<<<<<<<
  *   elif image.dtype == np.uint16:
@@ -19109,7 +19116,7 @@ static PyObject *__pyx_pf_4cc3d_52draw(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
     /* "cc3d.pyx":628
  *   if image.dtype == np.bool:
- *     set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+ *     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint8:             # <<<<<<<<<<<<<<
  *     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
  *   elif image.dtype == np.uint16:
@@ -42700,6 +42707,73 @@ static CYTHON_INLINE int __Pyx_dict_iter_next(
         "Argument '%.200s' has incorrect type (expected %.200s, got %.200s)",
         name, type->tp_name, Py_TYPE(obj)->tp_name);
     return 0;
+}
+
+/* PyIntCompare */
+  static CYTHON_INLINE PyObject* __Pyx_PyInt_NeObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED long intval, CYTHON_UNUSED long inplace) {
+    if (op1 == op2) {
+        Py_RETURN_FALSE;
+    }
+    #if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_CheckExact(op1))) {
+        const long b = intval;
+        long a = PyInt_AS_LONG(op1);
+        if (a != b) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    }
+    #endif
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        int unequal;
+        unsigned long uintval;
+        Py_ssize_t size = Py_SIZE(op1);
+        const digit* digits = ((PyLongObject*)op1)->ob_digit;
+        if (intval == 0) {
+            if (size != 0) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+        } else if (intval < 0) {
+            if (size >= 0)
+                Py_RETURN_TRUE;
+            intval = -intval;
+            size = -size;
+        } else {
+            if (size <= 0)
+                Py_RETURN_TRUE;
+        }
+        uintval = (unsigned long) intval;
+#if PyLong_SHIFT * 4 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 4)) {
+            unequal = (size != 5) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[4] != ((uintval >> (4 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 3 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 3)) {
+            unequal = (size != 4) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 2 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 2)) {
+            unequal = (size != 3) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+#if PyLong_SHIFT * 1 < SIZEOF_LONG*8
+        if (uintval >> (PyLong_SHIFT * 1)) {
+            unequal = (size != 2) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
+                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
+        } else
+#endif
+            unequal = (size != 1) || (((unsigned long) digits[0]) != (uintval & (unsigned long) PyLong_MASK));
+        if (unequal != 0) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        const long b = intval;
+        double a = PyFloat_AS_DOUBLE(op1);
+        if ((double)a != (double)b) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    }
+    return (
+        PyObject_RichCompare(op1, op2, Py_NE));
 }
 
 /* None */

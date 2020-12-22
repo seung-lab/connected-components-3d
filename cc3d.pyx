@@ -624,7 +624,7 @@ def draw(
   runs.
   """
   if image.dtype == np.bool:
-    set_run_voxels[uint8_t](label > 0, runs, <uint8_t*>&image[0,0,0], image.size)
+    set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0,0,0], image.size)
   elif image.dtype == np.uint8:
     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0,0,0], image.size)
   elif image.dtype == np.uint16:
