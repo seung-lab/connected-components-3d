@@ -1041,50 +1041,23 @@ OUT* connected_components2d_8_bbdt(
   const int64_t W = +1 + sx;
 
   int64_t loc = 0;
+  int64_t oloc = 0;
   OUT next_label = 0;
-
-#define ASSIGN_Y(value) \
-  out_labels[loc + Y] = (value); \
-  if (x < sx - 1 && in_labels[loc + Z]) { \
-    out_labels[loc + Z] = (value); \
-  } \
-  if (y < sy - 1 && in_labels[loc + X]) { \
-    out_labels[loc + X] = (value); \
-  } \
-  if (x < sx - 1 && y < sy - 1 && in_labels[loc + W]) { \
-    out_labels[loc + W] = (value); \
-  }
-
-#define ASSIGN_Z(value) \
-    out_labels[loc + Z] = (value); \
-    if (y < sy - 1 && in_labels[loc + X]) { \
-      out_labels[loc + X] = (value); \
-    } \
-    if (y < sy - 1 && in_labels[loc + W]) { \
-      out_labels[loc + W] = (value); \
-    }
-
-#define ASSIGN_X(value) \
-  out_labels[loc + X] = (value); \
-  if (x < sx - 1 && in_labels[loc + W]) { \
-    out_labels[loc + W] = (value); \
-  }
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
   for (int64_t y = 0; y < sy; y += 2) {
-    for (int64_t x = 0; x < sx; x += 2) {
-      loc = x + sx * y;
+    for (int64_t x = 0; x < sx; x += 2, loc += 2, oloc++) {
 
       if (in_labels[loc + Y]) {
         if (y > 0 && in_labels[loc + D]) {
-          ASSIGN_Y(out_labels[loc + D]);
+          out_labels[oloc] = out_labels[loc + D];
           if (x < sx - 2 && in_labels[loc + Z] && !in_labels[loc + E] && in_labels[loc + F]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
           }
         }
         else if (y > 0 && x < sx - 1 && in_labels[loc + E]) {
-          ASSIGN_Y(out_labels[loc + E]);
+          out_labels[oloc] = out_labels[loc + E];
           if (x > 0 && in_labels[loc + B]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + B]);
           }
@@ -1099,13 +1072,13 @@ OUT* connected_components2d_8_bbdt(
           }
         }
         else if (x > 0 && in_labels[loc + B]) {
-          ASSIGN_Y(out_labels[loc + B]);
+          out_labels[oloc] = out_labels[loc + B];
           if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
           }            
         }
         else if (x > 0 && y > 0 && in_labels[loc + C]) {
-          ASSIGN_Y(out_labels[loc + C]);
+          out_labels[oloc] = out_labels[loc + C];
           if (y < sy - 1 && in_labels[loc + A]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + A]);
           }
@@ -1114,23 +1087,23 @@ OUT* connected_components2d_8_bbdt(
           }            
         }
         else if (x > 0 && y < sx - 1 && in_labels[loc + A]) {
-          ASSIGN_Y(out_labels[loc + A]);
+          out_labels[oloc] = out_labels[loc + A];
           if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
             equivalences.unify(out_labels[loc + Y], out_labels[loc + F]);
           }            
         }
         else if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
-          ASSIGN_Y(out_labels[loc + F]);
+          out_labels[oloc] = out_labels[loc + F];
         }
         else {
           next_label++;
-          ASSIGN_Y(next_label);
+          out_labels[oloc] = next_label;
           equivalences.add(next_label);            
         }
       }
       else if (x < sx - 1 && in_labels[loc + Z]) {
         if (y > 0 && in_labels[loc + E]) {
-          ASSIGN_Z(out_labels[loc + E]);
+          out_labels[oloc] = out_labels[loc + E];
           if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
             if (in_labels[loc + B]) {
               equivalences.unify(out_labels[loc + X], out_labels[loc + B]);   
@@ -1141,7 +1114,7 @@ OUT* connected_components2d_8_bbdt(
           }            
         }
         else if (y > 0 && in_labels[loc + D]) {
-          ASSIGN_Z(out_labels[loc + D]);
+          out_labels[oloc] = out_labels[loc + D];
           if (x < sx - 2 && in_labels[loc + F]) {
             equivalences.unify(out_labels[loc + Z], out_labels[loc + F]);
           }
@@ -1160,7 +1133,7 @@ OUT* connected_components2d_8_bbdt(
           }
         }
         else if (x < sx - 2 && y > 0 && in_labels[loc + F]) {
-          ASSIGN_Z(out_labels[loc + F]);
+          out_labels[oloc] = out_labels[loc + F];
           if (x > 0 && y < sy - 1 && in_labels[loc + X]) {
             if (in_labels[loc + B]) {
               equivalences.unify(out_labels[loc + X], out_labels[loc + B]);   
@@ -1172,14 +1145,14 @@ OUT* connected_components2d_8_bbdt(
         }
         else if (y < sy - 1 && in_labels[loc + X]) {
           if (x > 0 && in_labels[loc + B]) {
-            ASSIGN_Z(out_labels[loc + B]);
+            out_labels[oloc] = out_labels[loc + B];
           }
           else if (x > 0 && in_labels[loc + A]) {
-            ASSIGN_Z(out_labels[loc + A]);
+            out_labels[oloc] = out_labels[loc + A];
           }
           else {
             next_label++;
-            ASSIGN_Z(next_label);
+            out_labels[oloc] = next_label;
             equivalences.add(next_label);
           }
         }
@@ -1194,14 +1167,14 @@ OUT* connected_components2d_8_bbdt(
       }
       else if (y < sy - 1 && in_labels[loc + X]) {
         if (x > 0 && in_labels[loc + B]) {
-          ASSIGN_X(out_labels[loc + B]);
+          out_labels[oloc] = out_labels[loc + B];
         }
         else if (x > 0 && in_labels[loc + A]) {
-          ASSIGN_X(out_labels[loc + A]); 
+          out_labels[oloc] = out_labels[loc + A];
         }    
         else {
           next_label++;
-          ASSIGN_X(next_label);
+          out_labels[oloc] = next_label;
           equivalences.add(next_label);
         }      
       }
@@ -1213,11 +1186,36 @@ OUT* connected_components2d_8_bbdt(
     }
   }
 
-#undef ASSIGN_X
-#undef ASSIGN_Y
-#undef ASSIGN_Z
+  int64_t num_labels = next_label;
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences);
+  OUT label;
+  OUT* renumber = new OUT[num_labels + 1]();
+  next_label = 1;
+
+  for (int64_t i = 1; i <= num_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
+      renumber[label] = next_label;
+      renumber[i] = next_label;
+      next_label++;
+    }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  // Raster Scan 2: Write final labels based on equivalences
+  for (int64_t y = sy - 1; y >= 0; y--) {
+    for (int64_t x = sx - 1; x >= 0; x--) {
+      loc = x + sx * y;
+      oloc = (x >> 1) + sx * (y >> 1);
+      out_labels[loc] = renumber[out_labels[oloc]];
+    }
+  }
+
+  delete[] renumber;
+
+  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
