@@ -1040,11 +1040,12 @@ OUT* connected_components2d_8_bbdt(
   const int64_t Z = +1;
   const int64_t W = +1 + sx;
 
-  const int64_t oA = -1 + ((sx+1) / 2);
+  // output offsets
+  const int64_t oA = -1;
   const int64_t oB = -1;
   const int64_t oC = -1 - ((sx+1) / 2);
   const int64_t oD = -((sx+1) / 2);
-  const int64_t oE = +0 - ((sx+1) / 2);
+  const int64_t oE = -((sx+1) / 2);
   const int64_t oF = +1 - ((sx+1) / 2);
 
   int64_t loc = 0;
