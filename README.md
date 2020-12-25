@@ -178,15 +178,17 @@ Fig 2. The mask for the lower plane in 3D.
 
 As `e` is connected to all other voxels, if present, it can simply be copied. If `e` is absent, `b` and `h` fully cover the mask. If `b` is absent, `h`, `a`, `c` comprise a covering. If `h` is absent, `b`, `g`, `i` are one. Below is a list of coverings such that each proceeding entry in the list assumes the first letters in the entries above are background.
 
-1. `e`
-2. `b`, (`h` | `g`, `i`)
-3. `h`, `a`, `c`
-4. `d`, (`f` | `c`, `i`)
-5. `f`, `g`, `a`
-6. `a`, `c`, `g`, `i`
-7. `c`, `g`, `i`
-8. `g`, `i`
-9. `i`
+ 1. `e`
+ 2. `k`, (`h` | `g`, `i`)
+ 3. `b`, (`h` | `g`, `i`)
+ 4. `h`, `a`, `c`
+ 5. `m`, (`f` | `c`, `i`)
+ 6. `d`, (`f` | `c`, `i`)
+ 7. `f`, `g`, `a`
+ 8. `a`, `c`, `g`, `i`
+ 9. `c`, `g`, `i`
+10. `g`, `i`
+11. `i`
 
 The decision tree is then constructed such that each of these coverings will be evaluated using the fewest unifications possible. It's possible to further optimize this by noting that `e` and `b` are both fully connected to the upper 2D mask. Therefore, if either of them are present, we can skip the 8-connected unification step. It's also possible to try the DF covering first if B is background, which would save one unification versus HAC given even statistics, but it seems to be slightly slower on the dataset I attempted. To move from binary data to multilabel data, I simply replaced tests for foreground and background with tests for matching labels.
 
