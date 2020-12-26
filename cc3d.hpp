@@ -1216,8 +1216,8 @@ OUT* connected_components2d_8_bbdt(
   loc = voxels - 1;
   for (int64_t y = sy - 1; y >= 0; y--) {
     for (int64_t x = sx - 1; x >= 0; x--, loc--) {
-      oloc = (x / 2) + (sx / 2) * (y / 2);
-      out_labels[loc] = ~(static_cast<OUT>(in_labels[loc] != 0) - 1) & renumber[out_labels[oloc]];
+      oloc = (x >> 1) + (sx >> 1) * (y >> 1);
+      out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
     }
   }
 
