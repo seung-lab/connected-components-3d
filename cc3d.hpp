@@ -1213,8 +1213,7 @@ OUT* connected_components2d_8_bbdt(
     for (int64_t x = sx - 1; x >= 0; x--) {
       loc = x + sx * y;  
       oloc = (x / 2) + (sx / 2) * (y / 2);
-      // printf("<%d,%d> loc: %d oloc: %d label: %d\n", x, y, loc, oloc, out_labels[oloc]);
-      out_labels[loc] = (in_labels[loc] != 0) * renumber[out_labels[oloc]];
+      out_labels[loc] = ~(static_cast<OUT>(in_labels[loc] > 0) - 1) & renumber[out_labels[oloc]];
     }
   }
 
