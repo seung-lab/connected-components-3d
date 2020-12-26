@@ -1054,8 +1054,9 @@ OUT* connected_components2d_8_bbdt(
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
-  for (int64_t y = 0; y < sy; y += 2, loc += sx) {
-    for (int64_t x = 0; x < sx; x += 2, loc += 2, oloc++) {
+  for (int64_t y = 0; y < sy; y += 2) {
+    for (int64_t x = 0; x < sx; x += 2, oloc++) {
+      loc = x + sx * y;
       if (in_labels[loc + Y]) {
         if (y > 0 && in_labels[loc + D]) {
           out_labels[oloc] = out_labels[oloc + oD];
