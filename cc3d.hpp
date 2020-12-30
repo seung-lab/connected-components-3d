@@ -297,6 +297,50 @@ OUT* relabel(
   return out_labels;
 }
 
+template <typename OUT = uint32_t>
+OUT* relabel(
+    OUT* out_labels, const int64_t sx, const int64_t sy, const int64_t sz,
+    const int64_t num_labels, DisjointSet<OUT> &equivalences,
+    size_t &N, const int64_t *runs
+  ) {
+
+  const int64_t voxels = sx * sy * sz;
+
+  if (num_labels <= 1) {
+    return out_labels;
+  }
+
+  OUT label;
+  OUT* renumber = new OUT[num_labels + 1]();
+  OUT next_label = 1;
+
+  for (int64_t i = 1; i <= num_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
+      renumber[label] = next_label;
+      renumber[i] = next_label;
+      next_label++;
+    }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  // Raster Scan 2: Write final labels based on equivalences
+  for (int64_t row = 0; row < sy * sz; row++) {
+    int64_t xstart = runs[row << 1];
+    int64_t xend = runs[row << 1];
+    for (int64_t loc = sx * row + xstart; loc <= sx * row + xend; loc++) {
+      out_labels[loc] = renumber[out_labels[loc]];
+    }
+  }
+
+  delete[] renumber;
+
+  N = next_label - 1;
+  return out_labels;
+}
+
 template <typename T>
 size_t zeroth_pass_expt(
   T* in_labels, const int64_t sx, const int64_t voxels, int64_t *runs
@@ -395,7 +439,7 @@ OUT* connected_components3d_26(
       const int xstart = runs[row << 1];
       const int xend = runs[(row << 1) + 1];
 
-      for (int32_t x = xstart; x < xend; x++) {
+      for (int32_t x = xstart; x <= xend; x++) {
         loc = x + sx * y + sxy * z;
         const T cur = in_labels[loc];
 
@@ -577,9 +621,11 @@ OUT* connected_components3d_26(
     }
   }
 
-  delete[] runs;
+  
 
-  return relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
+  OUT* wow = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  delete[] runs;
+  return wow;
 }
 
 template <typename T, typename OUT = uint32_t>
