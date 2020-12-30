@@ -330,7 +330,7 @@ OUT* relabel(
   for (int64_t row = 0; row < sy * sz; row++) {
     int64_t xstart = runs[row << 1];
     int64_t xend = runs[row << 1];
-    for (int64_t loc = sx * row + xstart; loc <= sx * row + xend; loc++) {
+    for (int64_t loc = sx * row + xstart; loc < sx * row + xend; loc++) {
       out_labels[loc] = renumber[out_labels[loc]];
     }
   }
@@ -356,7 +356,7 @@ size_t zeroth_pass_expt(
         if (!runs[index]) {
           runs[index] = x;
         }
-        runs[index+1] = x;
+        runs[index+1] = x + 1;
       }
     }
   }
@@ -434,12 +434,13 @@ OUT* connected_components3d_26(
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
   int64_t row = 0;
+  size_t itr = 0;
   for (int32_t z = 0; z < sz; z++) {
     for (int32_t y = 0; y < sy; y++, row++) {
       const int xstart = runs[row << 1];
       const int xend = runs[(row << 1) + 1];
 
-      for (int32_t x = xstart; x <= xend; x++) {
+      for (int32_t x = xstart; x < xend; x++, itr++) {
         loc = x + sx * y + sxy * z;
         const T cur = in_labels[loc];
 
@@ -621,6 +622,7 @@ OUT* connected_components3d_26(
     }
   }
 
+  printf("itr: %llu\n", itr);
   
 
   OUT* wow = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
