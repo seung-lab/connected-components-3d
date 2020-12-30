@@ -549,6 +549,8 @@ def test_all_single_foreground(connectivity, dtype, order, lbl):
 @pytest.mark.parametrize("order", ("C", "F"))
 @pytest.mark.parametrize("in_place", (True, False))
 @pytest.mark.parametrize("dims", (1,2,3))
+@pytest.mark.skipif(platform='win32')
+@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
 def test_each(dtype, order, in_place, dims):
   shape = [128] * dims
   labels = np.random.randint(0,3, shape, dtype=dtype)
