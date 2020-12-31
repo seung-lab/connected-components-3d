@@ -620,9 +620,10 @@ OUT* connected_components3d_26(
   }
   
 
-  OUT* wow = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  // out_labels = relabel<OUT>(out_labels, voxels, next_label, equivalences, N);
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
   delete[] runs;
-  return wow;
+  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
