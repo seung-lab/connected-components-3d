@@ -482,7 +482,7 @@ def test_stress_upper_bound_for_binary_6(size, zeroth_pass):
       off = (y + (z % 2)) % 2
       labels[off::2,y,z] = True
 
-  out = cc3d.connected_components(labels, connectivity=6, zeroth_pass=zeroth_pass)
+  out = cc3d.connected_components(labels, connectivity=6)#, zeroth_pass=zeroth_pass)
   assert np.max(out) + 1 <= (256**3) // 2 + 1
 
 @pytest.mark.parametrize("size", (255,256))
@@ -491,7 +491,7 @@ def test_stress_upper_bound_for_binary_8(size, zeroth_pass):
   labels = np.zeros((size,size), dtype=np.bool)
   labels[0::2,0::2] = True
 
-  out = cc3d.connected_components(labels, connectivity=8, zeroth_pass=zeroth_pass)
+  out = cc3d.connected_components(labels, connectivity=8)#, zeroth_pass=zeroth_pass)
   assert np.max(out) + 1 <= (256**2) // 4 + 1
 
   for _ in range(10):
@@ -506,12 +506,12 @@ def test_stress_upper_bound_for_binary_18(size, zeroth_pass):
   labels[::2,::2,::2] = True
   labels[1::2,1::2,::2] = True
 
-  out = cc3d.connected_components(labels, connectivity=18, zeroth_pass=zeroth_pass)
+  out = cc3d.connected_components(labels, connectivity=18)#, zeroth_pass=zeroth_pass)
   assert np.max(out) + 1 <= (256**3) // 4 + 1
 
   for _ in range(10):
     labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=18, zeroth_pass=zeroth_pass)
+    out = cc3d.connected_components(labels, connectivity=18)#, zeroth_pass=zeroth_pass)
     assert np.max(out) + 1 <= (256**3) // 4 + 1
 
 @pytest.mark.parametrize("size", (255,256))
@@ -520,12 +520,12 @@ def test_stress_upper_bound_for_binary_26(size, zeroth_pass):
   labels = np.zeros((size,size,size), dtype=np.bool)
   labels[::2,::2,::2] = True
 
-  out = cc3d.connected_components(labels, connectivity=26, zeroth_pass=zeroth_pass)
+  out = cc3d.connected_components(labels, connectivity=26)#, zeroth_pass=zeroth_pass)
   assert np.max(out) + 1 <= (256**3) // 8 + 1
 
   for _ in range(10):
     labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
-    out = cc3d.connected_components(labels, connectivity=26, zeroth_pass=zeroth_pass)
+    out = cc3d.connected_components(labels, connectivity=26)#, zeroth_pass=zeroth_pass)
     assert np.max(out) + 1 <= (256**3) // 8 + 1
 
 @pytest.mark.parametrize("connectivity", (8, 18, 26))

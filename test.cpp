@@ -65,15 +65,15 @@ int main () {
   typedef std::chrono::milliseconds ms;
   typedef std::chrono::duration<float> fsec;
   auto t0 = Time::now();
-
-  for (int i = 0; i < 1; i++) {
+  int N = 1;
+  for (int i = 0; i < N; i++) {
 		cc3d::connected_components3d<uint32_t, uint32_t>(subvol, sx,sy,sz, 26);
 	}
 
   auto t1 = Time::now();
   fsec fs = t1 - t0;
   ms d = std::chrono::duration_cast<ms>(fs);
-  std::cout << d.count() << "ms\n";
+  std::cout << d.count() / N << "ms\n";
 
 	return 0;
 }

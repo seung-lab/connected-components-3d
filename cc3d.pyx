@@ -55,9 +55,6 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     int64_t max_labels, int64_t connectivity,
     U* out_labels, size_t &N
   )
-  cdef size_t zeroth_pass[T](
-    T* in_labels, int64_t sx, int64_t voxels
-  )
 
 cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
   cdef OUT* extract_voxel_connectivity_graph[T,OUT](
@@ -132,41 +129,14 @@ cdef int64_t even_ceil(int64_t N):
     return N << 1
   return N
 
-def compute_zeroth_pass(data):
-  cdef uint8_t[:] arr_memview8u
-  cdef uint16_t[:] arr_memview16u
-  cdef uint32_t[:] arr_memview32u
-  cdef uint64_t[:] arr_memview64u
-
-  dtype = data.dtype
-  sx = data.shape[0]
-  data = reshape(data, (data.size,))
-
-  if dtype in (np.uint64, np.int64):
-    arr_memview64u = data.view(np.uint64)
-    return zeroth_pass[uint64_t](&arr_memview64u[0], sx, data.size)
-  elif dtype in (np.uint32, np.int32):
-    arr_memview32u = data.view(np.uint32)
-    return zeroth_pass[uint32_t](&arr_memview32u[0], sx, data.size)
-  elif dtype in (np.uint16, np.int16):
-    arr_memview16u = data.view(np.uint16)
-    return zeroth_pass[uint16_t](&arr_memview16u[0], sx, data.size)
-  elif dtype in (np.uint8, np.int8, np.bool):
-    arr_memview8u = data.view(np.uint8)
-    return zeroth_pass[uint8_t](&arr_memview8u[0], sx, data.size)
-  else:
-    raise TypeError("Type {} not currently supported.".format(dtype))
-
 def connected_components(
   data, int64_t max_labels=-1, 
-  int64_t connectivity=26, bool zeroth_pass=True,
-  bool return_N=False
+  int64_t connectivity=26, bool return_N=False
 ):
   """
   ndarray connected_components(
     data, max_labels=-1, 
-    connectivity=26, zeroth_pass=True,
-    return_N=False
+    connectivity=26, return_N=False
   )
 
   Connected components applied to 3D images with 
@@ -182,21 +152,6 @@ def connected_components(
       For 3D images, 6 (voxel faces), 18 (+edges), or 26 (+corners)
       If the input image is 2D, you may specify 4 (pixel faces) or
         8 (+corners).
-    zeroth_pass (bool): if True, perform a preliminary pass to
-      compute an estimate of the number of provisional labels.
-
-      The hope is that this extra pass will reduce memory usage 
-      and improve execution time by avoiding unnecesary
-      memory initializations.
-
-      For some high performance situations with known quantities, it 
-      may make more sense to provide a manual estimate of max_labels 
-      and switch this off, but unless you know what you're doing keep
-      this enabled.
-
-      The name "zeroth pass" is in reference to the Rosenfeld and Pfaltz
-      two-pass scheme which consists of a scan for equivalences and then
-      a second pass for relabeling that this CCL variant is derived from.
     return_N (bool): if True, also return the number of connected components
       as the second argument of a return tuple.
 
@@ -258,9 +213,6 @@ def connected_components(
   if max_labels <= 0:
     max_labels = voxels
   max_labels = min(max_labels, voxels)
-
-  if zeroth_pass:
-    max_labels = min(max_labels, compute_zeroth_pass(data) + 1)
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
