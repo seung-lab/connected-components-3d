@@ -30,7 +30,27 @@ void print(int *input, int sx, int sy, int sz) {
 	}
 }
 
+uint32_t* read_subvol() {
+	const size_t voxels = 512 * 512 * 512;
+	uint32_t* input = new uint32_t[voxels]();
+  FILE *readPtr = fopen("subvol.bin", "rb");
+  fread(input, sizeof(uint32_t), voxels, readPtr);
+  fclose(readPtr);
+  return input;
+}
 
+uint32_t* randomvol() {
+	size_t sx = 512;
+	size_t sy = 512;
+	size_t sz = 512;
+	size_t voxels = sx * sy * sz;
+
+	uint32_t *big = new uint32_t[sx*sy*sz]();
+	for (uint32_t i = 0; i < voxels; i++) {
+		big[i] = rand() % 10;
+	}
+	return big;
+}
 
 int main () {
 
@@ -39,73 +59,21 @@ int main () {
 	size_t sz = 512;
 	size_t voxels = sx * sy * sz;
 
-	int *big = new int[sx*sy*sz]();
-	for (int i = 0; i < voxels; i++) {
-		big[i] = rand() % 10;
+	uint32_t* subvol = read_subvol();
+
+  typedef std::chrono::high_resolution_clock Time;
+  typedef std::chrono::milliseconds ms;
+  typedef std::chrono::duration<float> fsec;
+  auto t0 = Time::now();
+
+  for (int i = 0; i < 1; i++) {
+		cc3d::connected_components3d<uint32_t, uint32_t>(subvol, sx,sy,sz, 26);
 	}
 
-	// printf("%d\n", big[5]);
-	
-	// printf("%u %u\n", p.first, p.second);
-    typedef std::chrono::high_resolution_clock Time;
-    typedef std::chrono::milliseconds ms;
-    typedef std::chrono::duration<float> fsec;
-    auto t0 = Time::now();
-	// size_t p = cc3d::zeroth_pass<int>(big, voxels);
-//	std::pair<size_t, bool> p = cc3d::zeroth_pass<int>(big, voxels);
-cc3d::connected_components3d<int, uint32_t>(big, sx,sy,sz, 26);
-    auto t1 = Time::now();
-    fsec fs = t1 - t0;
-    ms d = std::chrono::duration_cast<ms>(fs);
-    //std::cout << fs.count() << "s\n";
-    std::cout << d.count() << "ms\n";
-	
-    //printf("%d\n", p.first);
-	// cc3d::connected_components3d<int, uint32_t>(big, sx,sy,sz, 26);	
-
-
-	// int twod[25] = {
-	// 	1,1,0,1,1,
-	// 	0,0,1,0,0,
-	// 	1,1,0,1,1,
-	// 	0,0,1,0,0,
-	// 	2,2,2,2,2
-	// };
-
-	// int threed[27] = {
-	// 	1,1,0,
-	// 	0,0,1,
-	// 	0,0,1,
-
-	// 	0,0,0,
-	// 	0,0,1,
-	// 	1,0,1,
-
-	// 	0,0,0,
-	// 	0,1,1,
-	// 	0,0,1
-	// };
-
-	// printf("INPUT\n");
-	// print(twod, 5,5,1);
-
-	// uint16_t *y = cc3d::connected_components3d(twod, 5,5,1);
-	// printf("OUTPUT\n");
-	// print(y, 5,5,1);
-
-
-
-	// cc3d::DisjointSet<int> djs;
-	// printf("\nDISJOINT SET\n");
-	// printf("root 5: %d\n", djs.root(5));
-
-	// djs.unify(1,2);
-	// printf("root 1: %d\n", djs.root(1));
-	// printf("root 2: %d\n", djs.root(2));
-	// printf("root 1: %d\n", djs.root(1));
-	// printf("root 2: %d\n", djs.root(2));
-	// printf("root 1: %d\n", djs.root(1));
-	// printf("root 2: %d\n", djs.root(2));
+  auto t1 = Time::now();
+  fsec fs = t1 - t0;
+  ms d = std::chrono::duration_cast<ms>(fs);
+  std::cout << d.count() << "ms\n";
 
 	return 0;
 }
