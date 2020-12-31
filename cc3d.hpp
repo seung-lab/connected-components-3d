@@ -301,7 +301,7 @@ template <typename OUT = uint32_t>
 OUT* relabel(
     OUT* out_labels, const int64_t sx, const int64_t sy, const int64_t sz,
     const int64_t num_labels, DisjointSet<OUT> &equivalences,
-    size_t &N, const int64_t *runs
+    size_t &N, const uint32_t *runs
   ) {
 
   const int64_t voxels = sx * sy * sz;
@@ -342,26 +342,27 @@ OUT* relabel(
 }
 
 template <typename T>
-size_t zeroth_pass_expt(
-  T* in_labels, const int64_t sx, const int64_t voxels, int64_t *runs
+size_t zeroth_pass(
+  T* in_labels, const int64_t sx, const int64_t voxels, uint32_t *runs
 ) {
-  size_t count = 0;
+  size_t count = 0; // number of transitions between labels
   int64_t row = 0;
   for (int64_t loc = 0; loc < voxels; loc += sx, row++) {
     count += (in_labels[loc] != 0);
     size_t index = (row << 1);
-    runs[index]   = (in_labels[loc] != 0);
-    runs[index+1] = (in_labels[loc] != 0);
+    // runs: start and end indices of the foreground on each row
+    runs[index]   = static_cast<uint32_t>(in_labels[loc] != 0);
+    runs[index+1] = static_cast<uint32_t>(in_labels[loc] != 0);
     for (int64_t x = 1; x < sx; x++) {
       count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
       if (in_labels[loc + x]) {
         if (!runs[index]) {
-          runs[index] = x;
+          runs[index] = static_cast<uint32_t>(x);
         }
-        runs[index+1] = x + 1;
+        runs[index+1] = static_cast<uint32_t>(x + 1);
       }
     }
-    runs[index] -= (in_labels[loc] != 0);
+    runs[index] -= static_cast<uint32_t>(in_labels[loc] != 0);
   }
 
   return count;
@@ -377,8 +378,8 @@ OUT* connected_components3d_26(
 	const int64_t sxy = sx * sy;
 	const int64_t voxels = sxy * sz;
 
-  int64_t *runs = new int64_t[2*sy*sz]();
-  max_labels = zeroth_pass_expt<T>(in_labels, sx, voxels, runs);
+  uint32_t *runs = new uint32_t[2*sy*sz]();
+  max_labels = zeroth_pass<T>(in_labels, sx, voxels, runs) + 1;
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -432,12 +433,12 @@ OUT* connected_components3d_26(
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
   int64_t row = 0;
-  for (int z = 0; z < sz; z++) {
-    for (int y = 0; y < sy; y++, row++) {
-      const int xstart = runs[row << 1];
-      const int xend = runs[(row << 1) + 1];
+  for (int64_t z = 0; z < sz; z++) {
+    for (int64_t y = 0; y < sy; y++, row++) {
+      const int64_t xstart = runs[row << 1];
+      const int64_t xend = runs[(row << 1) + 1];
 
-      for (int x = xstart; x < xend; x++) {
+      for (int64_t x = xstart; x < xend; x++) {
         loc = x + sx * y + sxy * z;
         const T cur = in_labels[loc];
 
