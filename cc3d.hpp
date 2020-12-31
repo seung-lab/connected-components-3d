@@ -298,19 +298,23 @@ size_t zeroth_pass(
   for (int64_t loc = 0; loc < voxels; loc += sx, row++) {
     count += (in_labels[loc] != 0);
     size_t index = (row << 1);
-    // runs: start and end indices of the foreground on each row
-    runs[index]   = static_cast<uint32_t>(in_labels[loc] != 0);
-    runs[index+1] = static_cast<uint32_t>(in_labels[loc] != 0);
+    // count number of label transitions
     for (int64_t x = 1; x < sx; x++) {
       count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+    }
+    // runs: start and end indices of the foreground on each row
+    for (int64_t x = 0; x < sx; x++) {
       if (in_labels[loc + x]) {
-        if (!runs[index]) {
           runs[index] = static_cast<uint32_t>(x);
-        }
-        runs[index+1] = static_cast<uint32_t>(x + 1);
+          break;
       }
     }
-    runs[index] -= static_cast<uint32_t>(in_labels[loc] != 0);
+    for (int64_t x = sx - 1; x >= runs[index]; x--) {
+      if (in_labels[loc + x]) {
+        runs[index+1] = static_cast<uint32_t>(x + 1);
+        break;
+      }
+    }
   }
 
   return count;
