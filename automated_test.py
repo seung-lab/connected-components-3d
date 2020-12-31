@@ -395,8 +395,8 @@ def test_3d_cross_asymmetrical(dtype):
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
-@pytest.mark.skipif(platform='win32')
-@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows 32-bit not supported.")
+@pytest.mark.xpass(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
 def test_512_cube_no_segfault_no_jitsu(): 
   input_labels = np.arange(0, 512 ** 3).astype(np.uint64).reshape((512,512,512))
   output_labels = cc3d.connected_components(input_labels)
@@ -549,8 +549,8 @@ def test_all_single_foreground(connectivity, dtype, order, lbl):
 @pytest.mark.parametrize("order", ("C", "F"))
 @pytest.mark.parametrize("in_place", (True, False))
 @pytest.mark.parametrize("dims", (1,2,3))
-@pytest.mark.skipif(platform='win32')
-@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows 32-bit not supported.")
+@pytest.mark.xpass(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
 def test_each(dtype, order, in_place, dims):
   shape = [128] * dims
   labels = np.random.randint(0,3, shape, dtype=dtype)
