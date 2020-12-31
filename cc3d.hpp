@@ -329,7 +329,7 @@ OUT* relabel(
   // Raster Scan 2: Write final labels based on equivalences
   for (int64_t row = 0; row < sy * sz; row++) {
     int64_t xstart = runs[row << 1];
-    int64_t xend = runs[row << 1];
+    int64_t xend = runs[(row << 1) + 1];
     for (int64_t loc = sx * row + xstart; loc < sx * row + xend; loc++) {
       out_labels[loc] = renumber[out_labels[loc]];
     }
@@ -350,6 +350,8 @@ size_t zeroth_pass_expt(
   for (int64_t loc = 0; loc < voxels; loc += sx, row++) {
     count += (in_labels[loc] != 0);
     size_t index = (row << 1);
+    runs[index]   = (in_labels[loc] != 0);
+    runs[index+1] = (in_labels[loc] != 0);
     for (int64_t x = 1; x < sx; x++) {
       count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
       if (in_labels[loc + x]) {
@@ -359,6 +361,7 @@ size_t zeroth_pass_expt(
         runs[index+1] = x + 1;
       }
     }
+    runs[index] -= (in_labels[loc] != 0);
   }
 
   return count;
@@ -376,11 +379,6 @@ OUT* connected_components3d_26(
 
   int64_t *runs = new int64_t[2*sy*sz]();
   max_labels = zeroth_pass_expt<T>(in_labels, sx, voxels, runs);
-
-  // for (int i = 0; i < sy*sz; ++i)
-  // {
-  //   printf("%lld, %lld\n", runs[i*2], runs[i*2+1]);
-  // }
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
