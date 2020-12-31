@@ -52,14 +52,15 @@ int main () {
     typedef std::chrono::duration<float> fsec;
     auto t0 = Time::now();
 	// size_t p = cc3d::zeroth_pass<int>(big, voxels);
-	std::pair<size_t, bool> p = cc3d::zeroth_pass<int>(big, voxels);
+//	std::pair<size_t, bool> p = cc3d::zeroth_pass<int>(big, voxels);
+cc3d::connected_components3d<int, uint32_t>(big, sx,sy,sz, 26);
     auto t1 = Time::now();
     fsec fs = t1 - t0;
     ms d = std::chrono::duration_cast<ms>(fs);
-    std::cout << fs.count() << "s\n";
+    //std::cout << fs.count() << "s\n";
     std::cout << d.count() << "ms\n";
 	
-    printf("%d\n", p.first);
+    //printf("%d\n", p.first);
 	// cc3d::connected_components3d<int, uint32_t>(big, sx,sy,sz, 26);	
 
 
