@@ -336,8 +336,7 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_26(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, const uint32_t* runs, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
 	const int64_t sxy = sx * sy;
@@ -355,10 +354,12 @@ OUT* connected_components3d_26(
   }
 
   max_labels++;
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
+
+  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -583,14 +584,16 @@ OUT* connected_components3d_26(
   }
   
 
-  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  delete[] runs;
+  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_18(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, uint32_t* runs, 
+    size_t max_labels, 
     OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
@@ -609,11 +612,12 @@ OUT* connected_components3d_18(
   }
 
   max_labels++;
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
 
+  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -743,14 +747,16 @@ OUT* connected_components3d_18(
     }
   }
 
-  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  delete[] runs;
+  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, uint32_t* runs, 
+    size_t max_labels, 
     OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
@@ -769,10 +775,12 @@ OUT* connected_components3d_6(
   }
 
   max_labels++;
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
+
+  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
 
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -851,7 +859,9 @@ OUT* connected_components3d_6(
     }
   }
 
-  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  delete[] runs;
+  return out_labels;
 }
 
 
@@ -863,7 +873,7 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
-    size_t max_labels, uint32_t *runs, 
+    size_t max_labels, 
     OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
@@ -881,10 +891,12 @@ OUT* connected_components2d_4(
   }
 
   max_labels++;
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels)), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
+
+  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
     
   /*
     Layout of forward pass mask. 
@@ -935,7 +947,9 @@ OUT* connected_components2d_4(
     }
   }
 
-  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
+  delete[] runs;
+  return out_labels;
 }
 
 // K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
@@ -947,7 +961,7 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_8(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
-    size_t max_labels, uint32_t* runs,
+    size_t max_labels, 
     OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
@@ -969,6 +983,8 @@ OUT* connected_components2d_8(
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
+
+  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
 
   /*
     Layout of mask. We start from e.
@@ -1031,7 +1047,9 @@ OUT* connected_components2d_8(
     }
   }
 
-  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
+  delete[] runs;
+  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -1042,50 +1060,45 @@ OUT* connected_components3d(
     OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
-  uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
-
   if (connectivity == 26) {
-    out_labels = connected_components3d_26<T, OUT>(
+    return connected_components3d_26<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, runs, out_labels, N
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 18) {
-    out_labels = connected_components3d_18<T, OUT>(
+    return connected_components3d_18<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, runs, out_labels, N
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 6) {
-    out_labels = connected_components3d_6<T, OUT>(
+    return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, runs, out_labels, N
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 8) {
     if (sz != 1) {
       throw std::runtime_error("sz must be 1 for 2D connectivities.");
     }
-    out_labels = connected_components2d_8<T,OUT>(
+    return connected_components2d_8<T,OUT>(
       in_labels, sx, sy,
-      max_labels, runs, out_labels, N
+      max_labels, out_labels, N
     );
   }
   else if (connectivity == 4) {
     if (sz != 1) {
       throw std::runtime_error("sz must be 1 for 2D connectivities.");
     }
-    out_labels = connected_components2d_4<T, OUT>(
+    return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, runs, out_labels, N
+      max_labels, out_labels, N
     );
   }
   else {
     throw std::runtime_error("Only 4 and 8 2D and 6, 18, and 26 3D connectivities are supported.");
   }
-
-  delete[] runs;
-  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -1094,8 +1107,9 @@ OUT* connected_components3d(
     const int64_t sx, const int64_t sy, const int64_t sz,
     const int64_t connectivity=26, size_t &N = _dummy_N
   ) {
-  const int64_t voxels = sx * sy * sz;
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, voxels, connectivity, NULL, N);
+  const size_t voxels = sx * sy * sz;
+  size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
+  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, max_labels, connectivity, NULL, N);
 }
 
 

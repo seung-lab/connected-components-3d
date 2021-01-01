@@ -52,6 +52,15 @@ uint32_t* randomvol() {
 	return big;
 }
 
+uint32_t* black() {
+	size_t sx = 512;
+	size_t sy = 512;
+	size_t sz = 512;
+	size_t voxels = sx * sy * sz;
+
+	return new uint32_t[sx*sy*sz]();
+}
+
 int main () {
 
 	size_t sx = 512;
@@ -59,7 +68,7 @@ int main () {
 	size_t sz = 512;
 	size_t voxels = sx * sy * sz;
 
-	uint32_t* subvol = read_subvol();
+	uint32_t* subvol = black();
 
   typedef std::chrono::high_resolution_clock Time;
   typedef std::chrono::milliseconds ms;
