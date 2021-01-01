@@ -290,19 +290,31 @@ OUT* relabel(
 }
 
 template <typename T>
-size_t zeroth_pass(
-  T* in_labels, const int64_t sx, const int64_t voxels, uint32_t *runs
+size_t estimate_provisional_label_count(
+  T* in_labels, const int64_t sx, const int64_t voxels
 ) {
+  size_t count = 0; // number of transitions between labels
+  for (int64_t loc = 0; loc < voxels; loc += sx) {
+    count += (in_labels[loc] != 0);
+    for (int64_t x = 1; x < sx; x++) {
+      count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+    }
+  }
+  return count;
+}
+
+template <typename T>
+uint32_t* compute_foreground_index(
+  T* in_labels, const int64_t sx, const int64_t sy, const int64_t sz
+) {
+  const int64_t voxels = sx * sy * sz;
+  uint32_t* runs = new uint32_t[2*sy*sz]();
+
   size_t count = 0; // number of transitions between labels
   int64_t row = 0;
   for (int64_t loc = 0; loc < voxels; loc += sx, row++) {
     count += (in_labels[loc] != 0);
     size_t index = (row << 1);
-    // count number of label transitions
-    for (int64_t x = 1; x < sx; x++) {
-      count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
-    }
-    // runs: start and end indices of the foreground on each row
     for (int64_t x = 0; x < sx; x++) {
       if (in_labels[loc + x]) {
           runs[index] = static_cast<uint32_t>(x);
@@ -317,7 +329,7 @@ size_t zeroth_pass(
     }
   }
 
-  return count;
+  return runs;
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -1030,8 +1042,7 @@ OUT* connected_components3d(
     OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
-  uint32_t *runs = new uint32_t[2*sy*sz]();
-  max_labels = std::min(max_labels, zeroth_pass<T>(in_labels, sx, sx*sy*sz, runs) + 1);
+  uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
 
   if (connectivity == 26) {
     out_labels = connected_components3d_26<T, OUT>(

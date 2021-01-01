@@ -55,6 +55,9 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     int64_t max_labels, int64_t connectivity,
     U* out_labels, size_t &N
   )
+  cdef size_t estimate_provisional_label_count[T](
+    T* in_labels, int64_t sx, int64_t voxels
+  )
 
 cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
   cdef OUT* extract_voxel_connectivity_graph[T,OUT](
@@ -128,6 +131,31 @@ cdef int64_t even_ceil(int64_t N):
   if N & 0x1:
     return N << 1
   return N
+
+def estimate_provisional_labels(data):
+  cdef uint8_t[:] arr_memview8u
+  cdef uint16_t[:] arr_memview16u
+  cdef uint32_t[:] arr_memview32u
+  cdef uint64_t[:] arr_memview64u
+
+  dtype = data.dtype
+  sx = data.shape[0]
+  data = reshape(data, (data.size,))
+
+  if dtype in (np.uint64, np.int64):
+    arr_memview64u = data.view(np.uint64)
+    return estimate_provisional_label_count[uint64_t](&arr_memview64u[0], sx, data.size)
+  elif dtype in (np.uint32, np.int32):
+    arr_memview32u = data.view(np.uint32)
+    return estimate_provisional_label_count[uint32_t](&arr_memview32u[0], sx, data.size)
+  elif dtype in (np.uint16, np.int16):
+    arr_memview16u = data.view(np.uint16)
+    return estimate_provisional_label_count[uint16_t](&arr_memview16u[0], sx, data.size)
+  elif dtype in (np.uint8, np.int8, np.bool):
+    arr_memview8u = data.view(np.uint8)
+    return estimate_provisional_label_count[uint8_t](&arr_memview8u[0], sx, data.size)
+  else:
+    raise TypeError("Type {} not currently supported.".format(dtype))
 
 def connected_components(
   data, int64_t max_labels=-1, 
@@ -213,6 +241,8 @@ def connected_components(
   if max_labels <= 0:
     max_labels = voxels
   max_labels = min(max_labels, voxels)
+
+  max_labels = min(max_labels, estimate_provisional_labels(data) + 1)
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
