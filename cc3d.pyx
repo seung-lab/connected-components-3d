@@ -148,20 +148,20 @@ def estimate_provisional_labels(data):
 
     dtype = data.dtype
     sx = data.shape[0]
-    data = reshape(data, (data.size,))
+    linear_data = reshape(data, (data.size,))
 
     if dtype in (np.uint64, np.int64):
-      arr_memview64u = data.view(np.uint64)
-      return estimate_provisional_label_count[uint64_t](&arr_memview64u[0], sx, data.size)
+      arr_memview64u = linear_data.view(np.uint64)
+      return estimate_provisional_label_count[uint64_t](&arr_memview64u[0], sx, linear_data.size)
     elif dtype in (np.uint32, np.int32):
-      arr_memview32u = data.view(np.uint32)
-      return estimate_provisional_label_count[uint32_t](&arr_memview32u[0], sx, data.size)
+      arr_memview32u = linear_data.view(np.uint32)
+      return estimate_provisional_label_count[uint32_t](&arr_memview32u[0], sx, linear_data.size)
     elif dtype in (np.uint16, np.int16):
-      arr_memview16u = data.view(np.uint16)
-      return estimate_provisional_label_count[uint16_t](&arr_memview16u[0], sx, data.size)
+      arr_memview16u = linear_data.view(np.uint16)
+      return estimate_provisional_label_count[uint16_t](&arr_memview16u[0], sx, linear_data.size)
     elif dtype in (np.uint8, np.int8, np.bool):
-      arr_memview8u = data.view(np.uint8)
-      return estimate_provisional_label_count[uint8_t](&arr_memview8u[0], sx, data.size)
+      arr_memview8u = linear_data.view(np.uint8)
+      return estimate_provisional_label_count[uint8_t](&arr_memview8u[0], sx, linear_data.size)
     else:
       raise TypeError("Type {} not currently supported.".format(dtype))
   finally:
