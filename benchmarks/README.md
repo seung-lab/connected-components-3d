@@ -68,7 +68,7 @@ In this test, `cc3d_test` was run to completion in 225 seconds after loading the
 
 <p style="font-style: italics;" align="center">
 <img height=384 src="https://github.com/seung-lab/connected-components-3d/blob/master/benchmarks/cc3d_vs_scipy_single_label_10x.png" alt="Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.5.2 (blue) cc3d 2.0.0" /><br>
-Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.5.2 (blue) cc3d 2.0.0
+Fig. 2: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (black) SciPy 1.6.0 (blue) cc3d 3.1.0
 </p> 
 
 ```python
@@ -93,12 +93,12 @@ for i in tqdm(range(10)):
   scipy.ndimage.measurements.label(labels, structure=s)
 ```
 
-This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. `cc3d` performs each iteration in 0.4 seconds while SciPy takes about 6.1 seconds. In previous experiments (not shown) on dense labels, `cc3d` takes about 7.6 seconds per an iteration, so it becomes faster when the volume is less dense. While in previous versions, cc3d used many times more memory than scipy in this experiment, as of version 2.0.0, the memory usage is now better than SciPy due to estimating the necessary number of provisional labels before executing.
+This comparison was performed to show what happens when SciPy and `cc3d` are run on realistic single-label data. `cc3d` performs each iteration in 0.27 seconds while SciPy takes about 5.7 seconds. While in previous versions, cc3d used many times more memory than scipy in this experiment, as of version 2.0.0, the memory usage is now better than SciPy due to estimating the necessary number of provisional labels before executing.
 
 | Trial             | MVx/sec | Rel. Perf. |
 |-------------------|---------|------------|
-| SciPy 1.5.2       | 17.8    | 1.00x      |
-| cc3d 2.0.0        | 323.8   | 18.2x      |
+| SciPy 1.6.0       | 23.7    | 1.00x      |
+| cc3d 3.1.0        | 502.5   | 21.2x      |
 
 
 # 10x Head to Head: Random Binary Images  
