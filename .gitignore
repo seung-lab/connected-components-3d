@@ -141,3 +141,4 @@ save_images
 
 .DS_Store
 callgrind*
+subvol.bin
