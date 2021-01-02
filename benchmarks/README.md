@@ -76,11 +76,9 @@ import cc3d
 from tqdm import tqdm
 import scipy.ndimage.measurements
 import numpy as np
-import fastremap
 
 labels = ...
-labels, remap = fastremap.renumber(labels)
-labels[labels != 6] = 0
+labels == labels == 28792756
 
 s = [
   [[1,1,1], [1,1,1], [1,1,1]],
