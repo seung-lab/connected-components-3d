@@ -1,14 +1,34 @@
 # Benchmarks
 
-On an x86_64 3.7 GHz Intel Core i7-4820K CPU @ 3.70GHz with DDR3 1600 MHz RAM, I compared the performance of cc3d to the commonly used `scipy.ndimage.measurements.label` which supports 26-connected binary images. cc3d was designed to handle multilabel datasets more efficiently, and does so. Scipy appears to use a "runs" based algorithm, while cc3d uses a decision tree around each voxel. 
+Except where noted, these benchmarks were run on a 2.8 GHz Dual-Core Intel Core i7 with 1600 MHz DDR3 RAM. For binary images, we compared the performance of cc3d to the commonly used `scipy.ndimage.measurements.label` which supports 26-connected binary images. cc3d was designed to efficiently handle multilabel datasets.
 
-I compared the time and memory performance of both libraries on a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
+Except where noted, we compared the time and memory performance of both libraries on a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
 
 # Multi-Label Comparison
 
 <p style="font-style: italics;" align="center">
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_multilabel_optimized_extraction.png" alt="Fig. 1: Optimized extraction of components using cc3d 3.1.0 on a 512x512x512 densely labeled connectomics segmentation." /><br>
+Fig. 1: Optimized extraction of components using cc3d 3.1.0 on a 512x512x512 densely labeled connectomics segmentation.
+</p>
+
+```python
+import cc3d
+from tqdm import tqdm
+import numpy as np
+
+def cc3d_mutlilabel_extraction(labels):
+  res, N = cc3d.connected_components(labels, return_N=True)
+  for label, extracted in tqdm(cc3d.each(res, in_place=True), total=N):
+    pass
+```
+
+This is the fastest method we have for running CCL and then extracting each label from the result. CCL takes a fraction of a second, an index of the location of each shape is compiled, and then each shape is then drawn onto an output image and then erased before the next iteration of the loop. Compared with a pure scipy and numpy approach, this method is thousands of times faster if a full sized image is required. Scipy/numpy can perform much better if `scipy.ndimage.find_objects` and cropping is employed. 
+
+The memory usage is higher here compared with the figure below due to the size of the location index.
+
+<p style="font-style: italics;" align="center">
 <img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_multilabel.png" alt="Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.3.0 (blue) 100% of cc3d 1.2.2" /><br>
-Fig. 1: Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.3.0 (blue) 100% of cc3d 1.2.2
+Fig. 2: Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.3.0 (blue) 100% of cc3d 1.2.2
 </p>
 
 ```python
@@ -40,9 +60,9 @@ def ndimage_test(labels):
       extracted = (res == ccid)
 ```
 
-In this test, `cc3d_test` was run to completion in 225 seconds after loading the image and processing it. `ndimage_test` was arrested manually after 496 iterations (20%) at 2,745 seconds as `tqdm` projected over three hours of total running time. SciPy's algorithm wins on memory pressure at about 1.7 GB peak usage versus cc3d using about 1.8 to 1.9 GB. SciPy performs poorly here because it must be run thousands of times after masking to expose individual labels since it only supports binary data. SciPy's average iteration per label took about 5.1 sec. It then must extract the individual components from the results of connected components, but this is fast. By contrast, since `cc3d` has native multi-label support, it needs to only be run once, with the bulk of time spent querying the resulting image for components.  
+*This benchmark was run an x86_64 3.7 GHz Intel Core i7-4820K CPU @ 3.70GHz with DDR3 1600 MHz RAM.*
 
-`cc3d` has a disadvantage compared with SciPy in that input images must only contain labels smaller than the maximum size of the image or that of a uint32 (whichever is smaller). That is why it is treated with `fastremap.renumber` prior to running. If it is known that the values of the labels are small compared with the image size, this additional step is not needed. The large difference in memory usage is due to the implementation of `cc3d`'s union-find data structure and the run based equivalences in SciPy. If we were to use an `std::unordered_map` in `cc3d`, it would slow down the performance of the initial run, but would reduce memory by about half, and prevent the need for using renumber. However, SciPy would still do better on memory due to its representations.
+In this test, `cc3d_test` was run to completion in 225 seconds after loading the image and processing it. `ndimage_test` was arrested manually after 496 iterations (20%) at 2,745 seconds as `tqdm` projected over three hours of total running time. SciPy's algorithm wins on memory pressure at about 1.7 GB peak usage versus cc3d using about 1.8 to 1.9 GB. SciPy performs poorly here because it must be run thousands of times after masking to expose individual labels since it only supports binary data. SciPy's average iteration per label takes about 5.1 sec. It then must extract the individual components from the results of connected components, but this is fast. By contrast, since `cc3d` has native multi-label support, it needs to only be run once, with the bulk of time spent querying the resulting image for components.  
 
 # 10x Head to Head: Connectomics Data
 
