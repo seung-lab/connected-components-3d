@@ -144,7 +144,8 @@ def estimate_provisional_labels(data):
     # by this flag, so we'll just unset it and reset it at 
     # the end.
     writable = data.flags.writeable
-    data.setflags(write=1)
+    if data.flags.owndata:
+      data.setflags(write=1)
 
     dtype = data.dtype
     sx = data.shape[0]
@@ -165,7 +166,8 @@ def estimate_provisional_labels(data):
     else:
       raise TypeError("Type {} not currently supported.".format(dtype))
   finally:
-    data.setflags(write=writable)
+    if data.flags.owndata:
+      data.setflags(write=writable)
 
 def connected_components(
   data, int64_t max_labels=-1, 
@@ -301,7 +303,8 @@ def connected_components(
     # by this flag, so we'll just unset it and reset it at 
     # the end.
     writable = data.flags.writeable
-    data.setflags(write=1)
+    if data.flags.owndata:
+      data.setflags(write=1)
 
     if dtype in (np.uint64, np.int64):
       arr_memview64u = data.view(np.uint64)
@@ -386,7 +389,8 @@ def connected_components(
     else:
       raise TypeError("Type {} not currently supported.".format(dtype))
   finally:
-    data.setflags(write=writable)
+    if data.flags.owndata:
+      data.setflags(write=writable)
 
   if dims == 3:
     if order == 'C':
