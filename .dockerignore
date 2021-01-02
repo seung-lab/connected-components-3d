@@ -7,3 +7,4 @@ manual_testing
 .git
 .tox
 .pytest_cache
+subvol.bin
