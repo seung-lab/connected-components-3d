@@ -112,10 +112,7 @@ s = [
   [[1,1,1], [1,1,1], [1,1,1]]
 ]
 
-labels = [ 
-  np.random.randint(0,2, size=(384, 384, 384), dtype=np.bool) 
-  for _ in range(10)
-]
+labels = np.random.randint(0,2, size=(384, 384, 384), dtype=np.bool)
 
 for label in labels:
   # scipy.ndimage.measurements.label(label, structure=s) # black
@@ -125,30 +122,30 @@ for label in labels:
 ## 26-connected
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_26.png" alt="Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 26-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
-Fig. 3: SciPy vs cc3d run ten times on ten 384x384x384 random binary images. (black) SciPy 1.5.2 (blue) cc3d 1.13.0
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_26.png" alt="Fig. 3: SciPy vs cc3d run ten times on a 384x384x384 random binary image using 26-connectivity. (black) SciPy 1.6.0 (blue) cc3d 3.1.0" /><br>
+Fig. 3: SciPy vs cc3d run ten times on a 384x384x384 random binary image. (black) SciPy 1.5.2 (blue) cc3d 1.13.0
 </p>   
 
-On random binary images, SciPy marginally wins on memory with a peak memory cosumption of about 790 MB vs. cc3d with a peak consumption of about 800 MB (1.01x). However, SciPy doesn't perform as well as cc3d in running time with an average run time of 2.41 sec versus 1.03 sec per label set. Bear in mind that 10 binary images are stored in memory at once, inflating the baseline. Each image is about 56MB, so 10 of them are about 560MB. With interpreter overhead, the baseline is somewhere around 600 MB. Therefore, they use about 200 MB.
+On random binary images, SciPy marginally wins on memory with a peak memory cosumption of 337 MB vs. cc3d with a peak consumption of about 363 MB (1.08x). However, SciPy doesn't perform as well as cc3d in running time with an average run time of 2.45 sec versus 0.92 sec per label set. 
 
 | Trial             | MVx/sec | MB/sec | Rel. Perf. |
 |-------------------|---------|--------|------------|
-| SciPy 1.5.2       | 23.4    | 23.4   | 1.00x      |
-| cc3d 1.13.0       | 54.7    | 54.7   | 2.34x      |
+| SciPy 1.6.0       | 23.1    | 23.1   | 1.0x       |
+| cc3d 3.1.0        | 61.7    | 61.7   | 2.6x       |
 
 ## 6-connected
 
 <p style="font-style: italics;" align="center">
 <img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_6.png" alt="Fig. 4: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
-Fig. 4: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0
+Fig. 4: SciPy vs cc3d run ten times on a 384x384x384 random binary image using 6-connectivity. (black) SciPy 1.6.0 (blue) cc3d 3.1.0
 </p>
 
-Here there's a slight difference in the memory usage. SciPy uses about 850 MB while cc3d uses 930 MB. Accounting for the ~600 MB of baseline, SciPy uses 250 MB and cc3d uses 330 MB (1.32x). At least for cc3d, the reason for additional memory usage is that 6-connectivity requires a larger union-find datastructure to handle the worst case than 26-connectivity (1/2 vs 1/8). The timings are more favorable though. scipy averages 1.35 seconds per volume vs cc3d averages 0.96 seconds per volume. 
+SciPy uses about 390 MB, which is oddly increasing, while cc3d uses 405 MB. SciPy averages 1.31 seconds per volume vs cc3d averages 0.95 seconds per volume. 
 
 | Trial             | MVx/sec | MB/sec | Rel. Perf. |
 |-------------------|---------|--------|------------|
-| SciPy 1.5.2       | 42.2    | 42.2   | 1.00x      |
-| cc3d 1.13.0       | 59.2    | 59.2   | 1.40x      |
+| SciPy 1.5.2       | 43.4    | 43.4   | 1.0x       |
+| cc3d 1.13.0       | 59.9    | 59.9   | 1.4x       |
 
 # 10x Head to Head: Black Cube
 
@@ -190,10 +187,4 @@ Fig. 6: 26-way cc3d and scipy peak memory usage and speed in selected releases a
 <img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_6-way_connectomics_over_time.png" alt="Fig. 7: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
 Fig. 7: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
 </p>   
-
-
-
-
-
-
 
