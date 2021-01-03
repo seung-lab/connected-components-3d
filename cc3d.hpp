@@ -201,7 +201,7 @@ inline void unify2d_ac(
   if (x > 0 && y > 0 && cur == in_labels[loc - 1 - sx]) {
     equivalences.unify(out_labels[loc], out_labels[loc - 1 - sx]); 
 
-    if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx] && !(y > 1 && cur != in_labels[loc - sx - sx])) {
+    if (x < sx - 1 && y > 0 && cur == in_labels[loc + 1 - sx] && !(y > 1 && cur == in_labels[loc - sx - sx])) {
       equivalences.unify(out_labels[loc], out_labels[loc + 1 - sx]); 
     }
   }
