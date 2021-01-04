@@ -150,8 +150,8 @@ SciPy uses about 390 MB, which is oddly increasing, while cc3d uses 405 MB. SciP
 # 10x Head to Head: Black Cube
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.6.0 (blue) cc3d 3.1.0" /><br>
-Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (black) SciPy 1.6.0 (blue) cc3d 3.1.0
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (blue) SciPy 1.6.0 (black) cc3d 3.1.0" /><br>
+Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (blue) SciPy 1.6.0 (black) cc3d 3.1.0
 </p>   
 
 Sometimes empty data shows up in your pipeline. Sometimes a lot of it. How do your libraries handle it? At full speed? Slower? Faster than normal?  
