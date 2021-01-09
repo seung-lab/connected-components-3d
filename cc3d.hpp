@@ -153,6 +153,49 @@ public:
   // Will be O(n).
 };
 
+class BitArray {
+public:
+  size_t length;
+  char* array;
+
+  BitArray(size_t N) {
+    length = N;
+    array = new char[(N + 4) / 8]();
+  }
+
+  BitArray(char* bytes, size_t N) {
+    length = N;
+    array = bytes;
+  }
+
+  ~BitArray() {
+    delete[] array;
+  }
+
+  bool operator[](size_t i) const {
+    if (i > N || i < 0) {
+      throw std::runtime_error("Index out of range.");
+    }
+    size_t bkt = i >> 3;
+    uint8_t bits = reinterpret_cast<uint8_t>(array[bkt]);
+    uint8_t bit_idx = static_cast<uint8_t>(i - (bkt << 3));
+    return (bits >> bit_idx) & 0x1;
+  }
+
+  void set(size_t i, bool val) {
+    if (i > N || i < 0) {
+      throw std::runtime_error("Index out of range.");
+    }
+    size_t bkt = i >> 3;
+    uint8_t bit_idx = static_cast<uint8_t>(i - (bkt << 3));
+    char field = (1 << bit_idx);
+    if (!val) {
+      field = ~field;
+    }
+    array[bkt] = array[bkt] & field;
+  }
+}
+
 // This is the original Wu et al decision tree but without
 // any copy operations, only union find. We can decompose the problem
 // into the z - 1 problem unified with the original 2D algorithm.
