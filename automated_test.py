@@ -467,6 +467,36 @@ def test_compare_scipy_6():
   assert Ncc3d == Nscipy
   assert np.all(cc3d_labels == scipy_labels)
 
+@pytest.mark.parametrize("connectivity", (6,18,26))
+def test_return_N(connectivity):
+  labels = np.zeros((10,10,10), dtype=np.uint8)
+  cc3d_labels, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True)
+  assert N == 0
+  assert np.max(cc3d_labels) == 0
+
+  labels = np.ones((10,10,10), dtype=np.uint8) + 2
+  cc3d_labels, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True)
+  assert N == 1
+  assert np.max(cc3d_labels) == 1
+
+  labels = np.ones((512,512,512), dtype=np.uint8, order='F')
+  labels[256:,:256,:256] = 2
+  labels[256:,256:,:256] = 3
+  labels[:256,256:,:256] = 4
+  labels[256:,256:,256:] = 5
+  labels[:256,256:,256:] = 6
+  labels[256:,:256,256:] = 7 
+  labels[:256,:256,256:] = 8
+  labels[128, 128, 128] = 9
+  cc3d_labels, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True)
+  assert N == 9
+  assert np.max(cc3d_labels) == 9
+
+  labels = np.random.randint(0,2, (128,128,128), dtype=np.bool)
+  cc3d_labels, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True)
+  assert N == np.max(cc3d_labels)
+
+
 # @pytest.mark.skipif("sys.maxsize <= 2**33")
 # @pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
 # def test_sixty_four_bit():

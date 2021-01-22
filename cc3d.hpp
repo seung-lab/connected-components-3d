@@ -254,6 +254,7 @@ OUT* relabel(
   ) {
 
   if (num_labels <= 1) {
+    N = num_labels;
     return out_labels;
   }
 
