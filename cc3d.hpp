@@ -936,6 +936,7 @@ OUT* connected_components2d_4(
     const int64_t xend = runs[(row << 1) + 1];
 
     int64_t x = xstart - 1;
+    goto NO_B;
 
     FULLTREE:
     INIT_TREE()
@@ -1002,7 +1003,31 @@ OUT* connected_components2d_4(
     }
     else {
       out_labels[loc + A] = out_labels[loc + B];
-      goto FULLTREE;
+      if (cur == next) {
+        goto ASSUME_B;
+      }
+      goto NO_B;
+    }
+
+    ASSUME_B:
+    INIT_TREE()
+    out_labels[loc + A] = out_labels[loc + B];
+    if (y > 0 && cur == in_labels[loc + C]) {
+      if (cur != in_labels[loc + D]) {
+        equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+      }
+      if (cur == next) {
+        goto ASSUME_BD;
+      }
+      else {
+        goto NO_B;
+      }
+    }
+    else if (cur == next) {
+      goto NO_D;
+    }
+    else {
+      goto NO_B;
     }
 
     NO_D:
