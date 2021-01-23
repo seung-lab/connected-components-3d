@@ -918,35 +918,154 @@ OUT* connected_components2d_4(
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
 
+#define NEW_LABEL() \
+  next_label++; \
+  out_labels[loc] = next_label; \
+  equivalences.add(out_labels[loc]);
+
+#define INIT_TREE() \
+    if (++x >= xend - 1) { goto FINAL_TREE; } \
+    loc = x + sx * y; \
+    cur = in_labels[loc]; \
+    next = in_labels[loc + 1];
+
   T cur = 0;
+  T next = 0;
   for (int64_t y = 0; y < sy; y++, row++) {
     const int64_t xstart = runs[row << 1];
     const int64_t xend = runs[(row << 1) + 1];
 
-    for (int64_t x = xstart; x < xend; x++) {
-      loc = x + sx * y;
-      cur = in_labels[loc];
+    int64_t x = xstart - 1;
 
-      if (cur == 0) {
-        continue;
-      }
-
-      if (x > 0 && cur == in_labels[loc + B]) {
-        out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && cur != in_labels[loc + D] && cur == in_labels[loc + C]) {
+    FULLTREE:
+    INIT_TREE()
+    if (cur == 0) { 
+      goto NO_B; 
+    }
+    else if (x > 0 && cur == in_labels[loc + B]) {
+      out_labels[loc + A] = out_labels[loc + B];
+      if (y > 0 && cur == in_labels[loc + C]) {
+        if (cur != in_labels[loc + D]) {
           equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
         }
+        if (cur == next) {
+          goto ASSUME_BD;
+        }
+        else {
+          goto NO_B;
+        }
       }
-      else if (y > 0 && cur == in_labels[loc + C]) {
-        out_labels[loc + A] = out_labels[loc + C];
+      else if (cur == next) {
+        goto NO_D;
       }
       else {
-        next_label++;
-        out_labels[loc + A] = next_label;
-        equivalences.add(out_labels[loc + A]);
+        goto NO_B;
       }
     }
+    else if (y > 0 && cur == in_labels[loc + C]) {
+      out_labels[loc + A] = out_labels[loc + C];
+      if (cur == next) {
+        goto ASSUME_BD;
+      }
+      else {
+        goto NO_B;
+      }
+    }
+    else {
+      NEW_LABEL()
+      goto NO_D;
+    }
+
+    NO_B:
+    INIT_TREE()
+    if (cur == 0) { 
+      goto NO_B; 
+    }
+    else if (y > 0 && cur == in_labels[loc + C]) {
+      out_labels[loc + A] = out_labels[loc + C];
+      if (cur == next) {
+        goto ASSUME_BD;
+      }
+      else {
+        goto NO_B;
+      }
+    }
+    else {
+      NEW_LABEL()
+      goto NO_D;
+    }
+
+    ASSUME_BD:
+    INIT_TREE()
+    if (cur == 0) { 
+      goto NO_B; 
+    }
+    else {
+      out_labels[loc + A] = out_labels[loc + B];
+      goto FULLTREE;
+    }
+
+    NO_D:
+    INIT_TREE()
+    if (cur == 0) { 
+      goto NO_B; 
+    }
+    else if (x > 0 && cur == in_labels[loc + B]) {
+      out_labels[loc + A] = out_labels[loc + B];
+      if (y > 0 && cur == in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+        if (cur == next) {
+          goto ASSUME_BD;
+        }
+        else {
+          goto NO_B;
+        }
+      }
+      else if (cur == next) {
+        goto NO_D;
+      }
+      else {
+        goto NO_B;
+      }
+    }
+    else if (y > 0 && cur == in_labels[loc + C]) {
+      out_labels[loc + A] = out_labels[loc + C];
+      if (cur == next) {
+        goto ASSUME_BD;
+      }
+      else {
+        goto NO_B;
+      }
+    }
+    else {
+      NEW_LABEL()
+      goto NO_D;
+    }
+
+    FINAL_TREE:
+    if (x >= xend) { continue; }
+    loc = x + sx * y;
+    cur = in_labels[loc];
+
+    if (cur == 0) {
+      continue;
+    }
+    else if (x > 0 && cur == in_labels[loc + B]) {
+      out_labels[loc + A] = out_labels[loc + B];
+      if (y > 0 && cur != in_labels[loc + D] && cur == in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+      }
+    }
+    else if (y > 0 && cur == in_labels[loc + C]) {
+      out_labels[loc + A] = out_labels[loc + C];
+    }
+    else {
+      NEW_LABEL()
+    }
   }
+
+#undef NEW_LABEL
+#undef INIT_TREE
 
   out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
   delete[] runs;
