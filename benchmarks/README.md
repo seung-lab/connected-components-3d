@@ -4,7 +4,7 @@ Except where noted, these benchmarks were run on a 2.8 GHz Dual-Core Intel Core 
 
 ## Connectomics Data
 
-Except where noted, we compared the time and memory performance of both libraries on `connectomics.npy`, a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
+Except where noted, we compared the time and memory performance of both libraries on [`connectomics.npy`](https://github.com/seung-lab/connected-components-3d/raw/master/benchmarks/connectomics.npy.gz), a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
 
 The volume is derived from an early experimental segmentation of pinky40, a predecessor to the now public pinky100_v185 automatic segmentation of mouse brain now available at https://microns-explorer.org/phase1. You need to gzip decompress to recover the uncompressed file: `gunzip connectomics.npy.gz`
 
