@@ -2,7 +2,11 @@
 
 Except where noted, these benchmarks were run on a 2.8 GHz Dual-Core Intel Core i7 with 1600 MHz DDR3 RAM. For binary images, we compared the performance of cc3d to the commonly used `scipy.ndimage.measurements.label` which supports 26-connected binary images. cc3d was designed to efficiently handle multilabel datasets.
 
-Except where noted, we compared the time and memory performance of both libraries on a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
+## Connectomics Data
+
+Except where noted, we compared the time and memory performance of both libraries on `connectomics.npy`, a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
+
+The volume is derived from an early experimental segmentation of pinky40, a predecessor to the now public pinky100_v185 automatic segmentation of mouse brain now available at https://microns-explorer.org/phase1. You need to gzip decompress to recover the uncompressed file: `gunzip connectomics.npy.gz`
 
 # Multi-Label Comparison
 
