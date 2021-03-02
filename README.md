@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/seung-lab/connected-components-3d.svg?branch=master)](https://travis-ci.org/seung-lab/connected-components-3d) [![PyPI version](https://badge.fury.io/py/connected-components-3d.svg)](https://badge.fury.io/py/connected-components-3d)
 
-Connected Components 3D
+cc3d: Connected Components on Multilabel 3D Images
 =======================
 
 Implementation of connected components in three dimensions using a 26, 18, or 6 connected neighborhood in 3D or 4 and 8-connected in 2D. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It can be used with 2D or 3D images. 
@@ -338,6 +338,14 @@ There are three locations in the algorithm at which further processing can be ab
 A number of papers are using cc3d now. Many of them seem to be deep learning applications as instance segmentation is liable to generate touching non-binary labels. Some are in geoscience, neuroscience, and medical fields. If cc3d is helpful to you, please feel free to [email us](https://github.com/william-silversmith/) and let us know. We might be able to offer some tips if its performance critical (though we can't guarantee timeliness of response). There are so many variations of the CCL problem, you might be surprised at what you can do.
 
 https://scholar.google.com/scholar?as_ylo=2019&q=connected-components-3d&hl=en&as_sdt=0,31
+
+Please cite cc3d as:
+
+```
+W. Silversmith. "cc3d: Connected Components on Multilabel 3D Images". 
+January 2021. https://github.com/seung-lab/connected-components-3d/
+```
+
 
 ## References
 
