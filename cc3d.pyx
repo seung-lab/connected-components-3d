@@ -35,7 +35,7 @@ from libc.stdint cimport (
   int8_t, int16_t, int32_t, int64_t,
   uint8_t, uint16_t, uint32_t, uint64_t,
 )
-from libcpp cimport bool
+from libcpp cimport bool as native_bool
 from cpython cimport array 
 import array
 import sys
@@ -160,7 +160,7 @@ def estimate_provisional_labels(data):
     elif dtype in (np.uint16, np.int16):
       arr_memview16u = linear_data.view(np.uint16)
       return estimate_provisional_label_count[uint16_t](&arr_memview16u[0], sx, linear_data.size)
-    elif dtype in (np.uint8, np.int8, np.bool):
+    elif dtype in (np.uint8, np.int8, bool):
       arr_memview8u = linear_data.view(np.uint8)
       return estimate_provisional_label_count[uint8_t](&arr_memview8u[0], sx, linear_data.size)
     else:
@@ -171,7 +171,7 @@ def estimate_provisional_labels(data):
 
 def connected_components(
   data, int64_t max_labels=-1, 
-  int64_t connectivity=26, bool return_N=False
+  int64_t connectivity=26, native_bool return_N=False
 ):
   """
   ndarray connected_components(
@@ -268,7 +268,7 @@ def connected_components(
   # connected, 2x2x2 blocks are connected, so at most 1/8 + 1
   cdef int64_t union_find_voxels = even_ceil(data.shape[0]) * even_ceil(data.shape[1]) * even_ceil(data.shape[2])
 
-  if data.dtype == np.bool:
+  if data.dtype == bool:
     if connectivity in (4,6):
       max_labels = min(max_labels, (union_find_voxels // 2) + 1)
     elif connectivity == (8,18):
@@ -366,7 +366,7 @@ def connected_components(
           sx, sy, sz, max_labels, connectivity,
           <uint64_t*>&out_labels64[0], N
         )
-    elif dtype in (np.uint8, np.int8, np.bool):
+    elif dtype in (np.uint8, np.int8, bool):
       arr_memview8u = data.view(np.uint8)
       if out_dtype == np.uint16:
         connected_components3d[uint8_t, uint16_t](
@@ -540,7 +540,7 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
         sx, sy, sz, connectivity, 
         <uint32_t*>&graph32[0]
       )
-  elif dtype in (np.uint8, np.int8, np.bool):
+  elif dtype in (np.uint8, np.int8, bool):
     arr_memview8u = data.view(np.uint8)
     if out_dtype == np.uint8:
       extract_voxel_connectivity_graph[uint8_t, uint8_t](
@@ -614,7 +614,7 @@ def runs(labels):
 def _runs(
     cnp.ndarray[UINT, ndim=1, cast=True] labels
   ):
-  if labels.dtype in (np.uint8, np.bool):
+  if labels.dtype in (np.uint8, bool):
     return extract_runs[uint8_t](<uint8_t*>&labels[0], labels.size)
   elif labels.dtype == np.uint16:
     return extract_runs[uint16_t](<uint16_t*>&labels[0], labels.size)
@@ -643,7 +643,7 @@ def _draw(
   vector[cpp_pair[size_t, size_t]] runs,
   cnp.ndarray[UINT, ndim=1, cast=True] image
 ):
-  if image.dtype == np.bool:
+  if image.dtype == bool:
     set_run_voxels[uint8_t](label != 0, runs, <uint8_t*>&image[0], image.size)
   elif image.dtype == np.uint8:
     set_run_voxels[uint8_t](label, runs, <uint8_t*>&image[0], image.size)
@@ -691,7 +691,7 @@ def each(labels, binary=False, in_place=False):
 
   dtype = labels.dtype
   if binary:
-    dtype = np.bool
+    dtype = bool
 
   class ImageIterator():
     def __len__(self):
