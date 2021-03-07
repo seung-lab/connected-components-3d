@@ -355,7 +355,7 @@ OUT* connected_components3d_26(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1L); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
@@ -613,7 +613,7 @@ OUT* connected_components3d_18(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1L); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<OUT> equivalences(max_labels);
@@ -776,7 +776,7 @@ OUT* connected_components3d_6(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1L); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<OUT> equivalences(max_labels);
@@ -892,9 +892,9 @@ OUT* connected_components2d_4(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1L); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
-  
+
   DisjointSet<OUT> equivalences(max_labels);
 
   const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
@@ -980,7 +980,7 @@ OUT* connected_components2d_8(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels) + 1L), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels) + 1), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
