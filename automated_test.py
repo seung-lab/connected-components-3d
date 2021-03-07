@@ -230,11 +230,12 @@ def test_2d_cross_with_intruder(connectivity):
   test("F", gt_c2f(ground_truth))
 
 @pytest.mark.parametrize("order", ('C', 'F'))
-def test_3d_all_different(order):
-  input_labels = np.arange(0, 100 * 99 * 98).astype(np.uint32)
+@pytest.mark.parametrize("connectivity", (6,18,26))
+def test_3d_all_different(order, connectivity):
+  input_labels = np.arange(0, 100 * 99 * 98).astype(np.uint32) + 1
   input_labels = input_labels.reshape((100,99,98), order=order)
 
-  output_labels = cc3d.connected_components(input_labels)
+  output_labels = cc3d.connected_components(input_labels, connectivity=connectivity)
 
   assert np.unique(output_labels).shape[0] == 100*99*98
   assert output_labels.shape == (100, 99, 98)
@@ -396,7 +397,6 @@ def test_3d_cross_asymmetrical(dtype):
   test('F', gt_c2f(ground_truth))
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Windows 32-bit not supported.")
-@pytest.mark.xpass(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
 def test_512_cube_no_segfault_no_jitsu(): 
   input_labels = np.arange(0, 512 ** 3).astype(np.uint64).reshape((512,512,512))
   output_labels = cc3d.connected_components(input_labels)
@@ -414,7 +414,7 @@ def test_compare_scipy_26():
   import scipy.ndimage.measurements
 
   sx, sy, sz = 128, 128, 128
-  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
 
   structure = [
     [[1,1,1], [1,1,1], [1,1,1]],
@@ -435,7 +435,7 @@ def test_compare_scipy_18():
   import scipy.ndimage.measurements
 
   sx, sy, sz = 256, 256, 256
-  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
 
   structure = [
     [[0,1,0], [1,1,1], [0,1,0]],
@@ -456,7 +456,7 @@ def test_compare_scipy_6():
   import scipy.ndimage.measurements
 
   sx, sy, sz = 256, 256, 256
-  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
 
   cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=6, return_N=True)
   scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels)
@@ -492,7 +492,7 @@ def test_return_N(connectivity):
   assert N == 9
   assert np.max(cc3d_labels) == 9
 
-  labels = np.random.randint(0,2, (128,128,128), dtype=np.bool)
+  labels = np.random.randint(0,2, (128,128,128), dtype=bool)
   cc3d_labels, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True)
   assert N == np.max(cc3d_labels)
 
@@ -505,7 +505,7 @@ def test_return_N(connectivity):
 
 @pytest.mark.parametrize("size", (255,256))
 def test_stress_upper_bound_for_binary_6(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels = np.zeros((size,size,size), dtype=bool)
   for z in range(labels.shape[2]):
     for y in range(labels.shape[1]):
       off = (y + (z % 2)) % 2
@@ -516,20 +516,20 @@ def test_stress_upper_bound_for_binary_6(size):
 
 @pytest.mark.parametrize("size", (255,256))
 def test_stress_upper_bound_for_binary_8(size):
-  labels = np.zeros((size,size), dtype=np.bool)
+  labels = np.zeros((size,size), dtype=bool)
   labels[0::2,0::2] = True
 
   out = cc3d.connected_components(labels, connectivity=8)
   assert np.max(out) + 1 <= (256**2) // 4 + 1
 
   for _ in range(10):
-    labels = np.random.randint(0,2, (256,256), dtype=np.bool)
+    labels = np.random.randint(0,2, (256,256), dtype=bool)
     out = cc3d.connected_components(labels, connectivity=8)
     assert np.max(out) + 1 <= (256**2) // 4 + 1    
 
 @pytest.mark.parametrize("size", (255,256))
 def test_stress_upper_bound_for_binary_18(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels = np.zeros((size,size,size), dtype=bool)
   labels[::2,::2,::2] = True
   labels[1::2,1::2,::2] = True
 
@@ -537,20 +537,20 @@ def test_stress_upper_bound_for_binary_18(size):
   assert np.max(out) + 1 <= (256**3) // 4 + 1
 
   for _ in range(10):
-    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
+    labels = np.random.randint(0,2, (256,256,256), dtype=bool)
     out = cc3d.connected_components(labels, connectivity=18)
     assert np.max(out) + 1 <= (256**3) // 4 + 1
 
 @pytest.mark.parametrize("size", (255,256))
 def test_stress_upper_bound_for_binary_26(size):
-  labels = np.zeros((size,size,size), dtype=np.bool)
+  labels = np.zeros((size,size,size), dtype=bool)
   labels[::2,::2,::2] = True
 
   out = cc3d.connected_components(labels, connectivity=26)
   assert np.max(out) + 1 <= (256**3) // 8 + 1
 
   for _ in range(10):
-    labels = np.random.randint(0,2, (256,256,256), dtype=np.bool)
+    labels = np.random.randint(0,2, (256,256,256), dtype=bool)
     out = cc3d.connected_components(labels, connectivity=26)
     assert np.max(out) + 1 <= (256**3) // 8 + 1
 
@@ -576,7 +576,7 @@ def test_all_single_foreground(connectivity, dtype, order, lbl):
 @pytest.mark.parametrize("in_place", (True, False))
 @pytest.mark.parametrize("dims", (1,2,3))
 @pytest.mark.skipif(sys.platform == "win32", reason="Windows 32-bit not supported.")
-@pytest.mark.xpass(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
+@pytest.mark.xfail(raises=MemoryError, reason="Some build tools don't have enough memory for this.")
 def test_each(dtype, order, in_place, dims):
   shape = [128] * dims
   labels = np.random.randint(0,3, shape, dtype=dtype)
