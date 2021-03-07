@@ -355,7 +355,7 @@ OUT* connected_components3d_26(
   }
 
   max_labels++;
-  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels)) + 1L;
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
@@ -613,7 +613,7 @@ OUT* connected_components3d_18(
   }
 
   max_labels++;
-  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels)) + 1L;
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
@@ -776,7 +776,7 @@ OUT* connected_components3d_6(
   }
 
   max_labels++;
-  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels)) + 1L;
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);
@@ -892,7 +892,7 @@ OUT* connected_components2d_4(
   }
 
   max_labels++;
-  max_labels = std::min(max_labels + 1, static_cast<size_t>(voxels));
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels)) + 1L;
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   
   DisjointSet<OUT> equivalences(max_labels);

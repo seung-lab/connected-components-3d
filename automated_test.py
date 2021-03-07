@@ -230,11 +230,12 @@ def test_2d_cross_with_intruder(connectivity):
   test("F", gt_c2f(ground_truth))
 
 @pytest.mark.parametrize("order", ('C', 'F'))
-def test_3d_all_different(order):
-  input_labels = np.arange(0, 100 * 99 * 98).astype(np.uint32)
+@pytest.mark.parametrize("connectivity", (6,18,26))
+def test_3d_all_different(order, connectivity):
+  input_labels = np.arange(0, 100 * 99 * 98).astype(np.uint32) + 1
   input_labels = input_labels.reshape((100,99,98), order=order)
 
-  output_labels = cc3d.connected_components(input_labels)
+  output_labels = cc3d.connected_components(input_labels, connectivity=connectivity)
 
   assert np.unique(output_labels).shape[0] == 100*99*98
   assert output_labels.shape == (100, 99, 98)
