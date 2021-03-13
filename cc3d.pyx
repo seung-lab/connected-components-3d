@@ -258,7 +258,7 @@ def connected_components(
     max_labels = voxels
   max_labels = min(max_labels, voxels)
 
-  max_labels = min(max_labels, estimate_provisional_labels(data))
+  max_labels = min(max_labels, estimate_provisional_labels(data)[0])
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
