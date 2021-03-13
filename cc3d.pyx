@@ -39,6 +39,7 @@ from libcpp cimport bool as native_bool
 from cpython cimport array 
 import array
 import sys
+import time
 
 from libcpp.vector cimport vector
 from libcpp.map cimport map as mapcpp
@@ -138,7 +139,8 @@ def estimate_provisional_labels(data):
   cdef uint32_t[:] arr_memview32u
   cdef uint64_t[:] arr_memview64u
 
-  cdef int64_t istart, iend;
+  cdef int64_t istart = -1
+  cdef int64_t iend = -1
 
   try:
     # We aren't going to write to the array, but some 
@@ -243,22 +245,30 @@ def connected_components(
   cdef int sx = shape[0]
   cdef int sy = shape[1]
   cdef int sz = shape[2]
+  cdef int64_t sxy = <int64_t>sx * <int64_t>sy
+
+  epl, istart, iend = estimate_provisional_labels(data)
+
+  zstart = (istart // sx)
+  zend = (iend // sx)
+  print(istart, iend, zstart, zend)
+  data = data[:,:,zstart:zend+1]
+
+  sz = data.shape[2]
 
   cdef uint8_t[:,:,:] arr_memview8u
   cdef uint16_t[:,:,:] arr_memview16u
   cdef uint32_t[:,:,:] arr_memview32u
   cdef uint64_t[:,:,:] arr_memview64u
 
-  cdef int64_t voxels = <int64_t>sx * <int64_t>sy * <int64_t>sz
+  cdef int64_t voxels = sxy * <int64_t>sz
   cdef cnp.ndarray[uint16_t, ndim=1] out_labels16 = np.array([], dtype=np.uint16)
   cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
   cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
   if max_labels <= 0:
     max_labels = voxels
-  max_labels = min(max_labels, voxels)
-
-  max_labels = min(max_labels, estimate_provisional_labels(data)[0])
+  max_labels = min(max_labels, epl, voxels)
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 

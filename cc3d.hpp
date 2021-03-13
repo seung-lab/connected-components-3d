@@ -1135,6 +1135,8 @@ OUT* connected_components3d(
   size_t zstart = (row_start / sxy);
   size_t zend = (row_end / sxy);
 
+  printf("%lld %lld\n", zstart, zend);
+
   return connected_components3d<T, OUT>(in_labels + zstart * sxy, sx, sy, zend - zstart, max_labels, connectivity, NULL, N);
 }
 
