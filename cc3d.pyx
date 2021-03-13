@@ -56,7 +56,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     U* out_labels, size_t &N
   )
   cdef size_t estimate_provisional_label_count[T](
-    T* in_labels, int64_t sx, int64_t voxels
+    T* in_labels, int64_t sx, int64_t voxels, int64_t &start, int64_t &end
   )
 
 cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
@@ -138,6 +138,8 @@ def estimate_provisional_labels(data):
   cdef uint32_t[:] arr_memview32u
   cdef uint64_t[:] arr_memview64u
 
+  cdef int64_t istart, iend;
+
   try:
     # We aren't going to write to the array, but some 
     # non-modifying operations we'll perform will be blocked 
@@ -153,21 +155,23 @@ def estimate_provisional_labels(data):
 
     if dtype in (np.uint64, np.int64):
       arr_memview64u = linear_data.view(np.uint64)
-      return estimate_provisional_label_count[uint64_t](&arr_memview64u[0], sx, linear_data.size)
+      x= estimate_provisional_label_count[uint64_t](&arr_memview64u[0], sx, linear_data.size, istart, iend)
     elif dtype in (np.uint32, np.int32):
       arr_memview32u = linear_data.view(np.uint32)
-      return estimate_provisional_label_count[uint32_t](&arr_memview32u[0], sx, linear_data.size)
+      x= estimate_provisional_label_count[uint32_t](&arr_memview32u[0], sx, linear_data.size, istart, iend)
     elif dtype in (np.uint16, np.int16):
       arr_memview16u = linear_data.view(np.uint16)
-      return estimate_provisional_label_count[uint16_t](&arr_memview16u[0], sx, linear_data.size)
+      x= estimate_provisional_label_count[uint16_t](&arr_memview16u[0], sx, linear_data.size, istart, iend)
     elif dtype in (np.uint8, np.int8, bool):
       arr_memview8u = linear_data.view(np.uint8)
-      return estimate_provisional_label_count[uint8_t](&arr_memview8u[0], sx, linear_data.size)
+      x= estimate_provisional_label_count[uint8_t](&arr_memview8u[0], sx, linear_data.size, istart, iend)
     else:
       raise TypeError("Type {} not currently supported.".format(dtype))
   finally:
     if data.flags.owndata:
       data.setflags(write=writable)
+
+  return (x,istart,iend)
 
 def connected_components(
   data, int64_t max_labels=-1, 

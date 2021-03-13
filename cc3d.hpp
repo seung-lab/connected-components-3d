@@ -57,6 +57,8 @@
 namespace cc3d {
 
 static size_t _dummy_N;
+static int64_t _dummy_row_start;
+static int64_t _dummy_row_end;
 
 template <typename T>
 class DisjointSet {
@@ -292,15 +294,29 @@ OUT* relabel(
 
 template <typename T>
 size_t estimate_provisional_label_count(
-  T* in_labels, const int64_t sx, const int64_t voxels
+  T* in_labels, const int64_t sx, const int64_t voxels,
+  int64_t &row_start = _dummy_row_start, 
+  int64_t &row_end = _dummy_row_end
 ) {
   size_t count = 0; // number of transitions between labels
-  for (int64_t loc = 0; loc < voxels; loc += sx) {
-    count += (in_labels[loc] != 0);
+  size_t row_count = 0;
+  row_start = -1;
+  row_end = -1;
+  int64_t i = 0;
+  for (int64_t loc = 0; loc < voxels; loc += sx, i++) {
+    row_count += (in_labels[loc] != 0);
     for (int64_t x = 1; x < sx; x++) {
-      count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+      row_count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+    }
+    count += row_count;
+    if (row_count) {
+      if (row_start == -1) {
+        row_start = i;
+      }
+      row_end = i;
     }
   }
+
   return count;
 }
 
@@ -1109,8 +1125,17 @@ OUT* connected_components3d(
     const int64_t connectivity=26, size_t &N = _dummy_N
   ) {
   const size_t voxels = sx * sy * sz;
-  size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, max_labels, connectivity, NULL, N);
+  int64_t row_start = 0;
+  int64_t row_end = 0;
+  size_t epl = estimate_provisional_label_count(in_labels, sx, voxels, row_start, row_end);
+  size_t max_labels = std::min(epl, voxels);
+
+  size_t sxy = sx * sy;
+
+  size_t zstart = (row_start / sxy);
+  size_t zend = (row_end / sxy);
+
+  return connected_components3d<T, OUT>(in_labels + zstart * sxy, sx, sy, zend - zstart, max_labels, connectivity, NULL, N);
 }
 
 
