@@ -251,7 +251,7 @@ def connected_components(
 
   zstart = (istart // sx)
   zend = (iend // sx)
-  print(istart, iend, zstart, zend)
+  # print(istart, iend, zstart, zend)
   data = data[:,:,zstart:zend+1]
 
   sz = data.shape[2]
