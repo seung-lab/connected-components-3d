@@ -403,14 +403,14 @@ def test_epl_is_1():
   img = np.zeros((sx,sy,sz), dtype=np.uint8, order="F")
   y = np.random.randint(0,sy)
   z = np.random.randint(0,sz)
-  print(y,z)
+
   img[:,y,z] = 6
   out = cc3d.connected_components(img)
 
   epl, start, end = cc3d.estimate_provisional_labels(img)
   assert epl == 1
-  # assert start == sx * (y + sy * z)
-  # assert end == start
+  assert start == y + sy * z
+  assert end == start
 
   gt = np.zeros(img.shape, dtype=np.uint8, order="F")
   gt[:,y,z] = 1
