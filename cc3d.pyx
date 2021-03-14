@@ -250,11 +250,17 @@ def connected_components(
   cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
   cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
+  cdef size_t epl = estimate_provisional_labels(data)
+
+  if epl == 1:
+    if return_N:
+      return (data > 0, 1)
+    else:
+      return data > 0
+
   if max_labels <= 0:
     max_labels = voxels
-  max_labels = min(max_labels, voxels)
-
-  max_labels = min(max_labels, estimate_provisional_labels(data))
+  max_labels = min(max_labels, epl, voxels)
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
