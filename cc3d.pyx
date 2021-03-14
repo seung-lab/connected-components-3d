@@ -252,6 +252,9 @@ def connected_components(
 
   cdef size_t epl = estimate_provisional_labels(data)
 
+  # This can only happen if there is a single
+  # X axis aligned foreground row. Let's handle
+  # it efficiently.
   if epl == 1:
     if return_N:
       return (data > 0, 1)
