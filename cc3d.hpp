@@ -304,11 +304,12 @@ size_t estimate_provisional_label_count(
   row_end = -1;
   int64_t i = 0;
   for (int64_t loc = 0; loc < voxels; loc += sx, i++) {
-    row_count += (in_labels[loc] != 0);
+    row_count = (in_labels[loc] != 0);
     for (int64_t x = 1; x < sx; x++) {
       row_count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
     }
     count += row_count;
+    // printf("%llu\n", row_count);
     if (row_count) {
       if (row_start == -1) {
         row_start = i;

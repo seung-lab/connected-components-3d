@@ -255,6 +255,7 @@ def connected_components(
   data = data[:,:,zstart:zend+1]
 
   sz = data.shape[2]
+  print(sz, istart, iend, zstart, zend)
 
   cdef uint8_t[:,:,:] arr_memview8u
   cdef uint16_t[:,:,:] arr_memview16u
