@@ -396,7 +396,8 @@ def test_3d_cross_asymmetrical(dtype):
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
-def test_epl_is_1():
+@pytest.mark.parametrize("connectivity", (6,18,26))
+def test_epl_is_1(connectivity):
   sx = 256
   sy = 257
   sz = 252
@@ -405,12 +406,13 @@ def test_epl_is_1():
   z = np.random.randint(0,sz)
 
   img[:,y,z] = 6
-  out = cc3d.connected_components(img)
+  out = cc3d.connected_components(img, connectivity=connectivity)
 
   epl, start, end = cc3d.estimate_provisional_labels(img)
   assert epl == 1
   assert start == y + sy * z
   assert end == start
+  assert out.dtype == np.uint16
 
   gt = np.zeros(img.shape, dtype=np.uint8, order="F")
   gt[:,y,z] = 1
