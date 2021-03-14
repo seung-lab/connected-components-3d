@@ -397,13 +397,24 @@ def test_3d_cross_asymmetrical(dtype):
   test('F', gt_c2f(ground_truth))
 
 def test_epl_is_1():
-  img = np.zeros((256,256,256), dtype=np.uint8, order="F")
-  img[:,100,58] = 6
+  sx = 256
+  sy = 257
+  sz = 252
+  img = np.zeros((sx,sy,sz), dtype=np.uint8, order="F")
+  y = np.random.randint(0,sy)
+  z = np.random.randint(0,sz)
+  print(y,z)
+  img[:,y,z] = 6
   out = cc3d.connected_components(img)
 
-  assert cc3d.estimate_provisional_labels(img) == 1
-  assert np.all(np.unique(out) == [0,1])
-  assert np.all(out[:,100,58] == np.ones((256,), dtype=np.uint8))
+  epl, start, end = cc3d.estimate_provisional_labels(img)
+  assert epl == 1
+  # assert start == sx * (y + sy * z)
+  # assert end == start
+
+  gt = np.zeros(img.shape, dtype=np.uint8, order="F")
+  gt[:,y,z] = 1
+  assert np.all(out == gt)
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Windows 32-bit not supported.")
 def test_512_cube_no_segfault_no_jitsu(): 
