@@ -397,7 +397,7 @@ def test_3d_cross_asymmetrical(dtype):
   test('F', gt_c2f(ground_truth))
 
 @pytest.mark.parametrize("connectivity", (6,18,26))
-def test_epl_is_1(connectivity):
+def test_epl_special_case(connectivity):
   sx = 256
   sy = 257
   sz = 252
@@ -417,6 +417,16 @@ def test_epl_is_1(connectivity):
   gt = np.zeros(img.shape, dtype=np.uint8, order="F")
   gt[:,y,z] = 1
   assert np.all(out == gt)
+
+  img[:100,y,z] = 3
+  gt[100:,y,z] = 2
+  epl, start, end = cc3d.estimate_provisional_labels(img)
+  out = cc3d.connected_components(img, connectivity=connectivity)
+  assert epl == 2
+  assert start == end
+  print(gt[:,y,z])
+  print(out[:,y,z])
+  assert np.all(out == gt)  
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Windows 32-bit not supported.")
 def test_512_cube_no_segfault_no_jitsu(): 

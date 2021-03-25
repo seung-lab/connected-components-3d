@@ -329,13 +329,8 @@ def connected_components(
     # This first condition can only happen if there 
     # is a single X axis aligned foreground row. Let's handle
     # it hyper efficiently.
-    if epl == 1:
-      N = 1
-      start = first_foreground_row * sx
-      end = (first_foreground_row + 1) * sx
-      rz = first_foreground_row // sy
-      ry = first_foreground_row - rz * sy
-      out_labels[start:end] = data[:,ry,rz] > 0
+    if epl == 1 or (first_foreground_row == last_foreground_row and first_foreground_row >= 0):
+      N = epl_special_row(first_foreground_row, sx, sy, data, out_labels)
     elif dtype in (np.uint64, np.int64):
       arr_memview64u = data.view(np.uint64)
       if out_dtype == np.uint16:
@@ -443,6 +438,31 @@ def _final_reshape(out_labels, sx, sy, sz, dims, order):
     out_labels = out_labels.reshape( (sx), order=order)
 
   return out_labels
+
+cdef size_t epl_special_row(
+  size_t foreground_row, size_t sx, size_t sy, 
+  data, out_labels, size_t N = 0
+):
+  cdef size_t start = foreground_row * sx
+  cdef size_t end = (foreground_row + 1) * sx
+  cdef size_t rz = foreground_row // sy
+  cdef size_t ry = foreground_row - rz * sy
+
+  cdef size_t i = 0
+  cdef int64_t last_label = 0
+  for i in range(sx):
+    if data[i,ry,rz] == 0:
+      last_label = 0
+      continue
+    elif data[i,ry,rz] == last_label:
+      out_labels[start + i] = N
+      continue
+    else:
+      N += 1
+      out_labels[start + i] = N
+      last_label = data[i,ry,rz]
+
+  return N
 
 def voxel_connectivity_graph(data, int64_t connectivity=26):
   """
