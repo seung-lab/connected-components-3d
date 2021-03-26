@@ -329,7 +329,7 @@ def connected_components(
     # This first condition can only happen if there 
     # is a single X axis aligned foreground row. Let's handle
     # it hyper efficiently.
-    if epl == 1 or (first_foreground_row == last_foreground_row and first_foreground_row >= 0):
+    if first_foreground_row == last_foreground_row and first_foreground_row >= 0:
       N = epl_special_row(first_foreground_row, sx, sy, data, out_labels)
     elif dtype in (np.uint64, np.int64):
       arr_memview64u = data.view(np.uint64)
