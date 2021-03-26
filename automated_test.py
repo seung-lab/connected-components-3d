@@ -396,6 +396,38 @@ def test_3d_cross_asymmetrical(dtype):
   test('C', ground_truth)
   test('F', gt_c2f(ground_truth))
 
+@pytest.mark.parametrize("connectivity", (6,18,26))
+def test_epl_special_case(connectivity):
+  sx = 256
+  sy = 257
+  sz = 252
+  img = np.zeros((sx,sy,sz), dtype=np.uint8, order="F")
+  y = np.random.randint(0,sy)
+  z = np.random.randint(0,sz)
+
+  img[:,y,z] = 6
+  out = cc3d.connected_components(img, connectivity=connectivity)
+
+  epl, start, end = cc3d.estimate_provisional_labels(img)
+  assert epl == 1
+  assert start == y + sy * z
+  assert end == start
+  assert out.dtype == np.uint16
+
+  gt = np.zeros(img.shape, dtype=np.uint8, order="F")
+  gt[:,y,z] = 1
+  assert np.all(out == gt)
+
+  img[:100,y,z] = 3
+  gt[100:,y,z] = 2
+  epl, start, end = cc3d.estimate_provisional_labels(img)
+  out = cc3d.connected_components(img, connectivity=connectivity)
+  assert epl == 2
+  assert start == end
+  print(gt[:,y,z])
+  print(out[:,y,z])
+  assert np.all(out == gt)  
+
 @pytest.mark.skipif(sys.platform == "win32", reason="Windows 32-bit not supported.")
 def test_512_cube_no_segfault_no_jitsu(): 
   input_labels = np.arange(0, 512 ** 3).astype(np.uint64).reshape((512,512,512))

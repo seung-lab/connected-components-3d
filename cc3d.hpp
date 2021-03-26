@@ -57,6 +57,8 @@
 namespace cc3d {
 
 static size_t _dummy_N;
+static int64_t _dummy_row_start;
+static int64_t _dummy_row_end;
 
 template <typename T>
 class DisjointSet {
@@ -292,15 +294,31 @@ OUT* relabel(
 
 template <typename T>
 size_t estimate_provisional_label_count(
-  T* in_labels, const int64_t sx, const int64_t voxels
+  T* in_labels, const int64_t sx, const int64_t voxels,
+  int64_t &first_foreground_row = _dummy_row_start, 
+  int64_t &last_foreground_row = _dummy_row_end
 ) {
+  first_foreground_row = -1; // first row with any foreground
+  last_foreground_row = -1; // last row with any foreground
+
   size_t count = 0; // number of transitions between labels
-  for (int64_t loc = 0; loc < voxels; loc += sx) {
-    count += (in_labels[loc] != 0);
+  size_t row_count = 0; // per row
+
+  for (int64_t row = 0, loc = 0; loc < voxels; loc += sx, row++) {
+    row_count = (in_labels[loc] != 0);
     for (int64_t x = 1; x < sx; x++) {
-      count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+      row_count += static_cast<size_t>(in_labels[loc + x] != in_labels[loc + x - 1] && in_labels[loc + x] != 0);
+    }
+    count += row_count;
+    
+    if (row_count) { // there is foreground
+      if (first_foreground_row == -1) {
+        first_foreground_row = row;
+      }
+      last_foreground_row = row;
     }
   }
+
   return count;
 }
 

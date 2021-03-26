@@ -45,6 +45,7 @@ from libcpp.map cimport map as mapcpp
 from libcpp.utility cimport pair as cpp_pair
 cimport numpy as cnp
 import numpy as np
+import time
 
 __VERSION__ = '3.1.2'
 
@@ -56,7 +57,9 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     U* out_labels, size_t &N
   )
   cdef size_t estimate_provisional_label_count[T](
-    T* in_labels, int64_t sx, int64_t voxels
+    T* in_labels, int64_t sx, int64_t voxels,
+    int64_t &first_foreground_row, 
+    int64_t &last_foreground_row
   )
 
 cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
@@ -138,6 +141,9 @@ def estimate_provisional_labels(data):
   cdef uint32_t[:] arr_memview32u
   cdef uint64_t[:] arr_memview64u
 
+  cdef int64_t first_foreground_row = 0
+  cdef int64_t last_foreground_row = 0
+
   try:
     # We aren't going to write to the array, but some 
     # non-modifying operations we'll perform will be blocked 
@@ -153,21 +159,35 @@ def estimate_provisional_labels(data):
 
     if dtype in (np.uint64, np.int64):
       arr_memview64u = linear_data.view(np.uint64)
-      return estimate_provisional_label_count[uint64_t](&arr_memview64u[0], sx, linear_data.size)
+      epl = estimate_provisional_label_count[uint64_t](
+        &arr_memview64u[0], sx, linear_data.size,
+        first_foreground_row, last_foreground_row
+      )
     elif dtype in (np.uint32, np.int32):
       arr_memview32u = linear_data.view(np.uint32)
-      return estimate_provisional_label_count[uint32_t](&arr_memview32u[0], sx, linear_data.size)
+      epl = estimate_provisional_label_count[uint32_t](
+        &arr_memview32u[0], sx, linear_data.size,
+        first_foreground_row, last_foreground_row
+      )
     elif dtype in (np.uint16, np.int16):
       arr_memview16u = linear_data.view(np.uint16)
-      return estimate_provisional_label_count[uint16_t](&arr_memview16u[0], sx, linear_data.size)
+      epl = estimate_provisional_label_count[uint16_t](
+        &arr_memview16u[0], sx, linear_data.size,
+        first_foreground_row, last_foreground_row
+      )
     elif dtype in (np.uint8, np.int8, bool):
       arr_memview8u = linear_data.view(np.uint8)
-      return estimate_provisional_label_count[uint8_t](&arr_memview8u[0], sx, linear_data.size)
+      epl = estimate_provisional_label_count[uint8_t](
+        &arr_memview8u[0], sx, linear_data.size,
+        first_foreground_row, last_foreground_row
+      )
     else:
       raise TypeError("Type {} not currently supported.".format(dtype))
   finally:
     if data.flags.owndata:
       data.setflags(write=writable)
+
+  return (epl, first_foreground_row, last_foreground_row)
 
 def connected_components(
   data, int64_t max_labels=-1, 
@@ -250,11 +270,11 @@ def connected_components(
   cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
   cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
+  epl, first_foreground_row, last_foreground_row = estimate_provisional_labels(data)
+
   if max_labels <= 0:
     max_labels = voxels
-  max_labels = min(max_labels, voxels)
-
-  max_labels = min(max_labels, estimate_provisional_labels(data))
+  max_labels = min(max_labels, epl, voxels)
 
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
@@ -306,7 +326,12 @@ def connected_components(
     if data.flags.owndata:
       data.setflags(write=1)
 
-    if dtype in (np.uint64, np.int64):
+    # This first condition can only happen if there 
+    # is a single X axis aligned foreground row. Let's handle
+    # it hyper efficiently.
+    if first_foreground_row == last_foreground_row and first_foreground_row >= 0:
+      N = epl_special_row(first_foreground_row, sx, sy, data, out_labels)
+    elif dtype in (np.uint64, np.int64):
       arr_memview64u = data.view(np.uint64)
       if out_dtype == np.uint16:
         connected_components3d[uint64_t, uint16_t](
@@ -392,6 +417,13 @@ def connected_components(
     if data.flags.owndata:
       data.setflags(write=writable)
 
+  out_labels = _final_reshape(out_labels, sx, sy, sz, dims, order)
+
+  if return_N:
+    return (out_labels, N)
+  return out_labels
+
+def _final_reshape(out_labels, sx, sy, sz, dims, order):
   if dims == 3:
     if order == 'C':
       out_labels = out_labels.reshape( (sz, sy, sx), order=order)
@@ -405,9 +437,32 @@ def connected_components(
   else:
     out_labels = out_labels.reshape( (sx), order=order)
 
-  if return_N:
-    return (out_labels, N)
   return out_labels
+
+cdef size_t epl_special_row(
+  size_t foreground_row, size_t sx, size_t sy, 
+  data, out_labels, size_t N = 0
+):
+  cdef size_t start = foreground_row * sx
+  cdef size_t end = (foreground_row + 1) * sx
+  cdef size_t rz = foreground_row // sy
+  cdef size_t ry = foreground_row - rz * sy
+
+  cdef size_t i = 0
+  cdef int64_t last_label = 0
+  for i in range(sx):
+    if data[i,ry,rz] == 0:
+      last_label = 0
+      continue
+    elif data[i,ry,rz] == last_label:
+      out_labels[start + i] = N
+      continue
+    else:
+      N += 1
+      out_labels[start + i] = N
+      last_label = data[i,ry,rz]
+
+  return N
 
 def voxel_connectivity_graph(data, int64_t connectivity=26):
   """
