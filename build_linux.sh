@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/bin/bash
 container_name=$(basename $(dirname $(realpath $0)))
 echo "Building seunglab/$container_name"
 docker build . -f manylinux1.Dockerfile --tag "seunglab/$container_name:manylinux1"
