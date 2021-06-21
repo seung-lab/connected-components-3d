@@ -55,7 +55,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity,
     U* out_labels, size_t &N
-  )
+  ) except +
   cdef size_t estimate_provisional_label_count[T](
     T* in_labels, int64_t sx, int64_t voxels,
     int64_t &first_foreground_row, 
@@ -67,12 +67,12 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t connectivity, OUT *graph
-  )
+  ) except +
   cdef vector[T] extract_region_graph[T](
     T* labels,
     int64_t sx, int64_t sy, int64_t sz,
     int64_t connectivity,
-  )
+  ) except +
   cdef mapcpp[T, vector[cpp_pair[size_t,size_t]]] extract_runs[T](
     T* labels, size_t sx, size_t sy, size_t sz
   )
@@ -80,7 +80,7 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
     T key,
     vector[cpp_pair[size_t, size_t]] all_runs,
     T* labels, size_t voxels
-  )
+  ) except +
 
 ctypedef fused UINT:
   uint8_t
