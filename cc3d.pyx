@@ -155,6 +155,9 @@ def estimate_provisional_labels(data):
 
     dtype = data.dtype
     sx = data.shape[0]
+    if data.flags.c_contiguous:
+      sx = data.shape[-1]
+
     linear_data = reshape(data, (data.size,))
 
     if dtype in (np.uint64, np.int64):
@@ -444,23 +447,35 @@ cdef size_t epl_special_row(
   data, out_labels, size_t N = 0
 ):
   cdef size_t start = foreground_row * sx
-  cdef size_t end = (foreground_row + 1) * sx
   cdef size_t rz = foreground_row // sy
   cdef size_t ry = foreground_row - rz * sy
 
   cdef size_t i = 0
   cdef int64_t last_label = 0
-  for i in range(sx):
-    if data[i,ry,rz] == 0:
-      last_label = 0
-      continue
-    elif data[i,ry,rz] == last_label:
-      out_labels[start + i] = N
-      continue
-    else:
-      N += 1
-      out_labels[start + i] = N
-      last_label = data[i,ry,rz]
+  if data.flags.c_contiguous:
+    for i in range(sx):
+      if data[rz,ry,i] == 0:
+        last_label = 0
+        continue
+      elif data[rz,ry,i] == last_label:
+        out_labels[start + i] = N
+        continue
+      else:
+        N += 1
+        out_labels[start + i] = N
+        last_label = data[rz,ry,i]
+  else:
+    for i in range(sx):
+      if data[i,ry,rz] == 0:
+        last_label = 0
+        continue
+      elif data[i,ry,rz] == last_label:
+        out_labels[start + i] = N
+        continue
+      else:
+        N += 1
+        out_labels[start + i] = N
+        last_label = data[i,ry,rz]
 
   return N
 

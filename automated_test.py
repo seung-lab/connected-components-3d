@@ -619,6 +619,19 @@ def test_each(dtype, order, in_place, dims):
   for label, img in cc3d.each(labels, binary=True, in_place=in_place):
     assert np.all(img == (labels == label))
 
+@pytest.mark.parametrize("order", ('C', 'F'))
+@pytest.mark.parametrize("connectivity", (4, 8))
+def test_single_pixel_2d(order, connectivity):
+  binary_img = np.zeros((3, 3), dtype=np.uint8, order=order)
+  binary_img[1, 1] = 1
+  labels = cc3d.connected_components(binary_img, connectivity=connectivity)
+  assert np.all(labels == binary_img)
+  
+  binary_img = np.zeros((5, 5), dtype=np.uint8, order=order)
+  binary_img[1, 1] = 1
+  labels = cc3d.connected_components(binary_img, connectivity=connectivity)
+  assert np.all(labels == binary_img)
+
 def test_region_graph_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
