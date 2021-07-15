@@ -1,0 +1,29 @@
+name: Build Wheels
+
+on:  
+  push:
+    tags:
+      - '*'
+env:
+  CIBW_SKIP: cp27-* cp33-* cp34-* cp35-* pp27* pp36* pp37*
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build wheels
+        uses: joerick/cibuildwheel@v1.10.0
+        # to supply options, put them in 'env', like:
+        env:
+          CIBW_BEFORE_BUILD: pip install oldest-supported-numpy
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
