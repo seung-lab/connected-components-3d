@@ -62,14 +62,14 @@ N = np.max(labels_out) # costs a full read
 # This approach is slow, but makes a mutable copy.
 for segid in range(1, N+1):
   extracted_image = labels_out * (labels_out == segid)
-  process(extracted_image)
+  process(extracted_image) # stand in for whatever you'd like to do
 
 # If a read-only image is ok, this approach is MUCH faster
 # if the image has many contiguous regions. A random image 
 # can be slower. binary=True yields binary images instead
 # of numbered images.
 for label, image in cc3d.each(labels_out, binary=False, in_place=True):
-  process(image)
+  process(image) # stand in for whatever you'd like to do
 
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.
