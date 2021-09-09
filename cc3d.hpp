@@ -254,7 +254,7 @@ OUT* relabel(
   }
 
   OUT label;
-  OUT* renumber = new OUT[num_labels + 1]();
+  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
   OUT next_label = 1;
 
   for (int64_t i = 1; i <= num_labels; i++) {
@@ -297,7 +297,6 @@ OUT* relabel(
     pool.join();
   }
 
-  delete[] renumber;
   return out_labels;
 }
 
