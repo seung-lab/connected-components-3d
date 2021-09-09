@@ -54,6 +54,8 @@
 #include <vector>
 #include <limits>
 
+#include "threadpool.h"
+
 namespace cc3d {
 
 static size_t _dummy_N;
@@ -243,7 +245,7 @@ template <typename OUT = uint32_t>
 OUT* relabel(
     OUT* out_labels, const int64_t sx, const int64_t sy, const int64_t sz,
     const int64_t num_labels, DisjointSet<OUT> &equivalences,
-    size_t &N, const uint32_t *runs
+    size_t &N, const uint32_t *runs, const int64_t parallel = 1
   ) {
 
   if (num_labels <= 1) {
@@ -270,13 +272,29 @@ OUT* relabel(
   N = next_label - 1;
   if (N < static_cast<size_t>(num_labels)) {
     // Raster Scan 2: Write final labels based on equivalences
-    for (int64_t row = 0; row < sy * sz; row++) {
-      int64_t xstart = runs[row << 1];
-      int64_t xend = runs[(row << 1) + 1];
-      for (int64_t loc = sx * row + xstart; loc < sx * row + xend; loc++) {
-        out_labels[loc] = renumber[out_labels[loc]];
+    ThreadPool pool(parallel);
+
+    std::function<void(int64_t)> relabelfn = [&](int64_t p){
+      int64_t partition = (sy * sz) / parallel;
+      int64_t start = p * partition;
+      int64_t end = (p == parallel - 1) 
+        ? (sy * sz)
+        : (p+1) * partition;
+
+      for (int64_t row = start; row < end; row++) {
+        int64_t xstart = runs[row << 1];
+        int64_t xend = runs[(row << 1) + 1];
+        for (int64_t loc = sx * row + xstart; loc < sx * row + xend; loc++) {
+          out_labels[loc] = renumber[out_labels[loc]];
+        }
       }
+    };
+
+    for (int64_t p = 0; p < parallel; p++) {
+      pool.enqueue([p, &relabelfn](){ relabelfn(p); });
     }
+
+    pool.join();
   }
 
   delete[] renumber;
@@ -346,7 +364,8 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_26(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    size_t max_labels, OUT *out_labels = NULL, size_t &N = _dummy_N
+    size_t max_labels, OUT *out_labels = NULL, 
+    size_t &N = _dummy_N, const int64_t parallel = 1
   ) {
 
 	const int64_t sxy = sx * sy;
@@ -591,7 +610,7 @@ OUT* connected_components3d_26(
   }
   
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs, parallel);
   delete[] runs;
   return out_labels;
 }
@@ -601,7 +620,8 @@ OUT* connected_components3d_18(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    const int64_t parallel = 1
   ) {
 
   const int64_t sxy = sx * sy;
@@ -751,7 +771,7 @@ OUT* connected_components3d_18(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs, parallel);
   delete[] runs;
   return out_labels;
 }
@@ -761,7 +781,8 @@ OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    const int64_t parallel = 1
   ) {
 
   const int64_t sxy = sx * sy;
@@ -860,7 +881,7 @@ OUT* connected_components3d_6(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs, parallel);
   delete[] runs;
   return out_labels;
 }
@@ -875,7 +896,8 @@ OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    const int64_t parallel = 1
   ) {
 
   const int64_t voxels = sx * sy;
@@ -945,7 +967,7 @@ OUT* connected_components2d_4(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs, parallel);
   delete[] runs;
   return out_labels;
 }
@@ -960,7 +982,8 @@ OUT* connected_components2d_8(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    const int64_t parallel = 1
   ) {
 
   const int64_t voxels = sx * sy;
@@ -1042,7 +1065,7 @@ OUT* connected_components2d_8(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
+  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs, parallel);
   delete[] runs;
   return out_labels;
 }
@@ -1052,25 +1075,26 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity,
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N, 
+    const int64_t parallel = 1
   ) {
 
   if (connectivity == 26) {
     return connected_components3d_26<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, parallel
     );
   }
   else if (connectivity == 18) {
     return connected_components3d_18<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, parallel
     );
   }
   else if (connectivity == 6) {
     return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, parallel
     );
   }
   else if (connectivity == 8) {
@@ -1079,7 +1103,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_8<T,OUT>(
       in_labels, sx, sy,
-      max_labels, out_labels, N
+      max_labels, out_labels, N, parallel
     );
   }
   else if (connectivity == 4) {
@@ -1088,7 +1112,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, parallel
     );
   }
   else {
@@ -1100,11 +1124,16 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity=26, size_t &N = _dummy_N
+    const int64_t connectivity=26, size_t &N = _dummy_N,
+    const int64_t parallel = 1
   ) {
   const size_t voxels = sx * sy * sz;
   size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, max_labels, connectivity, NULL, N);
+  return connected_components3d<T, OUT>(
+    in_labels, sx, sy, sz, 
+    max_labels, connectivity, 
+    NULL, N, parallel
+  );
 }
 
 
