@@ -218,6 +218,7 @@ def connected_components(
         8 (+corners).
     return_N (bool): if True, also return the number of connected components
       as the second argument of a return tuple.
+    parallel: number of threads to perform computation. Must be > 0.
 
   let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
@@ -235,6 +236,9 @@ def connected_components(
   cdef int dims = len(data.shape)
   if dims not in (1,2,3):
     raise DimensionError("Only 1D, 2D, and 3D arrays supported. Got: " + str(dims))
+
+  if parallel <= 0:
+    raise ValueError(f"parallel must be greater than 0. Got: {parallel}")
 
   if dims == 2 and connectivity not in (4, 8, 6, 18, 26):
     raise ValueError("Only 4, 8, and 6, 18, 26 connectivities are supported for 2D images. Got: " + str(connectivity))

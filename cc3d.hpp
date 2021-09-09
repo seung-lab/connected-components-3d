@@ -1079,6 +1079,10 @@ OUT* connected_components3d(
     const int64_t parallel = 1
   ) {
 
+  if (parallel <= 0) {
+    throw std::runtime_error("parallel must be an integer > 1.");
+  }
+
   if (connectivity == 26) {
     return connected_components3d_26<T, OUT>(
       in_labels, sx, sy, sz, 
