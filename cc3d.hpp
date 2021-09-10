@@ -250,8 +250,11 @@ OUT* relabel(
 
   size_t num_labels = 0;
   for (int64_t p = 0; p < parallel; p++) {
+    // printf("(p) offsets: %d, %d\n", label_offsets[2*p], label_offsets[2*p+1]);
     num_labels += label_offsets[2*p+1] - label_offsets[2*p] + 1;
   }
+
+  // printf("num labels: %d\n", num_labels);
 
   if (num_labels <= 1) {
     N = num_labels;
@@ -259,12 +262,16 @@ OUT* relabel(
   }
 
   OUT label;
-  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
+  std::unique_ptr<OUT[]> renumber(
+    new OUT[label_offsets[label_offsets.size() - 1] + 1]()
+  );
   OUT next_label = 1;
 
   for (int64_t p = 0; p < parallel; p++) {
     for (int64_t i = label_offsets[p*2]; i <= label_offsets[p*2+1]; i++) {
+      // printf("%d\n", i);
       label = equivalences.root(i);
+      // printf("label %d\n", label);
       if (renumber[label] == 0) {
         renumber[label] = next_label;
         renumber[i] = next_label;
@@ -275,6 +282,8 @@ OUT* relabel(
       }
     }
   }
+
+  // printf("begin applying relabels\n");
 
   N = next_label - 1;
   if (N < static_cast<size_t>(num_labels)) {
@@ -393,6 +402,8 @@ OUT* connected_components3d_26(
   else {
     max_labels = static_cast<size_t>(voxels) + 1;
   }
+
+  // printf("max_labels: %d\n", max_labels);
   
   DisjointSet<OUT> equivalences(max_labels);
 
@@ -437,13 +448,15 @@ OUT* connected_components3d_26(
     
     OUT next_label = next_label_start;
     int64_t loc = 0;
-    int64_t row = p * partition * sxy;
+    int64_t row = p * partition * sy;
+    // printf("(%d) row: %d, %d, %d, %d\n", p, row, partition, sxy, sz);
 
     for (int64_t z = 0; z < sz; z++) {
       for (int64_t y = 0; y < sy; y++, row++) {
         const int64_t xstart = runs[row << 1];
         const int64_t xend = runs[(row << 1) + 1];
 
+        // printf("(%d) <%d,%d,%d>\n",p,xstart,y,z);
         for (int64_t x = xstart; x < xend; x++) {
           loc = x + sx * y + sxy * z;
           const T cur = in_labels[loc];
@@ -639,12 +652,14 @@ OUT* connected_components3d_26(
       ? sz
       : (p+1) * partition;
     pool.enqueue([&, p, partition_offset, zstart, zend](){
+      // printf("%d start\n", p);
       equivfn(
         p, 
         (in_labels + partition_offset), 
         (out_labels + partition_offset), 
         (zend - zstart)
       );
+      // printf("%d end\n", p);
     });
     partition_offset += (zend - zstart) * sxy;
   }
@@ -654,8 +669,9 @@ OUT* connected_components3d_26(
   if (parallel > 1) {
     // I think this can be parallelized too
     // if unify skips path compression.
+    // printf("resolve start\n");
     for (int64_t z = partition; z < sz; z += partition) {
-      int64_t row = z * sxy;
+      int64_t row = z * sy;
       for (int64_t y = 0; y < sy; y++, row++) {
         const int64_t xstart = runs[row << 1];
         const int64_t xend = runs[(row << 1) + 1];
@@ -741,6 +757,8 @@ OUT* connected_components3d_26(
       }    
     }
   }
+
+  // printf("relabel begin\n");
 
   out_labels = relabel<OUT>(out_labels, sx, sy, sz, label_offsets, equivalences, N, runs, parallel);
   delete[] runs;
