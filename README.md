@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/seung-lab/connected-components-3d.svg?branch=master)](https://travis-ci.org/seung-lab/connected-components-3d) [![PyPI version](https://badge.fury.io/py/connected-components-3d.svg)](https://badge.fury.io/py/connected-components-3d)
+[![Build Status](https://travis-ci.org/seung-lab/connected-components-3d.svg?branch=master)](https://travis-ci.org/seung-lab/connected-components-3d) [![PyPI version](https://badge.fury.io/py/connected-components-3d.svg)](https://badge.fury.io/py/connected-components-3d) [![DOI](https://zenodo.org/badge/146368855.svg)](https://zenodo.org/badge/latestdoi/146368855)
 
 cc3d: Connected Components on Multilabel 3D Images
 =======================
