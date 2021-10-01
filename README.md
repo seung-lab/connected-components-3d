@@ -339,14 +339,6 @@ A number of papers are using cc3d now. Many of them seem to be deep learning app
 
 https://scholar.google.com/scholar?as_ylo=2019&q=connected-components-3d&hl=en&as_sdt=0,31
 
-Please cite cc3d as:
-
-```
-W. Silversmith. "cc3d: Connected Components on Multilabel 3D Images". 
-January 2021. https://github.com/seung-lab/connected-components-3d/
-```
-
-
 ## References
 
 1. A. Rosenfeld and J. Pfaltz. "Sequential Operations in Digital Picture Processing". Journal of the ACM. Vol. 13, Issue 4, Oct. 1966, Pg. 471-494. doi: 10.1145/321356.321357 ([link](https://dl.acm.org/citation.cfm?id=321357))
