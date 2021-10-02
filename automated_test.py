@@ -19,9 +19,10 @@ def gt_c2f(gt):
   f_gt[ f_gt == mx ] = 3
   return f_gt
 
+@pytest.mark.parametrize("parallel", (1,2))
 @pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
-def test_2d_square(dtype, connectivity):
+def test_2d_square(dtype, connectivity, parallel):
   def test(order, ground_truth):
     input_labels = np.zeros( (16,16), dtype=dtype, order=order )
     input_labels[:8,:8] = 8
@@ -30,7 +31,7 @@ def test_2d_square(dtype, connectivity):
     input_labels[8:,8:] = 11
 
     output_labels = cc3d.connected_components(
-      input_labels, connectivity=connectivity
+      input_labels, connectivity=connectivity, parallel=parallel
     ).astype(dtype)
     
     print(output_labels)
@@ -229,13 +230,16 @@ def test_2d_cross_with_intruder(connectivity):
   test("C", ground_truth)
   test("F", gt_c2f(ground_truth))
 
+@pytest.mark.parametrize("parallel", (1,2))
 @pytest.mark.parametrize("order", ('C', 'F'))
 @pytest.mark.parametrize("connectivity", (6,18,26))
-def test_3d_all_different(order, connectivity):
+def test_3d_all_different(order, connectivity, parallel):
   input_labels = np.arange(0, 100 * 99 * 98).astype(np.uint32) + 1
   input_labels = input_labels.reshape((100,99,98), order=order)
 
-  output_labels = cc3d.connected_components(input_labels, connectivity=connectivity)
+  output_labels = cc3d.connected_components(
+    input_labels, connectivity=connectivity, parallel=parallel
+  )
 
   assert np.unique(output_labels).shape[0] == 100*99*98
   assert output_labels.shape == (100, 99, 98)
@@ -442,7 +446,8 @@ def test_max_labels_nonsensical():
   assert np.all(real_labels == zero_labels)
   assert np.all(real_labels == negative_labels)
 
-def test_compare_scipy_26():
+@pytest.mark.parametrize("parallel", (1,2))
+def test_compare_scipy_26(parallel):
   import scipy.ndimage.measurements
 
   sx, sy, sz = 128, 128, 128
@@ -454,7 +459,9 @@ def test_compare_scipy_26():
     [[1,1,1], [1,1,1], [1,1,1]]
   ]
 
-  cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=26, return_N=True)
+  cc3d_labels, Ncc3d = cc3d.connected_components(
+    labels, connectivity=26, return_N=True, parallel=parallel
+  )
   scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels, structure=structure)
 
   print(cc3d_labels)
