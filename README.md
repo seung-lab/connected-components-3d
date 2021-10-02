@@ -84,12 +84,6 @@ graph = cc3d.voxel_connectivity_graph(labels, connectivity=connectivity)
 
 ```
 
-If you know approximately how many labels you are going to generate, you can save some memory by specifying a number a safety factor above that range. The max label ID in your input labels must be less than `max_labels`.  *This option is only recommended for expert users.*
-
-```python
-labels_out = connected_components(labels_in, max_labels=20000)
-```
-
 *Note: C and Fortran order arrays will be processed in row major and column major order respectively, so the numbering of labels will be "transposed". The scare quotes are there because the dimensions of the array will not change.*
 
 ## C++ Use 
