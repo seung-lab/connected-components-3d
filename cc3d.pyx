@@ -26,7 +26,7 @@ the source code for free here:
 
 https://github.com/seung-lab/connected-components-3d
 """
-
+import cython
 import operator
 from functools import reduce
 
@@ -478,6 +478,86 @@ cdef size_t epl_special_row(
         last_label = data[i,ry,rz]
 
   return N
+
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.nonecheck(False)
+def statistics(cnp.ndarray[UINT, ndim=3] out_labels):
+  """
+  statistics(cnp.ndarray[UINT, ndim=3] out_labels):
+
+  Compute basic statistics on the regions in the image.
+  These are the voxel counts per label, the axis-aligned
+  bounding box, and the centroid of each label.
+
+  Returns:
+    Let N = np.max(out_labels)
+    Index into array is the CCL label.
+    {
+      voxel_counts: np.ndarray[uint64_t] (index is label) (N+1)
+
+      # Structure is xmin,xmax,ymin,ymax,zmin,zmax by label
+      bounding_boxes: np.ndarray[uint64_t] (N+1 x 6)
+
+      # Structure is x,y,z
+      centroids: np.ndarray[float64] (N+1,3)
+    }
+  """
+  cdef uint64_t voxels = out_labels.size;
+  cdef uint64_t sx = out_labels.shape[0]
+  cdef uint64_t sy = out_labels.shape[1]
+  cdef uint64_t sz = out_labels.shape[2]
+
+  if voxels == 0:
+    return {
+      "voxel_counts": None,
+      "bounding_boxes": None,
+      "centroids": None,
+    }
+
+  cdef uint64_t N = np.max(out_labels)
+
+  if N > voxels:
+    raise ValueError(
+      f"Statistics can only be computed on volumes containing labels with values lower than the number of voxels. Max: {N}"
+    )
+
+  cdef cnp.ndarray[uint64_t] counts = np.zeros(N + 1, dtype=np.uint64)
+  cdef cnp.ndarray[uint64_t] bounding_boxes = np.zeros(6 * (N + 1), dtype=np.uint64)
+  cdef cnp.ndarray[double] centroids = np.zeros(3 * (N + 1), dtype=np.float64)
+
+  cdef uint64_t x = 0
+  cdef uint64_t y = 0
+  cdef uint64_t z = 0
+
+  cdef uint64_t label = 0
+
+  for z in range(sz):
+    for y in range(sy):
+      for x in range(sx):
+        label = <uint64_t>out_labels[x,y,z]
+        counts[label] += 1
+        bounding_boxes[6 * label + 0] = min(bounding_boxes[6 * label + 0], x)
+        bounding_boxes[6 * label + 1] = max(bounding_boxes[6 * label + 1], x)
+        bounding_boxes[6 * label + 2] = min(bounding_boxes[6 * label + 2], y)
+        bounding_boxes[6 * label + 3] = max(bounding_boxes[6 * label + 3], y)
+        bounding_boxes[6 * label + 4] = min(bounding_boxes[6 * label + 4], z)
+        bounding_boxes[6 * label + 5] = max(bounding_boxes[6 * label + 5], z)
+        centroids[3 * label + 0] += <double>x
+        centroids[3 * label + 1] += <double>y
+        centroids[3 * label + 2] += <double>z
+
+  for label in range(N+1):
+    centroids[3 * label + 0] /= <double>counts[label]
+    centroids[3 * label + 1] /= <double>counts[label]
+    centroids[3 * label + 2] /= <double>counts[label]
+
+  return {
+    "voxel_counts": counts,
+    "bounding_boxes": bounding_boxes.reshape((N+1,6)),
+    "centroids": centroids.reshape((N+1,3)),
+  }
 
 def voxel_connectivity_graph(data, int64_t connectivity=26):
   """
