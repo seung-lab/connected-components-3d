@@ -479,11 +479,8 @@ cdef size_t epl_special_row(
 
   return N
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.nonecheck(False)
-def statistics(cnp.ndarray[UINT, ndim=3] out_labels):
+
+def statistics(out_labels):
   """
   statistics(cnp.ndarray[UINT, ndim=3] out_labels):
 
@@ -504,6 +501,19 @@ def statistics(cnp.ndarray[UINT, ndim=3] out_labels):
       centroids: np.ndarray[float64] (N+1,3)
     }
   """
+  while out_labels.ndim < 3:
+    out_labels = out_labels[..., np.newaxis]
+
+  if out_labels.dtype == bool:
+    out_labels = out_labels.view(np.uint8)
+
+  return _statistics(out_labels)
+
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.nonecheck(False)
+def _statistics(cnp.ndarray[UINT, ndim=3] out_labels):
   cdef uint64_t voxels = out_labels.size;
   cdef uint64_t sx = out_labels.shape[0]
   cdef uint64_t sy = out_labels.shape[1]
@@ -533,6 +543,9 @@ def statistics(cnp.ndarray[UINT, ndim=3] out_labels):
 
   cdef uint64_t label = 0
 
+  for label in range(0, <uint64_t>bounding_boxes.size, 2):
+    bounding_boxes[label] = voxels
+
   for z in range(sz):
     for y in range(sy):
       for x in range(sx):
@@ -553,9 +566,16 @@ def statistics(cnp.ndarray[UINT, ndim=3] out_labels):
     centroids[3 * label + 1] /= <double>counts[label]
     centroids[3 * label + 2] /= <double>counts[label]
 
+  slices = []
+  for xs, xe, ys, ye, zs, ze in bounding_boxes.reshape((N+1,6)):
+    if xs < voxels and ys < voxels and zs < voxels:
+      slices.append((slice(xs,xe+1), slice(ys,ye+1), slice(zs,ze+1))) 
+    else:
+      slices.append(None)
+  
   return {
     "voxel_counts": counts,
-    "bounding_boxes": bounding_boxes.reshape((N+1,6)),
+    "bounding_boxes": slices,
     "centroids": centroids.reshape((N+1,3)),
   }
 

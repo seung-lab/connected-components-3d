@@ -818,4 +818,33 @@ def test_voxel_graph_3d():
   
   assert np.all(gt.T == graph)
 
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_statistics(order):
+  labels = np.zeros((123,128,125), dtype=np.uint8, order=order)
+  labels[10:20,10:20,10:20] = 1
+  labels[40:50,40:50,40:51] = 2
+
+  stats = cc3d.statistics(labels)
+  assert stats["voxel_counts"][1] == 1000
+  assert stats["voxel_counts"][2] == 10 * 10 * 11
+  
+  assert np.all(stats["centroids"][1,:] == [14.5,14.5,14.5])
+  assert np.all(stats["centroids"][2,:] == [44.5,44.5,45])
+
+  assert np.all(stats["bounding_boxes"][0] == (slice(0,123), slice(0,128), slice(0,125)))
+  assert np.all(stats["bounding_boxes"][1] == (slice(10,20), slice(10,20), slice(10,20)))
+  assert np.all(stats["bounding_boxes"][2] == (slice(40,50), slice(40,50), slice(40,51)))
+
+  labels = np.zeros((1,1,1), dtype=np.uint8, order=order)
+  stats = cc3d.statistics(labels)
+  assert len(stats["voxel_counts"]) == 1
+  assert stats["voxel_counts"][0] == 1
+
+  labels = np.zeros((0,1,1), dtype=np.uint8, order=order)
+  stats = cc3d.statistics(labels)
+  assert stats == { 
+    "voxel_counts": None, 
+    "bounding_boxes": None, 
+    "centroids": None 
+  }
 
