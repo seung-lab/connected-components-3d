@@ -47,7 +47,7 @@ cimport numpy as cnp
 import numpy as np
 import time
 
-__VERSION__ = '3.2.1'
+__VERSION__ = '3.3.0'
 
 cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef uint32_t* connected_components3d[T,U](
