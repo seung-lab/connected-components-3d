@@ -71,6 +71,9 @@ for segid in range(1, N+1):
 for label, image in cc3d.each(labels_out, binary=False, in_place=True):
   process(image) # stand in for whatever you'd like to do
 
+# Image statistics like voxel counts, bounding boxes, and centroids.
+stats = cc3d.statistics(labels_out)
+
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.
 edges = cc3d.region_graph(labels_out, connectivity=connectivity) 
