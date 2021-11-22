@@ -129,7 +129,7 @@ OUT* connected_components3d_continuous(
 
         compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
         bool any = false;
-        
+
         for (int64_t i = 0; i < connectivity / 2; i++) {
           int64_t neighbor = neighborhood[i];
 
@@ -166,9 +166,8 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
-    size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N,
-    const T delta = 0
+    size_t max_labels, const T delta,
+    OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   const int64_t voxels = sx * sy;
@@ -249,9 +248,8 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_8(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
-    size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N,
-    const T delta = 0
+    size_t max_labels, const T delta,
+    OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
   const int64_t voxels = sx * sy;
@@ -380,7 +378,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_8<T,OUT>(
       in_labels, sx, sy,
-      max_labels, out_labels, N, delta
+      max_labels, delta, out_labels, N
     );
   }
   else if (connectivity == 4) {
@@ -389,7 +387,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, out_labels, N, delta
+      max_labels, delta, out_labels, N
     );
   }
   else {
