@@ -142,6 +142,8 @@ def estimate_provisional_labels(data):
   cdef uint16_t[:] arr_memview16u
   cdef uint32_t[:] arr_memview32u
   cdef uint64_t[:] arr_memview64u
+  cdef float[:] arr_memviewf
+  cdef double[:] arr_memviewd
 
   cdef int64_t first_foreground_row = 0
   cdef int64_t last_foreground_row = 0
@@ -184,6 +186,18 @@ def estimate_provisional_labels(data):
       arr_memview8u = linear_data.view(np.uint8)
       epl = estimate_provisional_label_count[uint8_t](
         &arr_memview8u[0], sx, linear_data.size,
+        first_foreground_row, last_foreground_row
+      )
+    elif dtype == np.float32:
+      arr_memviewf = linear_data
+      epl = estimate_provisional_label_count[float](
+        &arr_memviewf[0], sx, linear_data.size,
+        first_foreground_row, last_foreground_row
+      )
+    elif dtype == np.float64:
+      arr_memviewd = linear_data
+      epl = estimate_provisional_label_count[double](
+        &arr_memviewd[0], sx, linear_data.size,
         first_foreground_row, last_foreground_row
       )
     else:
@@ -270,6 +284,8 @@ def connected_components(
   cdef uint16_t[:,:,:] arr_memview16u
   cdef uint32_t[:,:,:] arr_memview32u
   cdef uint64_t[:,:,:] arr_memview64u
+  cdef float[:,:,:] arr_memviewf
+  cdef double[:,:,:] arr_memviewd
 
   cdef int64_t voxels = <int64_t>sx * <int64_t>sy * <int64_t>sz
   cdef cnp.ndarray[uint16_t, ndim=1] out_labels16 = np.array([], dtype=np.uint16)
@@ -414,6 +430,46 @@ def connected_components(
       elif out_dtype == np.uint64:
         connected_components3d[uint8_t, uint64_t](
           &arr_memview8u[0,0,0],
+          sx, sy, sz, max_labels, connectivity, delta,
+          <uint64_t*>&out_labels64[0], N
+        )
+    elif dtype == np.float32:
+      arr_memviewf = data
+      if out_dtype == np.uint16:
+        connected_components3d[float, uint16_t](
+          &arr_memviewf[0,0,0],
+          sx, sy, sz, max_labels, connectivity, delta,
+          <uint16_t*>&out_labels16[0], N
+        )
+      elif out_dtype == np.uint32:
+        connected_components3d[float, uint32_t](
+          &arr_memviewf[0,0,0],
+          sx, sy, sz, max_labels, connectivity, delta,
+          <uint32_t*>&out_labels32[0], N
+        )
+      elif out_dtype == np.uint64:
+        connected_components3d[float, uint64_t](
+          &arr_memviewf[0,0,0],
+          sx, sy, sz, max_labels, connectivity, delta,
+          <uint64_t*>&out_labels64[0], N
+        )
+    elif dtype == np.float64:
+      arr_memviewd = data
+      if out_dtype == np.uint16:
+        connected_components3d[double, uint16_t](
+          &arr_memviewd[0,0,0],
+          sx, sy, sz, max_labels, connectivity, delta,
+          <uint16_t*>&out_labels16[0], N
+        )
+      elif out_dtype == np.uint32:
+        connected_components3d[double, uint32_t](
+          &arr_memviewd[0,0,0],
+          sx, sy, sz, max_labels, connectivity, delta,
+          <uint32_t*>&out_labels32[0], N
+        )
+      elif out_dtype == np.uint64:
+        connected_components3d[double, uint64_t](
+          &arr_memviewd[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
           <uint64_t*>&out_labels64[0], N
         )

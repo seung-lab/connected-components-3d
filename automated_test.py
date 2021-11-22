@@ -882,10 +882,3 @@ def test_continuous_ccl_4_6(order, dtype, connectivity):
     [1, 2],
     [1, 2],
   ]))
-
-
-
-
-
-
-
