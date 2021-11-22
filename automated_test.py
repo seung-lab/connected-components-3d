@@ -883,3 +883,35 @@ def test_continuous_ccl_4_6(order, dtype, connectivity):
     [1, 2],
     [1, 2],
   ]))
+
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("connectivity", (4, 8))
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_continuous_blocks(dtype, connectivity, order):
+  mask = np.random.randint(0,5, size=(64,64)).astype(dtype)
+  img = np.zeros((512,512), dtype=dtype)
+  img[64:128, 64:128] = 50 + mask
+  img[200:264, 64:128] = 70 + mask
+
+  img = np.ascontiguousarray(img)
+  if order == "F":
+    img = np.asfortranarray(img)
+
+  out = cc3d.connected_components(
+    img, connectivity=connectivity, delta=0
+  )
+  assert np.unique(out).size > 1000
+
+  out = cc3d.connected_components(
+    img, connectivity=connectivity, delta=1
+  )
+  assert np.unique(out).size > 3
+
+  out = cc3d.connected_components(
+    img, connectivity=connectivity, delta=5
+  )
+  assert np.all(np.unique(out)== [0,1,2])
+
+
+
+
