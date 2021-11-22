@@ -128,9 +128,9 @@ OUT* connected_components3d_continuous(
         }
 
         compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
-
-        int64_t i = 0;
-        for (; i < connectivity / 2; i++) {
+        bool any = false;
+        
+        for (int64_t i = 0; i < connectivity / 2; i++) {
           int64_t neighbor = neighborhood[i];
 
           if (neighbor == 0 || in_labels[loc + neighbor] == 0) {
@@ -138,23 +138,20 @@ OUT* connected_components3d_continuous(
           }
 
           if (MATCH(cur, in_labels[loc + neighbor])) {
-            out_labels[loc] = out_labels[loc + neighbor];
-            goto SECOND_MATCHES;
+            if (any) {
+              equivalences.unify(out_labels[loc], out_labels[loc + neighbor]);
+            }
+            else {
+              out_labels[loc] = out_labels[loc + neighbor];  
+            }
+            any = true;
           }
         }
 
-        SECOND_MATCHES:
-        for (; i < connectivity / 2; i++) {
-
-          int64_t neighbor = neighborhood[i];
-
-          if (neighbor == 0 || in_labels[loc + neighbor] == 0) {
-            continue;
-          }
-
-          if (MATCH(cur, in_labels[loc + neighbor])) {
-            equivalences.unify(out_labels[loc], out_labels[loc + neighbor]);
-          }
+        if (!any) {
+          next_label++;
+          out_labels[loc] = next_label;
+          equivalences.add(out_labels[loc]);        
         }
       }
     }
@@ -165,10 +162,6 @@ OUT* connected_components3d_continuous(
   return out_labels;
 }
 
-// uses an approach inspired by 2x2 block based decision trees
-// by Grana et al that was intended for 8-connected. Here we 
-// skip a unify on every other voxel in the horizontal and
-// vertical directions.
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
