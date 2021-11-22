@@ -234,6 +234,9 @@ def connected_components(
         8 (+corners).
     return_N (bool): if True, also return the number of connected components
       as the second argument of a return tuple.
+    delta (same as data): >= 0. Connect together values whose 
+      difference in value is <= delta. Useful for rough 
+      segmentations of continuously valued images.
 
   let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
