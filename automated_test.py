@@ -848,3 +848,44 @@ def test_statistics(order):
     "centroids": None 
   }
 
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_continuous_ccl_diagonal(order, dtype, connectivity):
+  labels = np.zeros((2,2), dtype=dtype, order=order)
+  labels[0,0] = 1
+  labels[1,0] = 2
+  labels[0,1] = 3
+  labels[1,1] = 4
+
+  out = cc3d.connected_components(labels, delta=0, connectivity=connectivity)
+  assert np.all(np.unique(labels) == [1,2,3,4])
+
+  out = cc3d.connected_components(labels, delta=1, connectivity=connectivity)
+  assert np.all(out == 1)
+
+@pytest.mark.parametrize("connectivity", (4, 6))
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_continuous_ccl_4_6(order, dtype, connectivity):
+  labels = np.zeros((2,2), dtype=dtype, order=order)
+  labels[0,0] = 1
+  labels[1,0] = 2
+  labels[0,1] = 3
+  labels[1,1] = 4
+
+  out = cc3d.connected_components(labels, delta=0, connectivity=connectivity)
+  assert np.all(np.unique(labels) == [1,2,3,4])
+
+  out = cc3d.connected_components(labels, delta=1, connectivity=connectivity)
+  assert np.all(out == np.array([
+    [1, 2],
+    [1, 2],
+  ]))
+
+
+
+
+
+
+
