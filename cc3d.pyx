@@ -216,7 +216,8 @@ def connected_components(
   """
   ndarray connected_components(
     data, max_labels=-1, 
-    connectivity=26, return_N=False
+    connectivity=26, return_N=False,
+    delta=0
   )
 
   Connected components applied to 3D images with 
