@@ -3,7 +3,7 @@
 cc3d: Connected Components on Multilabel 3D Images
 =======================
 
-Implementation of connected components in three dimensions using a 26, 18, or 6 connected neighborhood in 3D or 4 and 8-connected in 2D. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It can be used with 2D or 3D images. 
+Implementation of connected components in three dimensions using a 26, 18, or 6 connected neighborhood in 3D or 4 and 8-connected in 2D. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It also supports continuously valued images such as grayscale microscope images with an algorithm that joins together nearby values. It can be used with 2D or 3D images. 
 
 I wrote this package because I was working on densely labeled 3D biomedical images of brain tissue (e.g. 512x512x512 voxels). Other off the shelf implementations I reviewed were limited to binary images. This rendered these other packages too slow for my use case as it required masking each label and running the connected components algorithm once each time. For reference, there are often between hundreds to thousands of labels in a given volume. The benefit of this package is that it labels all connected components in one shot, improving performance by one or more orders of magnitude. 
 
@@ -50,6 +50,13 @@ labels_out = cc3d.connected_components(labels_in) # 26-connected
 
 connectivity = 6 # only 4,8 (2D) and 26, 18, and 6 (3D) are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
+
+# If you're working with continuously valued images like microscopy
+# images you can use cc3d to perform a very rough segmentation. 
+# If delta = 0, standard high speed processing. If delta > 0, then
+# neighbor voxel values <= delta are considered the same component.
+# The algorithm can be 2-10x slower though.
+labels_out = cc3d.connected_components(labels_in, delta=10)
 
 # You can extract the number of labels (which is also the maximum 
 # label value) like so:

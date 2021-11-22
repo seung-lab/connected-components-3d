@@ -7,6 +7,7 @@ import numpy as np
 TEST_TYPES = [
   np.int8, np.int16, np.int32, np.int64,
   np.uint8, np.uint16, np.uint32, np.uint64,
+  np.float32, np.float64
 ]
 
 OUT_TYPES = [ np.uint16, np.uint32, np.uint64 ]
@@ -847,4 +848,70 @@ def test_statistics(order):
     "bounding_boxes": None, 
     "centroids": None 
   }
+
+@pytest.mark.parametrize("connectivity", (8, 18, 26))
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_continuous_ccl_diagonal(order, dtype, connectivity):
+  labels = np.zeros((2,2), dtype=dtype, order=order)
+  labels[0,0] = 1
+  labels[1,0] = 2
+  labels[0,1] = 3
+  labels[1,1] = 4
+
+  out = cc3d.connected_components(labels, delta=0, connectivity=connectivity)
+  assert np.all(np.unique(labels) == [1,2,3,4])
+
+  out = cc3d.connected_components(labels, delta=1, connectivity=connectivity)
+  assert np.all(out == 1)
+
+@pytest.mark.parametrize("connectivity", (4, 6))
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_continuous_ccl_4_6(order, dtype, connectivity):
+  labels = np.zeros((2,2), dtype=dtype, order=order)
+  labels[0,0] = 1
+  labels[1,0] = 2
+  labels[0,1] = 3
+  labels[1,1] = 4
+
+  out = cc3d.connected_components(labels, delta=0, connectivity=connectivity)
+  assert np.all(np.unique(labels) == [1,2,3,4])
+
+  out = cc3d.connected_components(labels, delta=1, connectivity=connectivity)
+  assert np.all(out == np.array([
+    [1, 2],
+    [1, 2],
+  ]))
+
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("connectivity", (4, 8))
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_continuous_blocks(dtype, connectivity, order):
+  mask = np.random.randint(0,5, size=(64,64)).astype(dtype)
+  img = np.zeros((512,512), dtype=dtype)
+  img[64:128, 64:128] = 50 + mask
+  img[200:264, 64:128] = 70 + mask
+
+  img = np.ascontiguousarray(img)
+  if order == "F":
+    img = np.asfortranarray(img)
+
+  out = cc3d.connected_components(
+    img, connectivity=connectivity, delta=0
+  )
+  assert np.unique(out).size > 1000
+
+  out = cc3d.connected_components(
+    img, connectivity=connectivity, delta=1
+  )
+  assert np.unique(out).size > 3
+
+  out = cc3d.connected_components(
+    img, connectivity=connectivity, delta=5
+  )
+  assert np.all(np.unique(out)== [0,1,2])
+
+
+
 
