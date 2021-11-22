@@ -54,7 +54,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity,
-    U* out_labels, size_t &N
+    U* out_labels, size_t &N, T delta
   ) except +
   cdef size_t estimate_provisional_label_count[T](
     T* in_labels, int64_t sx, int64_t voxels,
@@ -194,12 +194,14 @@ def estimate_provisional_labels(data):
 
 def connected_components(
   data, int64_t max_labels=-1, 
-  int64_t connectivity=26, native_bool return_N=False
+  int64_t connectivity=26, native_bool return_N=False,
+  delta=0
 ):
   """
   ndarray connected_components(
     data, max_labels=-1, 
-    connectivity=26, return_N=False
+    connectivity=26, return_N=False,
+    data=0
   )
 
   Connected components applied to 3D images with 
@@ -217,6 +219,9 @@ def connected_components(
         8 (+corners).
     return_N (bool): if True, also return the number of connected components
       as the second argument of a return tuple.
+    delta (same as data): >= 0. Connect together values whose 
+      difference in value is <= delta. Useful for rough 
+      segmentations of continuously valued images.
 
   let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
@@ -340,19 +345,19 @@ def connected_components(
         connected_components3d[uint64_t, uint16_t](
           &arr_memview64u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint16_t*>&out_labels16[0], N
+          <uint16_t*>&out_labels16[0], N, delta
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint64_t, uint32_t](
           &arr_memview64u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint32_t*>&out_labels32[0], N
+          <uint32_t*>&out_labels32[0], N, delta
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint64_t, uint64_t](
           &arr_memview64u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint64_t*>&out_labels64[0], N
+          <uint64_t*>&out_labels64[0], N, delta
         )
     elif dtype in (np.uint32, np.int32):
       arr_memview32u = data.view(np.uint32)
@@ -360,19 +365,19 @@ def connected_components(
         connected_components3d[uint32_t, uint16_t](
           &arr_memview32u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint16_t*>&out_labels16[0], N
+          <uint16_t*>&out_labels16[0], N, delta
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint32_t, uint32_t](
           &arr_memview32u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint32_t*>&out_labels32[0], N
+          <uint32_t*>&out_labels32[0], N, delta
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint32_t, uint64_t](
           &arr_memview32u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint64_t*>&out_labels64[0], N
+          <uint64_t*>&out_labels64[0], N, delta
         )
     elif dtype in (np.uint16, np.int16):
       arr_memview16u = data.view(np.uint16)
@@ -380,19 +385,19 @@ def connected_components(
         connected_components3d[uint16_t, uint16_t](
           &arr_memview16u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint16_t*>&out_labels16[0], N
+          <uint16_t*>&out_labels16[0], N, delta
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint16_t, uint32_t](
           &arr_memview16u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint32_t*>&out_labels32[0], N
+          <uint32_t*>&out_labels32[0], N, delta
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint16_t, uint64_t](
           &arr_memview16u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint64_t*>&out_labels64[0], N
+          <uint64_t*>&out_labels64[0], N, delta
         )
     elif dtype in (np.uint8, np.int8, bool):
       arr_memview8u = data.view(np.uint8)
@@ -400,19 +405,19 @@ def connected_components(
         connected_components3d[uint8_t, uint16_t](
           &arr_memview8u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint16_t*>&out_labels16[0], N
+          <uint16_t*>&out_labels16[0], N, delta
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint8_t, uint32_t](
           &arr_memview8u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint32_t*>&out_labels32[0], N
+          <uint32_t*>&out_labels32[0], N, delta
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint8_t, uint64_t](
           &arr_memview8u[0,0,0],
           sx, sy, sz, max_labels, connectivity,
-          <uint64_t*>&out_labels64[0], N
+          <uint64_t*>&out_labels64[0], N, delta
         )
     else:
       raise TypeError("Type {} not currently supported.".format(dtype))
