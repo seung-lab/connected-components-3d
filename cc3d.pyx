@@ -322,8 +322,6 @@ def connected_components(
   dtype = data.dtype
 
   cdef size_t N = 0
-
-  print(out_dtype)
   
   try:
     # We aren't going to write to the array, but some 
