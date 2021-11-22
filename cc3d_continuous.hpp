@@ -1,3 +1,31 @@
+/* cc3d_continuous.hpp
+ *
+ * Defines connected components on continuously
+ * valued images such as photographs.
+ *
+ * The algorithms for this seem to be more limited
+ * because there is less structure in the image to 
+ * use.
+ *
+ * Author: William Silversmith
+ * Date: November 2021
+ * Affiliation: Princeton Neuroscience Institute
+ * ----
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ----
+ */
+
 #ifndef CC3D_CONTINUOUS_HPP
 #define CC3D_CONTINUOUS_HPP 
 
@@ -8,7 +36,7 @@ namespace {
 inline void compute_neighborhood(
   int *neighborhood, 
   const int x, const int y, const int z,
-  const uint64_t sx, const uint64_t sy, const uint64_t sz,
+  const int sx, const int sy, const int sz,
   const int connectivity = 26
 ) {
 
@@ -16,43 +44,30 @@ inline void compute_neighborhood(
 
   // 6-hood
   neighborhood[0] = -1 * (x > 0); // -x
-  neighborhood[1] = (x < (static_cast<int>(sx) - 1)); // +x
-  neighborhood[2] = -static_cast<int>(sx) * (y > 0); // -y
-  neighborhood[3] = static_cast<int>(sx) * (y < static_cast<int>(sy) - 1); // +y
-  neighborhood[4] = -sxy * static_cast<int>(z > 0); // -z
-  neighborhood[5] = sxy * (z < static_cast<int>(sz) - 1); // +z
+  neighborhood[1] = -sx * (y > 0); // -y
+  neighborhood[2] = -sxy * (z > 0); // -z
 
   // 18-hood
 
   // xy diagonals
-  neighborhood[6] = (connectivity > 6) * (neighborhood[0] + neighborhood[2]) * (neighborhood[0] && neighborhood[2]); // up-left
-  neighborhood[7] = (connectivity > 6) * (neighborhood[0] + neighborhood[3]) * (neighborhood[0] && neighborhood[3]); // up-right
-  neighborhood[8] = (connectivity > 6) * (neighborhood[1] + neighborhood[2]) * (neighborhood[1] && neighborhood[2]); // down-left
-  neighborhood[9] = (connectivity > 6) * (neighborhood[1] + neighborhood[3]) * (neighborhood[1] && neighborhood[3]); // down-right
+  neighborhood[3] = (connectivity > 6) * (x > 0 && y > 0) * (-1 - sx); // up-left
+  neighborhood[4] = (connectivity > 6) * (x < sx - 1 && y > 0) * (1 - sx); // up-right
 
   // yz diagonals
-  neighborhood[10] = (connectivity > 6) * (neighborhood[2] + neighborhood[4]) * (neighborhood[2] && neighborhood[4]); // up-left
-  neighborhood[11] = (connectivity > 6) * (neighborhood[2] + neighborhood[5]) * (neighborhood[2] && neighborhood[5]); // up-right
-  neighborhood[12] = (connectivity > 6) * (neighborhood[3] + neighborhood[4]) * (neighborhood[3] && neighborhood[4]); // down-left
-  neighborhood[13] = (connectivity > 6) * (neighborhood[3] + neighborhood[5]) * (neighborhood[3] && neighborhood[5]); // down-right
+  neighborhood[5] = (connectivity > 6) * (y > 0 && z > 0) * (-sx - sxy); // down-left
+  neighborhood[6] = (connectivity > 6) * (y < sy - 1 && z > 0) * (sx - sxy); // down-right
 
   // xz diagonals
-  neighborhood[14] = (connectivity > 6) * (neighborhood[0] + neighborhood[4]) * (neighborhood[0] && neighborhood[4]); // up-left
-  neighborhood[15] = (connectivity > 6) * (neighborhood[0] + neighborhood[5]) * (neighborhood[0] && neighborhood[5]); // up-right
-  neighborhood[16] = (connectivity > 6) * (neighborhood[1] + neighborhood[4]) * (neighborhood[1] && neighborhood[4]); // down-left
-  neighborhood[17] = (connectivity > 6) * (neighborhood[1] + neighborhood[5]) * (neighborhood[1] && neighborhood[5]); // down-right
+  neighborhood[7] = (connectivity > 6) * (x > 0 && z > 0) * (-1 - sxy); // down-left
+  neighborhood[8] = (connectivity > 6) * (x < sx - 1 && z > 0) * (1 - sxy); // down-right
 
   // 26-hood
 
-  // Now the eight corners of the cube
-  neighborhood[18] = (connectivity > 18) * (neighborhood[0] + neighborhood[2] + neighborhood[4]) * (neighborhood[2] && neighborhood[4]);
-  neighborhood[19] = (connectivity > 18) * (neighborhood[1] + neighborhood[2] + neighborhood[4]) * (neighborhood[2] && neighborhood[4]);
-  neighborhood[20] = (connectivity > 18) * (neighborhood[0] + neighborhood[3] + neighborhood[4]) * (neighborhood[3] && neighborhood[4]);
-  neighborhood[21] = (connectivity > 18) * (neighborhood[0] + neighborhood[2] + neighborhood[5]) * (neighborhood[2] && neighborhood[5]);
-  neighborhood[22] = (connectivity > 18) * (neighborhood[1] + neighborhood[3] + neighborhood[4]) * (neighborhood[3] && neighborhood[4]);
-  neighborhood[23] = (connectivity > 18) * (neighborhood[1] + neighborhood[2] + neighborhood[5]) * (neighborhood[2] && neighborhood[5]);
-  neighborhood[24] = (connectivity > 18) * (neighborhood[0] + neighborhood[3] + neighborhood[5]) * (neighborhood[3] && neighborhood[5]);
-  neighborhood[25] = (connectivity > 18) * (neighborhood[1] + neighborhood[3] + neighborhood[5]) * (neighborhood[3] && neighborhood[5]);
+  // Now the four corners of the bottom plane
+  neighborhood[ 9] = (connectivity > 18) * (x > 0 && y > 0 && z > 0) * (-1 - sx - sxy);
+  neighborhood[10] = (connectivity > 18) * (x < sx - 1 && y > 0 && z > 0) * (1 - sx - sxy);
+  neighborhood[11] = (connectivity > 18) * (x > 0 && y < sy - 1 && z > 0) * (-1 + sx - sxy);
+  neighborhood[12] = (connectivity > 18) * (x < sx - 1 && y < sy - 1 && z > 0) * (1 + sx - sxy);
 }
 
 };
@@ -60,6 +75,95 @@ inline void compute_neighborhood(
 namespace cc3d {
 
 #define MATCH(cur, val) (std::max((cur), (val)) - std::min((cur), (val)) <= delta)
+
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components3d_continuous(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy, const int64_t sz,
+    size_t max_labels, const int64_t connectivity, const T delta,
+    OUT *out_labels = NULL, size_t &N = _dummy_N
+  ) {
+
+  const int64_t sxy = sx * sy;
+  const int64_t voxels = sxy * sz;
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+
+  if (max_labels == 0) {
+    return out_labels;
+  }
+
+  max_labels++; // corrects Cython estimation
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+
+  DisjointSet<OUT> equivalences(max_labels);
+
+  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+
+
+  int64_t loc = 0;
+  int64_t row = 0;
+  OUT next_label = 0;
+
+  int neighborhood[13];
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+
+  for (int64_t z = 0; z < sz; z++) {
+    for (int64_t y = 0; y < sy; y++, row++) {
+      const int64_t xstart = runs[row << 1];
+      const int64_t xend = runs[(row << 1) + 1];
+
+      for (int64_t x = xstart; x < xend; x++) {
+        loc = x + sx * (y + sy * z);
+
+        const T cur = in_labels[loc];
+
+        if (cur == 0) {
+          continue;
+        }
+
+        compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
+
+        int64_t i = 0;
+        for (; i < connectivity / 2; i++) {
+          int64_t neighbor = neighborhood[i];
+
+          if (neighbor == 0 || in_labels[loc + neighbor] == 0) {
+            continue;
+          }
+
+          if (MATCH(cur, in_labels[loc + neighbor])) {
+            out_labels[loc] = out_labels[loc + neighbor];
+            goto SECOND_MATCHES;
+          }
+        }
+
+        SECOND_MATCHES:
+        for (; i < connectivity / 2; i++) {
+
+          int64_t neighbor = neighborhood[i];
+
+          if (neighbor == 0 || in_labels[loc + neighbor] == 0) {
+            continue;
+          }
+
+          if (MATCH(cur, in_labels[loc + neighbor])) {
+            equivalences.unify(out_labels[loc], out_labels[loc + neighbor]);
+          }
+        }
+      }
+    }
+  }
+
+  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
+  delete[] runs;
+  return out_labels;
+}
 
 // uses an approach inspired by 2x2 block based decision trees
 // by Grana et al that was intended for 8-connected. Here we 
@@ -261,25 +365,23 @@ OUT* connected_components3d(
     OUT *out_labels = NULL, size_t &N = _dummy_N
   ) {
 
-  // if (connectivity == 26) {
-  //   return connected_components3d_26<T, OUT>(
-  //     in_labels, sx, sy, sz, 
-  //     max_labels, out_labels, N
-  //   );
-  // }
-  // else if (connectivity == 18) {
-  //   return connected_components3d_18<T, OUT>(
-  //     in_labels, sx, sy, sz, 
-  //     max_labels, out_labels, N
-  //   );
-  // }
-  // else if (connectivity == 6) {
-  //   return connected_components3d_6<T, OUT>(
-  //     in_labels, sx, sy, sz, 
-  //     max_labels, out_labels, N
-  //   );
-  // }
-  if (connectivity == 8) {
+  // for performance, shouldn't be "more correct"
+  if (delta == 0) {
+    return connected_components3d<T,OUT>(
+      in_labels, sx, sy, sz, 
+      max_labels, connectivity, 
+      out_labels, N
+    );
+  }
+
+  if (connectivity == 26 || connectivity == 18 || connectivity == 6) {
+    return connected_components3d_continuous<T, OUT>(
+      in_labels, sx, sy, sz, 
+      max_labels, connectivity, delta,
+      out_labels, N
+    );
+  }
+  else if (connectivity == 8) {
     if (sz != 1) {
       throw std::runtime_error("sz must be 1 for 2D connectivities.");
     }
@@ -302,35 +404,21 @@ OUT* connected_components3d(
   }
 }
 
-// template <typename T, typename OUT = uint32_t>
-// OUT* connected_components3d(
-//     T* in_labels, 
-//     const int64_t sx, const int64_t sy, const int64_t sz,
-//     const T delta,
-//     const int64_t connectivity=26, size_t &N = _dummy_N
-//   ) {
-//   const size_t voxels = sx * sy * sz;
-//   size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
-//   return connected_components3d<T, OUT>(
-//     in_labels, sx, sy, sz, max_labels, 
-//     connectivity, NULL, N, delta
-//   );
-// }
-
-// // template <typename T, typename OUT = uint32_t>
-// // OUT* connected_components3d_continuous(
-// //     T* in_labels, 
-// //     const int64_t sx, const int64_t sy, const int64_t sz,
-// //     size_t max_labels, const int64_t connectivity,
-// //     OUT *out_labels = NULL, size_t &N = _dummy_N,
-// //     const T delta = 0
-// //   ) {
-// //   return connected_components3d<T,OUT>(
-// //     in_labels, sx, sy, sz,
-// //     max_labels, connectivity,
-// //     out_labels, N, delta
-// //   );
-// // }
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components3d(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy, const int64_t sz,
+    const T delta,
+    const int64_t connectivity=26, size_t &N = _dummy_N
+  ) {
+  const size_t voxels = sx * sy * sz;
+  size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
+  return connected_components3d<T, OUT>(
+    in_labels, sx, sy, sz, 
+    max_labels, connectivity, delta, 
+    NULL, N
+  );
+}
 
 #undef MATCH
 

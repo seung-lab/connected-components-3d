@@ -1107,7 +1107,6 @@ OUT* connected_components3d(
   return connected_components3d<T, OUT>(in_labels, sx, sy, sz, max_labels, connectivity, NULL, N);
 }
 
-
 };
 
 
