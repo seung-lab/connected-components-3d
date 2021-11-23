@@ -118,6 +118,21 @@ uint16_t* cc_labels = cc3d::connected_components3d<int, uint16_t>(
   /*connectivity=*/18 // default is 26 connected
 );
 
+size_t N = 0;
+uint16_t* cc_labels = cc3d::connected_components3d<int, uint16_t>(
+  labels, /*sx=*/512, /*sy=*/512, /*sz=*/512, 
+  /*connectivity=*/26, /*N=*/N // writes number of labels to N
+);
+
+#include "cc3d_continuous.hpp"
+
+// For handling grayscale images. Note that the difference
+// is the addition of the "delta" argument.
+uint16_t* cc_labels = cc3d::connected_components3d<int, uint16_t>(
+  labels, /*sx=*/512, /*sy=*/512, /*sz=*/512, 
+  /*delta=*/10, /*connectivity=*/6 // default is 26 connected
+);
+
 #include "cc3d_graphs.hpp"
 
 // edges is [ e11, e12, e21, e22, ... ]
