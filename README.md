@@ -3,6 +3,11 @@
 cc3d: Connected Components on Multilabel 3D Images
 =======================
 
+<p style="font-style: italics;" align="center">
+<img height=256 width=256 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/ccl_figure.png" alt="" /><br>
+<b>Fig. 1</b> How binary and multilabel connected components works. (a) A binary image (white is foreground, black is background). (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image
+</p>
+
 Implementation of connected components in three dimensions using a 26, 18, or 6 connected neighborhood in 3D or 4 and 8-connected in 2D. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It also supports continuously valued images such as grayscale microscope images with an algorithm that joins together nearby values. It can be used with 2D or 3D images. 
 
 I wrote this package because I was working on densely labeled 3D biomedical images of brain tissue (e.g. 512x512x512 voxels). Other off the shelf implementations I reviewed were limited to binary images. This rendered these other packages too slow for my use case as it required masking each label and running the connected components algorithm once each time. For reference, there are often between hundreds to thousands of labels in a given volume. The benefit of this package is that it labels all connected components in one shot, improving performance by one or more orders of magnitude. 
