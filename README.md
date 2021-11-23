@@ -5,12 +5,12 @@ cc3d: Connected Components on Multilabel 3D Images
 
 <p style="font-style: italics;" align="center">
 <img height=348 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/ccl_figure.png" alt="Binary and multilabel connected components. (a) A binary image (foreground white,  background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image" /><br>
-<b>Fig. 1. Binary and multilabel connected components</b> 2D images are shown for simplicity. (a) A binary image (foreground white, background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image
+<b>Fig. 1. Binary and Multilabel Connected Components Labeling (CCL)</b> 2D images are shown for simplicity. (a) A binary image (foreground white, background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image
 </p>
 
 <p style="font-style: italics;" align="center">
 <img height=348 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/continuous_ccl_figure.png" alt="Continuous value connected components (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones" /><br>
-<b>Fig. 2. Continuous value connected components</b> (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones
+<b>Fig. 2. Continuous Value Connected Components Labeling (CCL)</b> (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones
 </p>
 
 cc3d is an implementation of connected components in three dimensions using a 26, 18, or 6-connected neighborhood in 3D or 4 and 8-connected in 2D. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It also supports continuously valued images such as grayscale microscope images with an algorithm that joins together nearby values.
