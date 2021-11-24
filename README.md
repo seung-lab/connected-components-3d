@@ -65,7 +65,8 @@ labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 # images you can use cc3d to perform a very rough segmentation. 
 # If delta = 0, standard high speed processing. If delta > 0, then
 # neighbor voxel values <= delta are considered the same component.
-# The algorithm can be 2-10x slower though.
+# The algorithm can be 2-10x slower though. Zero is considered
+# background and will not join to any other voxel.
 labels_out = cc3d.connected_components(labels_in, delta=10)
 
 # You can extract the number of labels (which is also the maximum 
