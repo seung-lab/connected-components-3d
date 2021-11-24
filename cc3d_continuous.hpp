@@ -198,6 +198,7 @@ OUT* connected_components2d_4(
   const int64_t A = 0;
   const int64_t B = -1;
   const int64_t C = -sx;
+  const int64_t D = -1 - sx;
 
   int64_t loc = 0;
   int64_t row = 0;
@@ -221,8 +222,10 @@ OUT* connected_components2d_4(
 
       if (x > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
         out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
-          equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+        if (y > 0 && cur != in_labels[loc + D]) {
+          if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
+            equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+          }
         }
       }
       else if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
