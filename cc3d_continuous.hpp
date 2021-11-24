@@ -302,16 +302,20 @@ OUT* connected_components2d_8(
       }
 
       bool any = false;
-      if (x > 0 && y > 0 && in_labels[loc + A] && MATCH(cur, in_labels[loc + A])) {
-        out_labels[loc] = out_labels[loc + A];
+      if (y > 0 && cur == in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+        continue;
+      }
+      else if (y > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
+        out_labels[loc] = out_labels[loc + B];
         any = true;
       }
-      if (y > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
+      if (x > 0 && y > 0 && in_labels[loc + A] && MATCH(cur, in_labels[loc + A])) {
         if (any) {
-          equivalences.unify(out_labels[loc], out_labels[loc + B]);
+          equivalences.unify(out_labels[loc], out_labels[loc + A]);
         }
         else {
-          out_labels[loc] = out_labels[loc + B];
+          out_labels[loc] = out_labels[loc + A];
         }
         any = true;
       }
@@ -333,7 +337,6 @@ OUT* connected_components2d_8(
         }
         any = true;
       }
-
 
       if (!any) {
         next_label++;
