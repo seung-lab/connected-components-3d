@@ -329,7 +329,7 @@ OUT* connected_components2d_8(
         y > 0 
         && in_labels[loc + B]
         && (std::min(cur, in_labels[loc + B]) - gmin <= delta) // avoid underflow
-        && (std::max(cur, in_labels[loc + B]) >= gmax - delta) // avoid overflow
+        && (gmax - std::max(cur, in_labels[loc + B]) <= delta) // avoid overflow
       ) {
         out_labels[loc] = out_labels[loc + B];
         continue;        
