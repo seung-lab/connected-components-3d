@@ -196,7 +196,7 @@ OUT* connected_components2d_4(
   DisjointSet<OUT> equivalences(max_labels);
 
   const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
-    
+
   /*
     Layout of forward pass mask. 
     A is the current location.
@@ -282,6 +282,13 @@ OUT* connected_components2d_8(
 
   const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
 
+  T gmax = in_labels[0];
+  T gmin = in_labels[0];
+  for (int64_t i = 1; i < voxels; i++) {
+    gmax = std::max(in_labels[i], gmax);
+    gmin = std::min(in_labels[i], gmin);
+  }
+
   /*
     Layout of mask. We start from e.
 
@@ -318,7 +325,17 @@ OUT* connected_components2d_8(
         out_labels[loc] = out_labels[loc + B];
         continue;
       }
-      else if (y > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
+      else if (
+        y > 0 
+        && in_labels[loc + B]
+        && (std::min(cur, in_labels[loc + B]) - gmin <= delta) // avoid underflow
+        && (std::max(cur, in_labels[loc + B]) >= gmax - delta) // avoid overflow
+      ) {
+        out_labels[loc] = out_labels[loc + B];
+        continue;        
+      }
+
+      if (y > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
         out_labels[loc] = out_labels[loc + B];
         any = true;
       }
