@@ -127,6 +127,15 @@ OUT* connected_components3d_continuous(
           continue;
         }
 
+        // The location below the target voxel is exceptionally valuable
+        // It alone is also connected to all of the other voxels in the
+        // mask. If it matches, we can assume all voxels have already been
+        // processed identically.
+        if (z > 0 && connectivity == 26 && cur == in_labels[loc - sxy]) {
+          out_labels[loc] = out_labels[loc - sxy];
+          continue;
+        }
+
         compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
         bool any = false;
 
