@@ -127,6 +127,15 @@ OUT* connected_components3d_continuous(
           continue;
         }
 
+        // The location below the target voxel is exceptionally valuable
+        // It alone is also connected to all of the other voxels in the
+        // mask. If it matches, we can assume all voxels have already been
+        // processed identically.
+        if (z > 0 && connectivity == 26 && cur == in_labels[loc - sxy]) {
+          out_labels[loc] = out_labels[loc - sxy];
+          continue;
+        }
+
         compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
         bool any = false;
 
@@ -187,7 +196,7 @@ OUT* connected_components2d_4(
   DisjointSet<OUT> equivalences(max_labels);
 
   const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
-    
+
   /*
     Layout of forward pass mask. 
     A is the current location.
@@ -198,6 +207,7 @@ OUT* connected_components2d_4(
   const int64_t A = 0;
   const int64_t B = -1;
   const int64_t C = -sx;
+  const int64_t D = -1 - sx;
 
   int64_t loc = 0;
   int64_t row = 0;
@@ -221,8 +231,10 @@ OUT* connected_components2d_4(
 
       if (x > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
         out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
-          equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+        if (y > 0 && cur != in_labels[loc + D]) {
+          if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
+            equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+          }
         }
       }
       else if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
@@ -270,6 +282,13 @@ OUT* connected_components2d_8(
 
   const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
 
+  T gmax = in_labels[0];
+  T gmin = in_labels[0];
+  for (int64_t i = 1; i < voxels; i++) {
+    gmax = std::max(in_labels[i], gmax);
+    gmin = std::min(in_labels[i], gmin);
+  }
+
   /*
     Layout of mask. We start from e.
 
@@ -302,16 +321,30 @@ OUT* connected_components2d_8(
       }
 
       bool any = false;
-      if (x > 0 && y > 0 && in_labels[loc + A] && MATCH(cur, in_labels[loc + A])) {
-        out_labels[loc] = out_labels[loc + A];
+      if (y > 0 && cur == in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+        continue;
+      }
+      else if (
+        y > 0 
+        && in_labels[loc + B]
+        && (std::min(cur, in_labels[loc + B]) - gmin <= delta) // avoid underflow
+        && (std::max(cur, in_labels[loc + B]) >= gmax - delta) // avoid overflow
+      ) {
+        out_labels[loc] = out_labels[loc + B];
+        continue;        
+      }
+
+      if (y > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
+        out_labels[loc] = out_labels[loc + B];
         any = true;
       }
-      if (y > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
+      if (x > 0 && y > 0 && in_labels[loc + A] && MATCH(cur, in_labels[loc + A])) {
         if (any) {
-          equivalences.unify(out_labels[loc], out_labels[loc + B]);
+          equivalences.unify(out_labels[loc], out_labels[loc + A]);
         }
         else {
-          out_labels[loc] = out_labels[loc + B];
+          out_labels[loc] = out_labels[loc + A];
         }
         any = true;
       }
@@ -333,7 +366,6 @@ OUT* connected_components2d_8(
         }
         any = true;
       }
-
 
       if (!any) {
         next_label++;
