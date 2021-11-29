@@ -8,6 +8,10 @@ Except where noted, we compared the time and memory performance of both librarie
 
 The volume is derived from an early experimental segmentation of pinky40, a predecessor to the now public pinky100_v185 automatic segmentation of mouse brain now available at https://microns-explorer.org/phase1. You need to gzip decompress to recover the uncompressed file: `gunzip connectomics.npy.gz`
 
+## Image Data
+
+`Misc_pollen.npy` is the microscopy image from https://en.wikipedia.org/wiki/Scanning_electron_microscope#/media/File:Misc_pollen.jpg which is a public domain photo taken by the Dartmouth College Electron Microscope Facility in 2004.
+
 # Multi-Label Comparison
 
 <p style="font-style: italics;" align="center">
