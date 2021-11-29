@@ -865,6 +865,51 @@ OUT* connected_components3d_6(
   return out_labels;
 }
 
+template <typename T, typename OUT = uint32_t>
+void circular_x_4(
+    const T* in_labels, const OUT *out_labels,
+    const int64_t sx, const int64_t sy, 
+    DisjointSet &equivalences
+) {
+  if (sx == 1) {
+    return;
+  }
+
+  for (int64_t y = 0; y < sy; y++) {
+    const int64_t loc = sx * y;
+    const T cur = in_labels[loc];
+    if (cur == 0) {
+      continue;
+    }
+
+    if (cur == in_labels[loc + (sx - 1)]) {
+      equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
+    }
+  }
+}
+
+template <typename T, typename OUT = uint32_t>
+void circular_y_4(
+    const T* in_labels, const OUT *out_labels,
+    const int64_t sx, const int64_t sy, 
+    DisjointSet &equivalences
+) {
+  if (sy == 1) {
+    return;
+  }
+
+  for (int64_t x = 0; x < sx; x++) {
+    const T cur = in_labels[x];
+
+    if (cur == 0) {
+      continue;
+    }
+
+    if (cur == in_labels[x + sx * (sy - 1)]) {
+      equivalences.unify(out_labels[x], out_labels[x + sx * (sy - 1)]);
+    }
+  }
+}
 
 // uses an approach inspired by 2x2 block based decision trees
 // by Grana et al that was intended for 8-connected. Here we 
@@ -943,6 +988,13 @@ OUT* connected_components2d_4(
         equivalences.add(out_labels[loc + A]);
       }
     }
+  }
+
+  if (circular_x) {
+    circular_x_4<T,OUT>(in_labels, out_labels, sx, sy, equivalences);
+  }
+  if (circular_y) {
+    circular_y_4<T,OUT>(in_labels, out_labels, sx, sy, equivalences);
   }
 
   out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
