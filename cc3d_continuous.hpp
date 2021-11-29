@@ -163,7 +163,7 @@ OUT* connected_components3d_continuous(
             continue;
           }
 
-          if (match<T>(cur, in_labels[loc + neighbor], delta)) {
+          if (match(cur, in_labels[loc + neighbor], delta)) {
             if (any) {
               equivalences.unify(out_labels[loc], out_labels[loc + neighbor]);
             }
