@@ -74,15 +74,19 @@ inline void compute_neighborhood(
 
 namespace cc3d {
 
-// abs doesn't work with unsigned ints
-// #define MATCH(cur, val) (std::max((cur), (val)) - std::min((cur), (val)) <= delta)
-
-
+// For unsigned ints, use this more expensive calculation
+// to avoid underflows. The typename/enable if buisness below
+// replaces the return type and results in "bool" if T is signed
+// or unsigned as the case may be. Then only the proper function is
+// generated and available for compilation for a given type.
 template <typename T>
 typename std::enable_if<std::is_unsigned<T>::value, bool>::type 
 match(const T cur, const T val, const T delta) {
   return std::max((cur), (val)) - std::min((cur), (val)) <= delta;
 }
+
+// For signed types (ints, floats) we can use the absolute value
+// which is significantly fewer assembly instructions.
 template <typename T>
 typename std::enable_if<std::is_signed<T>::value, bool>::type 
 match(const T cur, const T val, const T delta) {
