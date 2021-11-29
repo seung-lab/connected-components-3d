@@ -74,7 +74,24 @@ inline void compute_neighborhood(
 
 namespace cc3d {
 
-#define MATCH(cur, val) (std::max((cur), (val)) - std::min((cur), (val)) <= delta)
+// For unsigned ints, use this more expensive calculation
+// to avoid underflows. The typename/enable if buisness below
+// replaces the return type and results in "bool" if T is signed
+// or unsigned as the case may be. Then only the proper function is
+// generated and available for compilation for a given type.
+template <typename T>
+typename std::enable_if<std::is_unsigned<T>::value, bool>::type 
+match(const T cur, const T val, const T delta) {
+  return std::max((cur), (val)) - std::min((cur), (val)) <= delta;
+}
+
+// For signed types (ints, floats) we can use the absolute value
+// which is significantly fewer assembly instructions.
+template <typename T>
+typename std::enable_if<std::is_signed<T>::value, bool>::type 
+match(const T cur, const T val, const T delta) {
+  return std::abs(cur - val) <= delta;
+}
 
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_continuous(
@@ -146,7 +163,7 @@ OUT* connected_components3d_continuous(
             continue;
           }
 
-          if (MATCH(cur, in_labels[loc + neighbor])) {
+          if (match<T>(cur, in_labels[loc + neighbor], delta)) {
             if (any) {
               equivalences.unify(out_labels[loc], out_labels[loc + neighbor]);
             }
@@ -229,15 +246,15 @@ OUT* connected_components2d_4(
         continue;
       }
 
-      if (x > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
+      if (x > 0 && in_labels[loc + B] && match(cur, in_labels[loc + B], delta)) {
         out_labels[loc + A] = out_labels[loc + B];
         if (y > 0 && cur != in_labels[loc + D]) {
-          if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
+          if (y > 0 && in_labels[loc + C] && match(cur, in_labels[loc + C], delta)) {
             equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
           }
         }
       }
-      else if (y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
+      else if (y > 0 && in_labels[loc + C] && match(cur, in_labels[loc + C], delta)) {
         out_labels[loc + A] = out_labels[loc + C];
       }
       else {
@@ -335,11 +352,11 @@ OUT* connected_components2d_8(
         continue;        
       }
 
-      if (y > 0 && in_labels[loc + B] && MATCH(cur, in_labels[loc + B])) {
+      if (y > 0 && in_labels[loc + B] && match(cur, in_labels[loc + B], delta)) {
         out_labels[loc] = out_labels[loc + B];
         any = true;
       }
-      if (x > 0 && y > 0 && in_labels[loc + A] && MATCH(cur, in_labels[loc + A])) {
+      if (x > 0 && y > 0 && in_labels[loc + A] && match(cur, in_labels[loc + A], delta)) {
         if (any) {
           equivalences.unify(out_labels[loc], out_labels[loc + A]);
         }
@@ -348,7 +365,7 @@ OUT* connected_components2d_8(
         }
         any = true;
       }
-      if (x < sx - 1 && y > 0 && in_labels[loc + C] && MATCH(cur, in_labels[loc + C])) {
+      if (x < sx - 1 && y > 0 && in_labels[loc + C] && match(cur, in_labels[loc + C], delta)) {
         if (any) {
           equivalences.unify(out_labels[loc], out_labels[loc + C]);
         }
@@ -357,7 +374,7 @@ OUT* connected_components2d_8(
         }
         any = true;
       }
-      if (x > 0 && in_labels[loc + D] && MATCH(cur, in_labels[loc + D])) {
+      if (x > 0 && in_labels[loc + D] && match(cur, in_labels[loc + D], delta)) {
         if (any) {
           equivalences.unify(out_labels[loc], out_labels[loc + D]);
         }
@@ -442,8 +459,6 @@ OUT* connected_components3d(
     NULL, N
   );
 }
-
-#undef MATCH
 
 };
 
