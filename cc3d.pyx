@@ -29,6 +29,7 @@ https://github.com/seung-lab/connected-components-3d
 import cython
 import operator
 from functools import reduce
+from typing import Union
 
 from libc.stdlib cimport calloc, free
 from libc.stdint cimport (
@@ -952,3 +953,45 @@ def each(labels, binary=False, in_place=False):
   if in_place:
     return InPlaceImageIterator()
   return ImageIterator()
+
+def dust(
+  img:np.ndarray, 
+  threshold:Union[int,float], 
+  connectivity:int = 26,
+  in_place:bool = False,
+) -> np.ndarray:
+  """
+  dust(img, threshold, in_place=False) -> np.ndarray
+
+  Remove from the input image connected components
+  smaller than threshold ("dust"). The name of the function
+  can be read as a verb "to dust" the image.
+
+  img: 2D or 3D image
+  threshold: discard components smaller than this in voxels
+  connectivity: cc3d connectivity to use
+  in_place: whether to modify the input image or perform
+    dust 
+
+  Returns: dusted image
+  """
+  if not in_place:
+    img = np.copy(img)
+
+  cc_labels, N = connected_components(
+    img, connectivity=connectivity, return_N=True
+  )
+  stats = statistics(cc_labels)
+  mask_sizes = stats["voxel_counts"]
+  del stats
+
+  rns = runs(cc_labels)
+  del cc_labels
+
+  cdef int64_t label = 0
+  for label in range(1, N+1):
+    if mask_sizes[label] < threshold:
+      erase(rns[label], img)
+
+  return img
+
