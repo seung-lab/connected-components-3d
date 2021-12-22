@@ -92,6 +92,13 @@ for label, image in cc3d.each(labels_out, binary=False, in_place=True):
 # Image statistics like voxel counts, bounding boxes, and centroids.
 stats = cc3d.statistics(labels_out)
 
+# Remove dust from the input image. Removes objects with
+# fewer than `threshold` voxels.
+labels_out = cc3d.dust(
+  labels_in, threshold=100, 
+  connectivity=26, in_place=False
+)
+
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.
 edges = cc3d.region_graph(labels_out, connectivity=connectivity) 
