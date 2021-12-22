@@ -916,7 +916,7 @@ def test_continuous_blocks(dtype, connectivity, order):
 @pytest.mark.parametrize("connectivity", (6,18,26))
 @pytest.mark.parametrize("order", ("C", "F"))
 @pytest.mark.parametrize("in_place", (False, True))
-def test_dust(dtype, connectivity, order, in_place):
+def test_dust_static(dtype, connectivity, order, in_place):
   labels = np.zeros((100,100,10), dtype=np.uint8, order=order)
   labels[:5,:5,:1] = 1
   labels[20:40,20:40,:] = 2
@@ -936,6 +936,30 @@ def test_dust(dtype, connectivity, order, in_place):
   ans[20:40,20:40,:] = 2
 
   assert np.all(ans == recovered)
+
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("connectivity", (6,18,26))
+def test_dust_random(dtype, connectivity):
+  threshold = 20
+  labels = np.random.randint(0,5, size=(100,100,100), dtype=np.uint8)
+
+  ccl = cc3d.connected_components(labels, connectivity=connectivity)
+  uniq, counts = np.unique(ccl, return_counts=True)
+  filtered_orig = sum([ c for u,c in zip(uniq, counts) if c >= threshold and u > 0 ])
+
+  recovered = cc3d.dust(
+    labels, 
+    threshold=threshold, 
+    connectivity=connectivity,
+  )
+
+  uniq, counts = np.unique(recovered, return_counts=True)
+  filtered_recov = sum([ c for u,c in zip(uniq, counts) if c >= threshold and u > 0 ])
+
+  assert filtered_recov == filtered_orig
+
+
+
 
 
 
