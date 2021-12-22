@@ -23,10 +23,10 @@ if sys.platform == 'darwin':
 
 setuptools.setup(
   name="connected-components-3d",
-  version="3.6.0",
+  version="3.7.0",
   setup_requires=['pbr', 'numpy'],
   install_requires=['numpy'],
-  python_requires="~=3.6", # >= 3.6 < 4.0
+  python_requires="~=3.7", # >= 3.7 < 4.0
   ext_modules=[
     setuptools.Extension(
       'cc3d',
@@ -56,7 +56,6 @@ setuptools.setup(
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
