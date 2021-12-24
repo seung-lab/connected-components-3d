@@ -985,13 +985,22 @@ def dust(
   mask_sizes = stats["voxel_counts"]
   del stats
 
+  to_mask = [ 
+    i for i in range(1, N+1) if mask_sizes[i] < threshold 
+  ]
+
+  if len(to_mask) == 0:
+    return img
+  elif len(to_mask) <= 5:
+    for label in to_mask:
+      img *= (cc_labels != label)
+    return img
+
   rns = runs(cc_labels)
   del cc_labels
 
-  cdef int64_t label = 0
-  for label in range(1, N+1):
-    if mask_sizes[label] < threshold:
-      erase(rns[label], img)
+  for label in to_mask:
+    erase(rns[label], img)
 
   return img
 
