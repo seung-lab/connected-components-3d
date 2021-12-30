@@ -23,7 +23,7 @@ if sys.platform == 'darwin':
 
 setuptools.setup(
   name="connected-components-3d",
-  version="3.7.0",
+  version="3.8.0",
   setup_requires=['pbr', 'numpy'],
   install_requires=['numpy'],
   python_requires="~=3.7", # >= 3.7 < 4.0
