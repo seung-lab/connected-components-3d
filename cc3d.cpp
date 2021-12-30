@@ -29919,7 +29919,7 @@ static PyObject *__pyx_pf_4cc3d_30largest_k(CYTHON_UNUSED PyObject *__pyx_self, 
  *   assert k >= 0
  * 
  *   if k == 0:             # <<<<<<<<<<<<<<
- *     return np.zeros(img.shape, dtype=np.uint8)
+ *     return np.zeros(img.shape, dtype=np.uint16)
  * 
  */
   __pyx_t_1 = __Pyx_PyInt_EqObjC(__pyx_v_k, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1031, __pyx_L1_error)
@@ -29931,7 +29931,7 @@ static PyObject *__pyx_pf_4cc3d_30largest_k(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":1032
  * 
  *   if k == 0:
- *     return np.zeros(img.shape, dtype=np.uint8)             # <<<<<<<<<<<<<<
+ *     return np.zeros(img.shape, dtype=np.uint16)             # <<<<<<<<<<<<<<
  * 
  *   cc_labels, N = connected_components(
  */
@@ -29952,7 +29952,7 @@ static PyObject *__pyx_pf_4cc3d_30largest_k(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1032, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_uint8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1032, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_uint16); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1032, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_6) < 0) __PYX_ERR(0, 1032, __pyx_L1_error)
@@ -29970,13 +29970,13 @@ static PyObject *__pyx_pf_4cc3d_30largest_k(CYTHON_UNUSED PyObject *__pyx_self, 
  *   assert k >= 0
  * 
  *   if k == 0:             # <<<<<<<<<<<<<<
- *     return np.zeros(img.shape, dtype=np.uint8)
+ *     return np.zeros(img.shape, dtype=np.uint16)
  * 
  */
   }
 
   /* "cc3d.pyx":1034
- *     return np.zeros(img.shape, dtype=np.uint8)
+ *     return np.zeros(img.shape, dtype=np.uint16)
  * 
  *   cc_labels, N = connected_components(             # <<<<<<<<<<<<<<
  *     img, connectivity=connectivity,
@@ -30015,7 +30015,7 @@ static PyObject *__pyx_pf_4cc3d_30largest_k(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "cc3d.pyx":1034
- *     return np.zeros(img.shape, dtype=np.uint8)
+ *     return np.zeros(img.shape, dtype=np.uint16)
  * 
  *   cc_labels, N = connected_components(             # <<<<<<<<<<<<<<
  *     img, connectivity=connectivity,

@@ -106,7 +106,7 @@ labels_out, N = cc3d.largest_k(
   connectivity=26, delta=0,
   return_N=True,
 )
-labels_in *= (labels_out > 0) # filter the original image
+labels_in *= (labels_out > 0) # to get original labels
 
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.
