@@ -958,7 +958,32 @@ def test_dust_random(dtype, connectivity):
 
   assert filtered_recov == filtered_orig
 
+@pytest.mark.parametrize("k", (0,1,2,3,4,5,6,100,1000))
+def test_largest_k(k):
+  threshold = 20
 
+  labels = np.random.randint(0,5, size=(100,100,100), dtype=np.uint8)
+
+  cc_labels = cc3d.connected_components(labels)  
+  uniq, cts = np.unique(cc_labels, return_counts=True)
+
+  k_cc_labels = cc3d.largest_k(labels, k=k)
+  uniq_k, cts_k = np.unique(k_cc_labels, return_counts=True)
+
+  assert len(uniq_k) <= k+1
+
+  retained_labels = np.unique(cc_labels * (k_cc_labels > 0))
+
+  lbls = []
+  if k > 0:
+    lbls = sorted([ (u,c) for u,c in zip(uniq, cts) if u != 0 ], key=lambda x: x[1])
+    lbls = [ x[0] for x in lbls[-k:]  ]
+    lbls.sort()
+  retained_labels.sort()
+  if retained_labels[0] == 0:
+    retained_labels = retained_labels[1:]
+
+  assert np.all(lbls == retained_labels)
 
 
 

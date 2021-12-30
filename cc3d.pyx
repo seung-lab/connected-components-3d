@@ -954,6 +954,9 @@ def each(labels, binary=False, in_place=False):
     return InPlaceImageIterator()
   return ImageIterator()
 
+## The functions below are conveniences for doing
+## common tasks efficiently.
+
 def dust(
   img:np.ndarray, 
   threshold:Union[int,float], 
@@ -1003,4 +1006,54 @@ def dust(
     erase(rns[label], img)
 
   return img
+
+def largest_k(
+  img:np.ndarray,
+  k:int,
+  connectivity:int = 26,
+  delta:float = 0,
+  return_N:bool = False,
+) -> np.ndarray:
+  """
+  largest_k(
+    img:np.ndarray,
+    k:int,
+    connectivity:int = 26,
+    delta:float = 0,
+    return_N:bool = False,
+  ) -> np.ndarray:
+
+  Returns the k largest connected components
+  in the image.
+  """
+  assert k >= 0
+
+  if k == 0:
+    return np.zeros(img.shape, dtype=np.uint16)
+
+  cc_labels, N = connected_components(
+    img, connectivity=connectivity, 
+    return_N=True, delta=delta,
+  )
+  if N <= k:
+    if return_N:
+      return cc_labels, N
+    return cc_labels
+
+  cts = statistics(cc_labels)["voxel_counts"]  
+  preserve = [ (i,ct) for i,ct in enumerate(cts) if i > 0 ]
+  preserve.sort(key=lambda x: x[1])
+  preserve = [ x[0] for x in preserve[-k:] ]
+
+  shape, dtype = cc_labels.shape, cc_labels.dtype
+  rns = runs(cc_labels)
+  del cc_labels
+
+  cc_out = np.zeros(shape, dtype=dtype)
+  for i, label in enumerate(preserve):
+    draw(i+1, rns[label], cc_out)
+  
+  if return_N:
+    return cc_out, N
+  return cc_out
 
