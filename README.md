@@ -99,12 +99,14 @@ labels_out = cc3d.dust(
   connectivity=26, in_place=False
 )
 
-# Get a labeling of the k largest objects in the image
+# Get a labeling of the k largest objects in the image.
+# The output will be relabeled from 1 to N.
 labels_out, N = cc3d.largest_k(
   labels_in, k=10, 
   connectivity=26, delta=0,
   return_N=True,
 )
+labels_in *= (labels_out > 0) # filter the original image
 
 # We also include a region adjacency graph function 
 # that returns a set of undirected edges.
