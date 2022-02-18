@@ -3147,7 +3147,7 @@ static const char __pyx_k_stop[] = "stop";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_time[] = "time";
 static const char __pyx_k_view[] = "view";
-static const char __pyx_k_3_3_0[] = "3.3.0";
+static const char __pyx_k_3_9_0[] = "3.9.0";
 static const char __pyx_k_ASCII[] = "ASCII";
 static const char __pyx_k_Union[] = "Union";
 static const char __pyx_k_array[] = "array";
@@ -3353,7 +3353,7 @@ static const char __pyx_k_numpy_core_umath_failed_to_impor[] = "numpy.core.umath
 static const char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static const char __pyx_k_Only_6_18_and_26_connectivities_2[] = "Only 6, 18, and 26 connectivities are supported. Got: ";
 static const char __pyx_k_each_locals_InPlaceImageIterator_2[] = "each.<locals>.InPlaceImageIterator";
-static PyObject *__pyx_kp_u_3_3_0;
+static PyObject *__pyx_kp_u_3_9_0;
 static PyObject *__pyx_n_s_ASCII;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
 static PyObject *__pyx_n_u_C;
@@ -47596,7 +47596,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_u_3_3_0, __pyx_k_3_3_0, sizeof(__pyx_k_3_3_0), 0, 1, 0, 0},
+  {&__pyx_kp_u_3_9_0, __pyx_k_3_9_0, sizeof(__pyx_k_3_9_0), 0, 1, 0, 0},
   {&__pyx_n_s_ASCII, __pyx_k_ASCII, sizeof(__pyx_k_ASCII), 0, 0, 1, 1},
   {&__pyx_kp_s_Buffer_view_does_not_expose_stri, __pyx_k_Buffer_view_does_not_expose_stri, sizeof(__pyx_k_Buffer_view_does_not_expose_stri), 0, 0, 1, 0},
   {&__pyx_n_u_C, __pyx_k_C, sizeof(__pyx_k_C), 0, 1, 0, 1},
@@ -48978,7 +48978,7 @@ if (!__Pyx_RefNanny) {
  * import numpy as np
  * import time             # <<<<<<<<<<<<<<
  * 
- * __VERSION__ = '3.3.0'
+ * __VERSION__ = '3.9.0'
  */
   __pyx_t_1 = __Pyx_Import(__pyx_n_s_time, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -48988,11 +48988,11 @@ if (!__Pyx_RefNanny) {
   /* "cc3d.pyx":51
  * import time
  * 
- * __VERSION__ = '3.3.0'             # <<<<<<<<<<<<<<
+ * __VERSION__ = '3.9.0'             # <<<<<<<<<<<<<<
  * 
  * cdef extern from "cc3d.hpp" namespace "cc3d":
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_VERSION, __pyx_kp_u_3_3_0) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_VERSION, __pyx_kp_u_3_9_0) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
 
   /* "cc3d.pyx":101
  *   int64_t
