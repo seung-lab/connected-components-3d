@@ -4,7 +4,7 @@ with 26-connectivity and handling for multiple labels.
 
 Author: William Silversmith
 Affiliation: Seung Lab, Princeton Neuroscience Institute
-Date: August 2018 - October 2020
+Date: August 2018 - Februrary 2022
 
 ---
 This program is free software: you can redistribute it and/or modify
@@ -212,13 +212,13 @@ def estimate_provisional_labels(data):
 def connected_components(
   data, int64_t max_labels=-1, 
   int64_t connectivity=26, native_bool return_N=False,
-  delta=0
+  delta=0, out_dtype=None
 ):
   """
   ndarray connected_components(
     data, max_labels=-1, 
     connectivity=26, return_N=False,
-    delta=0
+    delta=0, out_dtype=None
   )
 
   Connected components applied to 3D images with 
@@ -239,6 +239,11 @@ def connected_components(
     delta (same as data): >= 0. Connect together values whose 
       difference in value is <= delta. Useful for rough 
       segmentations of continuously valued images.
+    out_dtype: if specified, must be one of np.uint16, np.uint32, np.uint64.
+      If not specified, it will be automatically determined. Most of the time,
+      you should leave this off so that the smallest safe dtype will be used.
+      However, in some applications you can save an up-conversion in the next 
+      operation by outputting the appropriately sized type instead.
 
   let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
@@ -323,7 +328,19 @@ def connected_components(
     else: # 26
       max_labels = min(max_labels, (union_find_voxels // 8) + 1)
 
-  if max_labels < np.iinfo(np.uint16).max:
+  if out_dtype is not None:
+    out_dtype = np.dtype(out_dtype)
+    if out_dtype not in (np.uint16, np.uint32, np.uint64):
+      raise ValueError(
+        f"Explicitly defined out_dtype ({out_dtype}) must be one of: "
+        f"np.uint16, np.uint32, np.uint64"
+      )
+    if np.iinfo(out_dtype).max < max_labels:
+      raise ValueError(
+        f"Explicitly defined out_dtype ({out_dtype}) is too small "
+        f"to contain the estimated maximum number of labels ({max_labels})."
+      )
+  elif max_labels < np.iinfo(np.uint16).max:
     out_dtype = np.uint16
   elif max_labels < np.iinfo(np.uint32).max:
     out_dtype = np.uint32
