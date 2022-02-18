@@ -15,15 +15,22 @@ def requirements():
 # NOTE: If cc3d.cpp does not exist:
 # cython -3 --fast-fail -v --cplus cc3d.pyx
 
-extra_compile_args = [
-  '-std=c++11', '-O3', '-ffast-math'
-]
+extra_compile_args = []
+if sys.platform == 'win32':
+  extra_compile_args += [
+    '/std:c++11', '/O2'
+  ]
+else:
+  extra_compile_args += [
+    '-std=c++11', '-O3'
+  ]
+
 if sys.platform == 'darwin':
   extra_compile_args += [ '-stdlib=libc++', '-mmacosx-version-min=10.9' ]
 
 setuptools.setup(
   name="connected-components-3d",
-  version="3.8.0",
+  version="3.9.0",
   setup_requires=['pbr', 'numpy'],
   install_requires=['numpy'],
   python_requires="~=3.7", # >= 3.7 < 4.0
