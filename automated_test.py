@@ -241,6 +241,31 @@ def test_3d_all_different(order, connectivity):
   assert np.unique(output_labels).shape[0] == 100*99*98
   assert output_labels.shape == (100, 99, 98)
 
+@pytest.mark.parametrize("out_dtype", (None, np.uint16, np.uint32, np.uint64))
+def test_out_dtype_empty(out_dtype):
+  labels = np.zeros((512,512,512), dtype=np.uint8)
+  out = cc3d.connected_components(labels, out_dtype=out_dtype)
+  if out_dtype is None:
+    assert out.dtype == np.uint16
+  else:
+    assert out.dtype == out_dtype
+
+def test_out_dtype_invalid():
+  labels = np.zeros((512,512,512), dtype=np.uint8)
+  try:
+    out = cc3d.connected_components(labels, out_dtype=np.uint8)
+    assert False
+  except ValueError:
+    pass
+
+def test_out_dtype_too_small():
+  labels = np.arange(0, 41 ** 3).astype(np.uint32) + 1
+  try:
+    out = cc3d.connected_components(labels, out_dtype=np.uint16)
+    assert False
+  except ValueError:
+    pass  
+
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 def test_3d_cross(dtype):
   def test(order, ground_truth):
