@@ -650,7 +650,7 @@ def _statistics(cnp.ndarray[UINT, ndim=3] out_labels):
   slices = []
   for xs, xe, ys, ye, zs, ze in bounding_boxes.reshape((N+1,6)):
     if xs < voxels and ys < voxels and zs < voxels:
-      slices.append((slice(xs,xe+1), slice(ys,ye+1), slice(zs,ze+1))) 
+      slices.append((slice(xs, int(xe+1)), slice(ys, int(ye+1)), slice(zs, int(ze+1))))
     else:
       slices.append(None)
   
