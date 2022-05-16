@@ -298,6 +298,9 @@ std::vector<T> extract_region_graph(
 
 	int neighborhood[13];
 	uint32_t areas[13]; // all zero except faces
+	for (int i = 0; i < 13; i++) {
+		areas[i] = 0;
+	}
 	areas[0] = wy * wz; // x axis
 	areas[1] = wx * wz; // y axis
 	areas[2] = wx * wy; // z axis
