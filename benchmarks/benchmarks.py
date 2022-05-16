@@ -111,6 +111,18 @@ def test_continuous_speed(labels, connectivity=8):
     _run(delta)
   _run(upper)
 
+def test_contacts_speed(labels, connectivity=26):
+  voxels = labels.size
+  times = []
+
+  for i in range(10):
+    s = time.time()
+    cc3d.contacts(labels, connectivity=connectivity)
+    e = time.time()
+    dt = e-s
+    times.append(dt)
+    prettyprint(dt, voxels)
+  summary(times, voxels)
 
 labels = np.load("connectomics.npy")
 scikit_image_multilabel_extraction(labels)
