@@ -6,8 +6,8 @@
 #include <cstdio>
 #include <cstdint>
 #include <stdexcept>
-#include <unordered_set>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace cc3d {
@@ -277,17 +277,20 @@ inline void compute_neighborhood(
 }
 
 struct pair_hash {
-	inline std::size_t operator()(const std::pair<int,int> & v) const {
+	inline std::size_t operator()(const std::pair<uint64_t,uint64_t> & v) const {
 		return v.first * 31 + v.second; // arbitrary hash fn
 	}
 };
 
 template <typename T>
-std::vector<T> extract_region_graph(
-		T* labels, 
-		const int64_t sx, const int64_t sy, const int64_t sz,
-		const int64_t connectivity=26
-	) {
+const std::unordered_map<std::pair<T,T>, float, pair_hash> 
+extract_region_graph(
+	T* labels, 
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	const float wx=1, const float wy=1, const float wz=1,
+	const int64_t connectivity=26,
+	const bool surface_area=true
+) {
 
 	if (connectivity != 6 && connectivity != 18 && connectivity != 26) {
 		throw std::runtime_error("Only 6, 18, and 26 connectivities are supported.");
@@ -296,12 +299,27 @@ std::vector<T> extract_region_graph(
 	const int64_t sxy = sx * sy;
 
 	int neighborhood[13];
+	float areas[13]; // all zero except faces
+
+	if (surface_area) {
+		for (int i = 3; i < 13; i++) {
+			areas[i] = 0;
+		}
+		areas[0] = wy * wz; // x axis
+		areas[1] = wx * wz; // y axis
+		areas[2] = wx * wy; // z axis
+	}
+	else { // voxel counts
+		for (int i = 0; i < 13; i++) {
+			areas[i] = 1;
+		}
+	}
 
 	T cur = 0;
 	T label = 0;
 	T last_label = 0;
 
-	std::unordered_set<std::pair<T,T>, pair_hash> edges;
+	std::unordered_map<std::pair<T,T>, float, pair_hash> edges;
 
 	for (int64_t z = 0; z < sz; z++) {
 		for (int64_t y = 0; y < sy; y++) {
@@ -326,11 +344,12 @@ std::vector<T> extract_region_graph(
 					}
 					else if (label != cur) {
 						if (cur > label) {
-							edges.emplace(std::pair<T,T>(label, cur));
+							edges[std::pair<T,T>(label, cur)] += areas[i];
 						}
 						else {
-							edges.emplace(std::pair<T,T>(cur, label)); 
+							edges[std::pair<T,T>(cur, label)] += areas[i];
 						}
+
 						last_label = label;
 					}
 				}
@@ -338,15 +357,7 @@ std::vector<T> extract_region_graph(
 		}
 	}
 
-	std::vector<T> output;
-	output.reserve(edges.size() * 2);
-
-	for (std::pair<T,T> edge : edges) {
-		output.push_back(edge.first);
-		output.push_back(edge.second);
-	}
-
-	return output;
+	return edges;
 }
 
 template <typename T>

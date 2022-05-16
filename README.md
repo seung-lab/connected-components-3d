@@ -114,9 +114,17 @@ labels_out, N = cc3d.largest_k(
 )
 labels_in *= (labels_out > 0) # to get original labels
 
-# We also include a region adjacency graph function 
-# that returns a set of undirected edges.
-edges = cc3d.region_graph(labels_out, connectivity=connectivity) 
+# Compute the contact surface area between all labels.
+# Only face contacts are counted as edges and corners
+# have zero area. To get a simple count of all contacting
+# voxels, set `surface_area=False`. 
+# { (1,2): 16 } aka { (label_1, label_2): contact surface area }
+surface_per_contact = cc3d.contacts(
+  labels_out, connectivity=connectivity,
+  surface_area=True, anisotropy=(4,4,40)
+)
+# same as set(surface_per_contact.keys())
+edges = cc3d.region_graph(labels_out, connectivity=connectivity)
 
 # You can also generate a voxel connectivty graph that encodes
 # which directions are passable from a given voxel as a bitfield.
