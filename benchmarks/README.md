@@ -19,10 +19,21 @@ The volume is derived from an early experimental segmentation of pinky40, a pred
 Fig. 1: Optimized extraction of components using cc3d 3.1.0 on a 512x512x512 densely labeled connectomics segmentation.
 </p>
 
+<p style="font-style: italics;" align="center">
+<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scikit_image_multilabel.png" alt="Fig. 2: Extraction of components on a 512x512x512 densely labeled connectomics segmentation. (black) scikit-image 0.19.2 and (blue) cc3d 3.10.0." /><br>
+Fig. 2: Extraction of components on a 512x512x512 densely labeled connectomics segmentation. (black) scikit-image 0.19.2 and (blue) cc3d 3.10.0
+</p>
+
 ```python
 import cc3d
+import skimage.measure
 from tqdm import tqdm
 import numpy as np
+
+def scikit_image_multilabel_extraction(labels):
+  res, N = skimage.measure.label(labels, return_num=True)
+  for segid in tqdm(range(1, N+1)):
+    extracted = (res == segid)
 
 def cc3d_mutlilabel_extraction(labels):
   res, N = cc3d.connected_components(labels, return_N=True)
@@ -107,7 +118,7 @@ This comparison was performed to show what happens when SciPy and `cc3d` are run
 | cc3d 3.1.0        | 502.5   | 21.2x      |
 
 
-# 10x Head to Head: Random Binary Images  
+# 10x Head to Head: Random Binary Images
 
 ```python
 import numpy as np
