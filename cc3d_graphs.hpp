@@ -331,11 +331,12 @@ std::vector<T> extract_region_graph(
 					}
 					else if (label != cur) {
 						if (cur > label) {
-							edges[std::pair<T,T>(label, cur)] += areas[neighboridx];
+							edges[std::pair<T,T>(label, cur)] += areas[i];
 						}
 						else {
-							edges[std::pair<T,T>(cur, label)] += areas[neighboridx];
+							edges[std::pair<T,T>(cur, label)] += areas[i];
 						}
+
 						last_label = label;
 					}
 				}
