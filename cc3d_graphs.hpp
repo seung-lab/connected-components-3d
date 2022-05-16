@@ -277,7 +277,7 @@ inline void compute_neighborhood(
 }
 
 struct pair_hash {
-	inline std::size_t operator()(const std::pair<int,int> & v) const {
+	inline std::size_t operator()(const std::pair<uint64_t,uint64_t> & v) const {
 		return v.first * 31 + v.second; // arbitrary hash fn
 	}
 };

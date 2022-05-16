@@ -73,7 +73,7 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
     int64_t connectivity, OUT *graph
   ) except +
   cdef struct pair_hash:
-    size_t __call__(cpp_pair[int,int] v)
+    size_t __call__(cpp_pair[uint64_t,uint64_t] v)
   cdef unordered_map[cpp_pair[T,T], float, pair_hash] extract_region_graph[T](
     T* labels,
     int64_t sx, int64_t sy, int64_t sz,
