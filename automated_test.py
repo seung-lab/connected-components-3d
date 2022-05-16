@@ -658,7 +658,46 @@ def test_single_pixel_2d(order, connectivity):
   labels = cc3d.connected_components(binary_img, connectivity=connectivity)
   assert np.all(labels == binary_img)
 
-def test_region_graph_26():
+def test_contacts_surface_area():
+  labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
+
+  labels[0,0,0] = 1
+  labels[1,0,0] = 2
+  labels[0,1,0] = 3
+  labels[0,0,1] = 4
+  labels[1,1,1] = 5
+
+  res = cc3d.contacts(labels, surface_area=True)
+  assert res[(1,2)] == 1
+  assert res[(1,3)] == 1
+  assert res[(1,4)] == 1
+  assert res[(1,5)] == 0
+
+  try:
+    res[(1,9)]
+    assert False
+  except KeyError:
+    pass
+
+  res = cc3d.contacts(labels, surface_area=True, anisotropy=(2,2,2))
+  assert res[(1,2)] == 4
+  assert res[(1,3)] == 4
+  assert res[(1,4)] == 4
+  assert res[(1,5)] == 0
+
+  res = cc3d.contacts(labels, surface_area=True, anisotropy=(1.5,10,10))
+  assert res[(1,2)] == 100
+  assert res[(1,3)] == 15
+  assert res[(1,4)] == 15
+  assert res[(1,5)] == 0
+
+  res = cc3d.contacts(labels, surface_area=False)
+  assert res[(1,2)] == 1
+  assert res[(1,3)] == 1
+  assert res[(1,4)] == 1
+  assert res[(1,5)] == 1
+  
+def test_contacts_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
   labels[5,5,5] = 1
@@ -676,15 +715,15 @@ def test_region_graph_26():
   labels[1,:,:] = 10
 
   res = cc3d.region_graph(labels, connectivity=26)
-  assert set(res.keys()) == set([ (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9) ])
+  assert res == set([ (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9) ])
 
   res = cc3d.region_graph(labels, connectivity=18)
-  assert set(res.keys()) == set()
+  assert res == set()
 
   res = cc3d.region_graph(labels, connectivity=6)
-  assert set(res.keys()) == set()
+  assert res == set()
 
-def test_region_graph_18():
+def test_contacts_18():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
   labels[5,5,5] = 1
@@ -701,25 +740,25 @@ def test_region_graph_18():
   # not connected to anything else
   labels[1,:,:] = 10
 
-  res = cc3d.region_graph(labels, connectivity=26)
+  res = cc3d.contacts(labels, connectivity=26)
   assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), 
     (2,4), (2,5), (3,4), (3,5),
     (6,8), (6,9), (7,8), (7,9),
   ])
 
-  res = cc3d.region_graph(labels, connectivity=18)
+  res = cc3d.contacts(labels, connectivity=18)
   assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), 
     (2,4), (2,5), (3,4), (3,5),
     (6,8), (6,9), (7,8), (7,9),
   ])
 
-  res = cc3d.region_graph(labels, connectivity=6)
+  res = cc3d.contacts(labels, connectivity=6)
   assert set(res.keys()) == set()
 
 
-def test_region_graph_6():
+def test_contacts_6():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
   labels[5,5,5] = 1
@@ -736,7 +775,7 @@ def test_region_graph_6():
   # not connected to anything else
   labels[1,:,:] = 10
 
-  res = cc3d.region_graph(labels, connectivity=26)
+  res = cc3d.contacts(labels, connectivity=26)
   assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
     (2,4), (2,5), (2,6), (2,7),
@@ -745,7 +784,7 @@ def test_region_graph_6():
     (5,6), (5,7)
   ])
 
-  res = cc3d.region_graph(labels, connectivity=18)
+  res = cc3d.contacts(labels, connectivity=18)
   assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
     (2,4), (2,5), (2,6), (2,7),
@@ -754,7 +793,7 @@ def test_region_graph_6():
     (5,6), (5,7)
   ])
 
-  res = cc3d.region_graph(labels, connectivity=6)
+  res = cc3d.contacts(labels, connectivity=6)
   assert set(res.keys()) == set([
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])

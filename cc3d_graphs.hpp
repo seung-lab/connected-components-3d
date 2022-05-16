@@ -6,8 +6,8 @@
 #include <cstdio>
 #include <cstdint>
 #include <stdexcept>
-#include <unordered_map>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace cc3d {
@@ -283,11 +283,13 @@ struct pair_hash {
 };
 
 template <typename T>
-std::vector<T> extract_region_graph(
+const std::unordered_map<std::pair<T,T>, float, pair_hash> 
+extract_region_graph(
 	T* labels, 
 	const int64_t sx, const int64_t sy, const int64_t sz,
-	const int64_t wx, const int64_t wy, const int64_t wz,
-	const int64_t connectivity=26
+	const float wx=1, const float wy=1, const float wz=1,
+	const int64_t connectivity=26,
+	const bool surface_area=true
 ) {
 
 	if (connectivity != 6 && connectivity != 18 && connectivity != 26) {
@@ -297,19 +299,27 @@ std::vector<T> extract_region_graph(
 	const int64_t sxy = sx * sy;
 
 	int neighborhood[13];
-	uint32_t areas[13]; // all zero except faces
-	for (int i = 0; i < 13; i++) {
-		areas[i] = 0;
+	float areas[13]; // all zero except faces
+
+	if (surface_area) {
+		for (int i = 3; i < 13; i++) {
+			areas[i] = 0;
+		}
+		areas[0] = wy * wz; // x axis
+		areas[1] = wx * wz; // y axis
+		areas[2] = wx * wy; // z axis
 	}
-	areas[0] = wy * wz; // x axis
-	areas[1] = wx * wz; // y axis
-	areas[2] = wx * wy; // z axis
+	else { // voxel counts
+		for (int i = 0; i < 13; i++) {
+			areas[i] = 1;
+		}
+	}
 
 	T cur = 0;
 	T label = 0;
 	T last_label = 0;
 
-	std::unordered_map<std::pair<T,T>, uint32_t, pair_hash> edges;
+	std::unordered_map<std::pair<T,T>, float, pair_hash> edges;
 
 	for (int64_t z = 0; z < sz; z++) {
 		for (int64_t y = 0; y < sy; y++) {
@@ -347,16 +357,7 @@ std::vector<T> extract_region_graph(
 		}
 	}
 
-	std::vector<T> output;
-	output.reserve(edges.size() * 3);
-
-	for (const auto edge : edges) {
-		output.push_back(edge.first.first);
-		output.push_back(edge.first.second);
-		output.push_back(edge.second);
-	}
-
-	return output;
+	return edges;
 }
 
 template <typename T>

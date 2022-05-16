@@ -28,7 +28,6 @@ https://github.com/seung-lab/connected-components-3d
 """
 import cython
 import operator
-from collections import defaultdict
 from functools import reduce
 from typing import Union
 
@@ -44,6 +43,7 @@ import sys
 
 from libcpp.vector cimport vector
 from libcpp.map cimport map as mapcpp
+from libcpp.unordered_map cimport unordered_map
 from libcpp.utility cimport pair as cpp_pair
 cimport numpy as cnp
 import numpy as np
@@ -72,11 +72,13 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
     int64_t sx, int64_t sy, int64_t sz,
     int64_t connectivity, OUT *graph
   ) except +
-  cdef vector[T] extract_region_graph[T](
+  cdef struct pair_hash:
+    size_t __call__(cpp_pair[int,int] v)
+  cdef unordered_map[cpp_pair[T,T], float, pair_hash] extract_region_graph[T](
     T* labels,
     int64_t sx, int64_t sy, int64_t sz,
-    int64_t wx, int64_t wy, int64_t wz,
-    int64_t connectivity,
+    float wx, float wy, float wz,
+    int64_t connectivity, native_bool surface_area
   ) except +
   cdef mapcpp[T, vector[cpp_pair[size_t,size_t]]] extract_runs[T](
     T* labels, size_t sx, size_t sy, size_t sz
@@ -820,7 +822,26 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
 def region_graph(
   cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
   int connectivity=26,
-  anisotropy=(1,1,1)
+):
+  """
+  Get the N-connected region adjacancy graph of a 3D image.
+  For backwards compatibility. "contacts" may be more useful.
+
+  Supports 26, 18, and 6 connectivities.
+
+  labels: 3D numpy array of integer segmentation labels
+  connectivity: 6, 16, or 26 (default)
+
+  Returns: set of edges between labels
+  """
+  res = contacts(labels, connectivity=connectivity)
+  return set(res.keys())
+
+def contacts(
+  cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
+  int connectivity=26,
+  surface_area=True,
+  anisotropy=(1,1,1), 
 ):
   """
   Get the N-connected region adjacancy graph of a 3D image
@@ -830,26 +851,30 @@ def region_graph(
 
   labels: 3D numpy array of integer segmentation labels
   connectivity: 6, 16, or 26 (default)
+  surface_area: should the returned value be the contact
+    surface area or a simple count of neighboring voxels?
+    Surface area only counts face contact as edges and corners
+    have zero area.
+  anisotropy: weights for x, y, and z dimensions for computing
+    surface area.
 
-  Returns: set of edges between labels
+  Returns: { (label_1, label_2): float, ... }
   """
   if connectivity not in (6, 18, 26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
 
   labels = np.asfortranarray(labels)
 
-  cdef vector[INTEGER] res = extract_region_graph(
+  cdef unordered_map[cpp_pair[INTEGER,INTEGER], float, pair_hash] res = extract_region_graph(
     <INTEGER*>&labels[0,0,0],
     labels.shape[0], labels.shape[1], labels.shape[2],
     anisotropy[0], anisotropy[1], anisotropy[2],
-    connectivity
+    connectivity, surface_area
   )
 
-  output = defaultdict(int)
-  cdef size_t i = 0
-
-  for i in range(res.size() // 3):
-    output[(res[i*3], res[i*3 + 1])] += res[i*3 + 2]
+  output = {}
+  for pair in res:
+    output[(pair.first.first, pair.first.second)] = pair.second
 
   return output
 
