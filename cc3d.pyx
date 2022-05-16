@@ -28,6 +28,7 @@ https://github.com/seung-lab/connected-components-3d
 """
 import cython
 import operator
+from collections import defaultdict
 from functools import reduce
 from typing import Union
 
@@ -74,6 +75,7 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
   cdef vector[T] extract_region_graph[T](
     T* labels,
     int64_t sx, int64_t sy, int64_t sz,
+    int64_t wx, int64_t wy, int64_t wz,
     int64_t connectivity,
   ) except +
   cdef mapcpp[T, vector[cpp_pair[size_t,size_t]]] extract_runs[T](
@@ -816,11 +818,13 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
     return graph.reshape( (sx), order='F')
 
 def region_graph(
-    cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
-    int connectivity=26
-  ):
+  cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
+  int connectivity=26,
+  anisotropy=(1,1,1)
+):
   """
-  Get the N-connected region adjacancy graph of a 3D image.
+  Get the N-connected region adjacancy graph of a 3D image
+  and the contact area between two regions.
 
   Supports 26, 18, and 6 connectivities.
 
@@ -837,16 +841,15 @@ def region_graph(
   cdef vector[INTEGER] res = extract_region_graph(
     <INTEGER*>&labels[0,0,0],
     labels.shape[0], labels.shape[1], labels.shape[2],
+    anisotropy[0], anisotropy[1], anisotropy[2],
     connectivity
   )
 
-  output = set()
+  output = defaultdict(int)
   cdef size_t i = 0
 
-  for i in range(res.size() // 2):
-    output.add(
-      (res[i * 2], res[i*2 + 1])
-    )
+  for i in range(res.size() // 3):
+    output[(res[i*3], res[i*3 + 1])] += res[i*3 + 2]
 
   return output
 

@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <stdexcept>
-#include <unordered_set>
+#include <unordered_map>
 #include <map>
 #include <vector>
 
@@ -284,10 +284,11 @@ struct pair_hash {
 
 template <typename T>
 std::vector<T> extract_region_graph(
-		T* labels, 
-		const int64_t sx, const int64_t sy, const int64_t sz,
-		const int64_t connectivity=26
-	) {
+	T* labels, 
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	const int64_t wx, const int64_t wy, const int64_t wz,
+	const int64_t connectivity=26
+) {
 
 	if (connectivity != 6 && connectivity != 18 && connectivity != 26) {
 		throw std::runtime_error("Only 6, 18, and 26 connectivities are supported.");
@@ -296,12 +297,16 @@ std::vector<T> extract_region_graph(
 	const int64_t sxy = sx * sy;
 
 	int neighborhood[13];
+	uint32_t areas[13]; // all zero except faces
+	areas[0] = wy * wz; // x axis
+	areas[1] = wx * wz; // y axis
+	areas[2] = wx * wy; // z axis
 
 	T cur = 0;
 	T label = 0;
 	T last_label = 0;
 
-	std::unordered_set<std::pair<T,T>, pair_hash> edges;
+	std::unordered_map<std::pair<T,T>, uint32_t, pair_hash> edges;
 
 	for (int64_t z = 0; z < sz; z++) {
 		for (int64_t y = 0; y < sy; y++) {
@@ -326,10 +331,10 @@ std::vector<T> extract_region_graph(
 					}
 					else if (label != cur) {
 						if (cur > label) {
-							edges.emplace(std::pair<T,T>(label, cur));
+							edges[std::pair<T,T>(label, cur)] += areas[neighboridx];
 						}
 						else {
-							edges.emplace(std::pair<T,T>(cur, label)); 
+							edges[std::pair<T,T>(cur, label)] += areas[neighboridx];
 						}
 						last_label = label;
 					}
@@ -339,10 +344,11 @@ std::vector<T> extract_region_graph(
 	}
 
 	std::vector<T> output;
-	output.reserve(edges.size() * 2);
+	output.reserve(edges.size() * 3);
 
-	for (std::pair<T,T> edge : edges) {
-		output.push_back(edge.first);
+	for (const auto edge : edges) {
+		output.push_back(edge.first.first);
+		output.push_back(edge.first.second);
 		output.push_back(edge.second);
 	}
 

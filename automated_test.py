@@ -676,13 +676,13 @@ def test_region_graph_26():
   labels[1,:,:] = 10
 
   res = cc3d.region_graph(labels, connectivity=26)
-  assert res == set([ (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9) ])
+  assert set(res.keys()) == set([ (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9) ])
 
   res = cc3d.region_graph(labels, connectivity=18)
-  assert res == set()
+  assert set(res.keys()) == set()
 
   res = cc3d.region_graph(labels, connectivity=6)
-  assert res == set()
+  assert set(res.keys()) == set()
 
 def test_region_graph_18():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
@@ -702,21 +702,21 @@ def test_region_graph_18():
   labels[1,:,:] = 10
 
   res = cc3d.region_graph(labels, connectivity=26)
-  assert res == set([ 
+  assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), 
     (2,4), (2,5), (3,4), (3,5),
     (6,8), (6,9), (7,8), (7,9),
   ])
 
   res = cc3d.region_graph(labels, connectivity=18)
-  assert res == set([ 
+  assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), 
     (2,4), (2,5), (3,4), (3,5),
     (6,8), (6,9), (7,8), (7,9),
   ])
 
   res = cc3d.region_graph(labels, connectivity=6)
-  assert res == set()
+  assert set(res.keys()) == set()
 
 
 def test_region_graph_6():
@@ -737,7 +737,7 @@ def test_region_graph_6():
   labels[1,:,:] = 10
 
   res = cc3d.region_graph(labels, connectivity=26)
-  assert res == set([ 
+  assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
     (2,4), (2,5), (2,6), (2,7),
     (3,4), (3,5), (3,6), (3,7),
@@ -746,7 +746,7 @@ def test_region_graph_6():
   ])
 
   res = cc3d.region_graph(labels, connectivity=18)
-  assert res == set([ 
+  assert set(res.keys()) == set([ 
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
     (2,4), (2,5), (2,6), (2,7),
     (3,4), (3,5), (3,6), (3,7),
@@ -755,7 +755,7 @@ def test_region_graph_6():
   ])
 
   res = cc3d.region_graph(labels, connectivity=6)
-  assert res == set([
+  assert set(res.keys()) == set([
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
 
