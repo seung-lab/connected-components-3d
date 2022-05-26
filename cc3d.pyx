@@ -1099,6 +1099,6 @@ def largest_k(
     draw(i+1, rns[label], cc_out)
   
   if return_N:
-    return cc_out, N
+    return cc_out, len(preserve)
   return cc_out
 
