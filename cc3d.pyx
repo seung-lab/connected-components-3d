@@ -272,7 +272,10 @@ def connected_components(
     raise ValueError("Only 6, 18, and 26 connectivities are supported for 3D images. Got: " + str(connectivity))
 
   if data.size == 0:
-    return np.zeros(shape=(0,), dtype=data.dtype)
+    out_labels = np.zeros(shape=(0,), dtype=data.dtype)
+    if return_N:
+      return (out_labels, 0)
+    return out_labels
 
   order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
 
