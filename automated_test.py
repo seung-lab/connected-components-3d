@@ -20,6 +20,25 @@ def gt_c2f(gt):
   f_gt[ f_gt == mx ] = 3
   return f_gt
 
+def test_empty():
+  labels = np.zeros((0,0), dtype=np.uint32)
+  out = cc3d.connected_components(labels)
+  assert out.size == 0
+
+  labels = np.zeros((0,0,0), dtype=np.uint32)
+  out = cc3d.connected_components(labels)
+  assert out.size == 0
+
+  labels = np.zeros((0,0), dtype=np.uint32)
+  out, N = cc3d.connected_components(labels, return_N=True)
+  assert N == 0
+  assert out.size == 0
+
+  labels = np.zeros((0,0,0), dtype=np.uint32)
+  out, N = cc3d.connected_components(labels, return_N=True)
+  assert N == 0
+  assert out.size == 0
+
 @pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 def test_2d_square(dtype, connectivity):
