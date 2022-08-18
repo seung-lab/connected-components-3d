@@ -823,7 +823,7 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
     return graph.reshape( (sx), order='F')
 
 def region_graph(
-  cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
+  labels,
   int connectivity=26,
 ):
   """
@@ -841,10 +841,10 @@ def region_graph(
   return set(res.keys())
 
 def contacts(
-  cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
-  int connectivity=26,
-  surface_area=True,
-  anisotropy=(1,1,1), 
+  labels, 
+  connectivity=26, 
+  surface_area=True, 
+  anisotropy=(1,1,1)
 ):
   """
   Get the N-connected region adjacancy graph of a 3D image
@@ -863,6 +863,22 @@ def contacts(
 
   Returns: { (label_1, label_2): float, ... }
   """
+  while len(labels.shape) < 3:
+    labels = labels[..., np.newaxis ]
+
+  return _contacts(labels, connectivity, surface_area, anisotropy)
+
+def _contacts(
+  cnp.ndarray[INTEGER, ndim=3, cast=True] labels,
+  int connectivity=26,
+  surface_area=True,
+  anisotropy=(1,1,1), 
+):
+  if connectivity == 8 and labels.ndim == 2:
+    connectivity = 26
+  if connectivity == 4 and labels.ndim == 2:
+    connectivity = 6
+
   if connectivity not in (6, 18, 26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
 
