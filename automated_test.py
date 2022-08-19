@@ -817,6 +817,28 @@ def test_contacts_6():
     (1,2), (1,3), (1,4), (1,5), (1,6), (1,7)
   ])
 
+def test_contacts_2d():
+  labels = np.zeros( (10, 10), dtype=np.uint32 )
+
+  labels[5,5] = 1
+
+  labels[3,2] = 2
+  labels[3,3] = 3
+
+  labels[7,5] = 4
+  labels[8,5] = 5
+
+  labels[7,2] = 6
+  labels[8,2] = 7
+
+  # not connected to anything else
+  labels[1,:] = 10
+
+  res = cc3d.contacts(labels, connectivity=8)
+  assert set(res.keys()) == set([ 
+    (2,3), (4,5), (6,7)
+  ])
+
 def test_voxel_graph_2d():
   labels = np.ones((3,3), dtype=np.uint8)
   graph = cc3d.voxel_connectivity_graph(labels, connectivity=4)
