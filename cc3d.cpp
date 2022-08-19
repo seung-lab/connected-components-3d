@@ -20560,9 +20560,9 @@ static PyObject *__pyx_pf_4cc3d_46_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -20570,16 +20570,16 @@ static PyObject *__pyx_pf_4cc3d_46_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -20587,16 +20587,16 @@ static PyObject *__pyx_pf_4cc3d_46_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -20606,14 +20606,14 @@ static PyObject *__pyx_pf_4cc3d_46_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -20621,9 +20621,9 @@ static PyObject *__pyx_pf_4cc3d_46_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -21105,9 +21105,9 @@ static PyObject *__pyx_pf_4cc3d_48_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -21115,16 +21115,16 @@ static PyObject *__pyx_pf_4cc3d_48_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -21132,16 +21132,16 @@ static PyObject *__pyx_pf_4cc3d_48_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -21151,14 +21151,14 @@ static PyObject *__pyx_pf_4cc3d_48_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -21166,9 +21166,9 @@ static PyObject *__pyx_pf_4cc3d_48_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -21650,9 +21650,9 @@ static PyObject *__pyx_pf_4cc3d_50_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -21660,16 +21660,16 @@ static PyObject *__pyx_pf_4cc3d_50_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -21677,16 +21677,16 @@ static PyObject *__pyx_pf_4cc3d_50_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -21696,14 +21696,14 @@ static PyObject *__pyx_pf_4cc3d_50_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -21711,9 +21711,9 @@ static PyObject *__pyx_pf_4cc3d_50_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -22195,9 +22195,9 @@ static PyObject *__pyx_pf_4cc3d_52_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -22205,16 +22205,16 @@ static PyObject *__pyx_pf_4cc3d_52_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -22222,16 +22222,16 @@ static PyObject *__pyx_pf_4cc3d_52_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -22241,14 +22241,14 @@ static PyObject *__pyx_pf_4cc3d_52_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -22256,9 +22256,9 @@ static PyObject *__pyx_pf_4cc3d_52_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -22740,9 +22740,9 @@ static PyObject *__pyx_pf_4cc3d_54_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -22750,16 +22750,16 @@ static PyObject *__pyx_pf_4cc3d_54_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -22767,16 +22767,16 @@ static PyObject *__pyx_pf_4cc3d_54_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -22786,14 +22786,14 @@ static PyObject *__pyx_pf_4cc3d_54_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -22801,9 +22801,9 @@ static PyObject *__pyx_pf_4cc3d_54_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -23285,9 +23285,9 @@ static PyObject *__pyx_pf_4cc3d_56_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -23295,16 +23295,16 @@ static PyObject *__pyx_pf_4cc3d_56_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -23312,16 +23312,16 @@ static PyObject *__pyx_pf_4cc3d_56_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -23331,14 +23331,14 @@ static PyObject *__pyx_pf_4cc3d_56_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -23346,9 +23346,9 @@ static PyObject *__pyx_pf_4cc3d_56_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -23830,9 +23830,9 @@ static PyObject *__pyx_pf_4cc3d_58_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -23840,16 +23840,16 @@ static PyObject *__pyx_pf_4cc3d_58_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -23857,16 +23857,16 @@ static PyObject *__pyx_pf_4cc3d_58_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -23876,14 +23876,14 @@ static PyObject *__pyx_pf_4cc3d_58_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -23891,9 +23891,9 @@ static PyObject *__pyx_pf_4cc3d_58_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -24375,9 +24375,9 @@ static PyObject *__pyx_pf_4cc3d_60_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   __pyx_t_2 = ((__pyx_v_connectivity == 8) != 0);
   if (__pyx_t_2) {
@@ -24385,16 +24385,16 @@ static PyObject *__pyx_pf_4cc3d_60_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":878
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26             # <<<<<<<<<<<<<<
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6
  */
     __pyx_v_connectivity = 26;
@@ -24402,16 +24402,16 @@ static PyObject *__pyx_pf_4cc3d_60_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     /* "cc3d.pyx":877
  *   anisotropy=(1,1,1),
  * ):
- *   if connectivity == 8 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 8 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  */
   }
 
   /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -24421,14 +24421,14 @@ static PyObject *__pyx_pf_4cc3d_60_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L7_bool_binop_done;
   }
-  __pyx_t_2 = ((__pyx_v_labels->nd == 2) != 0);
+  __pyx_t_2 = (((__pyx_v_labels->dimensions[2]) == 1) != 0);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "cc3d.pyx":880
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:
+ *   if connectivity == 4 and labels.shape[2] == 1:
  *     connectivity = 6             # <<<<<<<<<<<<<<
  * 
  *   if connectivity not in (6, 18, 26):
@@ -24436,9 +24436,9 @@ static PyObject *__pyx_pf_4cc3d_60_contacts(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_v_connectivity = 6;
 
     /* "cc3d.pyx":879
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  *     connectivity = 26
- *   if connectivity == 4 and labels.ndim == 2:             # <<<<<<<<<<<<<<
+ *   if connectivity == 4 and labels.shape[2] == 1:             # <<<<<<<<<<<<<<
  *     connectivity = 6
  * 
  */
@@ -51038,7 +51038,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_5.f0 = 1;
   __pyx_t_5.f1 = 1;
@@ -51069,7 +51069,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -51124,7 +51124,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -51163,7 +51163,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -51205,7 +51205,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -51247,7 +51247,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -51289,7 +51289,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -51331,7 +51331,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -51373,7 +51373,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -51415,7 +51415,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -51457,7 +51457,7 @@ if (!__Pyx_RefNanny) {
  *   surface_area=True,
  *   anisotropy=(1,1,1),             # <<<<<<<<<<<<<<
  * ):
- *   if connectivity == 8 and labels.ndim == 2:
+ *   if connectivity == 8 and labels.shape[2] == 1:
  */
   __pyx_t_2 = __pyx_convert__to_py___pyx_ctuple_long__and_long__and_long(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 875, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);

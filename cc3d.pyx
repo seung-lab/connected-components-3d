@@ -874,9 +874,9 @@ def _contacts(
   surface_area=True,
   anisotropy=(1,1,1), 
 ):
-  if connectivity == 8 and labels.ndim == 2:
+  if connectivity == 8 and labels.shape[2] == 1:
     connectivity = 26
-  if connectivity == 4 and labels.ndim == 2:
+  if connectivity == 4 and labels.shape[2] == 1:
     connectivity = 6
 
   if connectivity not in (6, 18, 26):
