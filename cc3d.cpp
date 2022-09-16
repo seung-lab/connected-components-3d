@@ -31104,7 +31104,7 @@ static PyObject *__pyx_pf_4cc3d_30each(CYTHON_UNUSED PyObject *__pyx_self, PyObj
 
 /* Python wrapper */
 static PyObject *__pyx_pw_4cc3d_33dust(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_4cc3d_32dust[] = "\n  dust(img, threshold, in_place=False) -> np.ndarray\n\n  Remove from the input image connected components\n  smaller than threshold (\"dust\"). The name of the function\n  can be read as a verb \"to dust\" the image.\n\n  img: 2D or 3D image\n  threshold: discard components smaller than this in voxels\n  connectivity: cc3d connectivity to use\n  in_place: whether to modify the input image or perform\n    dust \n\n  Returns: dusted image\n  ";
+static char __pyx_doc_4cc3d_32dust[] = "\n  dust(img, threshold, connectivity=26, in_place=False) -> np.ndarray\n\n  Remove from the input image connected components\n  smaller than threshold (\"dust\"). The name of the function\n  can be read as a verb \"to dust\" the image.\n\n  img: 2D or 3D image\n  threshold: discard components smaller than this in voxels\n  connectivity: cc3d connectivity to use\n  in_place: whether to modify the input image or perform\n    dust \n\n  Returns: dusted image\n  ";
 static PyMethodDef __pyx_mdef_4cc3d_33dust = {"dust", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_4cc3d_33dust, METH_VARARGS|METH_KEYWORDS, __pyx_doc_4cc3d_32dust};
 static PyObject *__pyx_pw_4cc3d_33dust(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_img = 0;

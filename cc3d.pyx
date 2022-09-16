@@ -1028,7 +1028,7 @@ def dust(
   in_place:bool = False,
 ) -> np.ndarray:
   """
-  dust(img, threshold, in_place=False) -> np.ndarray
+  dust(img, threshold, connectivity=26, in_place=False) -> np.ndarray
 
   Remove from the input image connected components
   smaller than threshold ("dust"). The name of the function
