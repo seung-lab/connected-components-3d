@@ -51,6 +51,14 @@ python setup.py develop
 
 ## Python Use
 
+The following functions are available with examples below:
+- Connected Component Labeling (CCL)
+- Removal of small objects ("dust")
+- Extraction of k largest objects
+- Fast extraction of all objects one-by-one
+- Calculation of contact surface area and contact network
+- Extraction of a per voxel connectivity graph
+
 ```python
 import cc3d
 import numpy as np
