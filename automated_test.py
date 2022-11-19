@@ -39,6 +39,13 @@ def test_empty():
   assert N == 0
   assert out.size == 0
 
+
+def test_1d_array():
+  labels, N = cc3d.connected_components(np.array([[[1,1,1,1]]]), return_N=True)
+  assert N == 1
+  assert np.all(labels == np.array([[[1,1,1,1]]]))
+
+
 @pytest.mark.parametrize("connectivity", (4, 6, 8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 def test_2d_square(dtype, connectivity):
