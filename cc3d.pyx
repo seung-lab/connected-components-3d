@@ -163,8 +163,9 @@ def estimate_provisional_labels(data):
       data.setflags(write=1)
 
     dtype = data.dtype
-    sx = data.shape[0]
-    if data.flags.c_contiguous:
+    if data.flags.f_contiguous:
+      sx = data.shape[0]
+    else:
       sx = data.shape[-1]
 
     linear_data = reshape(data, (data.size,))
@@ -277,7 +278,7 @@ def connected_components(
       return (out_labels, 0)
     return out_labels
 
-  order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
+  order = 'F' if data.flags.f_contiguous else 'C'
 
   while len(data.shape) < 3:
     if order == 'C':
@@ -285,7 +286,7 @@ def connected_components(
     else: # F
       data = data[..., np.newaxis ]
 
-  if not data.flags['C_CONTIGUOUS'] and not data.flags['F_CONTIGUOUS']:
+  if not data.flags.c_contiguous and not data.flags.f_contiguous:
     data = np.copy(data, order=order)
 
   shape = list(data.shape)
@@ -531,7 +532,7 @@ def _final_reshape(out_labels, sx, sy, sz, dims, order):
   return out_labels
 
 cdef size_t epl_special_row(
-  size_t foreground_row, size_t sx, size_t sy, 
+  size_t foreground_row, size_t sx, size_t sy,
   data, out_labels, size_t N = 0
 ):
   cdef size_t start = foreground_row * sx
@@ -540,19 +541,7 @@ cdef size_t epl_special_row(
 
   cdef size_t i = 0
   cdef int64_t last_label = 0
-  if data.flags.c_contiguous:
-    for i in range(sx):
-      if data[rz,ry,i] == 0:
-        last_label = 0
-        continue
-      elif data[rz,ry,i] == last_label:
-        out_labels[start + i] = N
-        continue
-      else:
-        N += 1
-        out_labels[start + i] = N
-        last_label = data[rz,ry,i]
-  else:
+  if data.flags.f_contiguous:
     for i in range(sx):
       if data[i,ry,rz] == 0:
         last_label = 0
@@ -564,6 +553,18 @@ cdef size_t epl_special_row(
         N += 1
         out_labels[start + i] = N
         last_label = data[i,ry,rz]
+  else:
+    for i in range(sx):
+      if data[rz,ry,i] == 0:
+        last_label = 0
+        continue
+      elif data[rz,ry,i] == last_label:
+        out_labels[start + i] = N
+        continue
+      else:
+        N += 1
+        out_labels[start + i] = N
+        last_label = data[rz,ry,i]
 
   return N
 
