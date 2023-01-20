@@ -2,7 +2,15 @@ import os
 import setuptools
 import sys
 
-import numpy as np
+
+class NumpyImport:
+  def __repr__(self):
+    import numpy as np
+
+    return np.get_include()
+
+  __fspath__ = __repr__
+
 
 def read(fname):
   with open(os.path.join(os.path.dirname(__file__), fname), 'rt') as f:
@@ -39,7 +47,7 @@ setuptools.setup(
       'cc3d',
       sources=[ 'cc3d.cpp' ],
       language='c++',
-      include_dirs=[ np.get_include() ],
+      include_dirs=[ NumpyImport() ],
       extra_compile_args=extra_compile_args,
     )
   ],
