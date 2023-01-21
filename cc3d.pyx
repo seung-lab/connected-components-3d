@@ -49,7 +49,7 @@ cimport numpy as cnp
 import numpy as np
 import time
 
-__VERSION__ = '3.10.3'
+__VERSION__ = '3.10.4'
 
 cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef size_t estimate_provisional_label_count[T](
