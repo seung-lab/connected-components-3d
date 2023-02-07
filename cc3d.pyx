@@ -1022,6 +1022,20 @@ def each(labels, binary=False, in_place=False):
 ## The functions below are conveniences for doing
 ## common tasks efficiently.
 
+def _view_as_unsigned(img:np.ndarray):
+  if np.issubdtype(img.dtype, np.unsignedinteger) or img.dtype == bool:
+    return img
+  elif img.dtype == np.int8:
+    return img.view(np.uint8)
+  elif img.dtype == np.int16:
+    return img.view(np.uint16)
+  elif img.dtype == np.int32:
+    return img.view(np.uint32)
+  elif img.dtype == np.int64:
+    return img.view(np.uint64)
+
+  return img
+
 def dust(
   img:np.ndarray, 
   threshold:Union[int,float], 
@@ -1043,6 +1057,9 @@ def dust(
 
   Returns: dusted image
   """
+  orig_dtype = img.dtype
+  img = _view_as_unsigned(img)
+  
   if not in_place:
     img = np.copy(img)
 
@@ -1070,7 +1087,7 @@ def dust(
   for label in to_mask:
     erase(rns[label], img)
 
-  return img
+  return img.view(orig_dtype)
 
 def largest_k(
   img:np.ndarray,

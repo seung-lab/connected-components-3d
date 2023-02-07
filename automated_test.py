@@ -1053,7 +1053,7 @@ def test_dust_static(dtype, connectivity, order, in_place):
 @pytest.mark.parametrize("connectivity", (6,18,26))
 def test_dust_random(dtype, connectivity):
   threshold = 20
-  labels = np.random.randint(0,5, size=(100,100,100), dtype=np.uint8)
+  labels = np.random.randint(0,5, size=(100,100,100), dtype=dtype)
 
   ccl = cc3d.connected_components(labels, connectivity=connectivity)
   uniq, counts = np.unique(ccl, return_counts=True)
