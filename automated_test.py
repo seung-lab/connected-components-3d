@@ -4,11 +4,12 @@ import sys
 import cc3d
 import numpy as np
 
-TEST_TYPES = [
+INT_TYPES = [
   np.int8, np.int16, np.int32, np.int64,
   np.uint8, np.uint16, np.uint32, np.uint64,
-  np.float32, np.float64
 ]
+
+TEST_TYPES = INT_TYPES + [ np.float32, np.float64 ]
 
 OUT_TYPES = [ np.uint16, np.uint32, np.uint64 ]
 
@@ -1049,7 +1050,7 @@ def test_dust_static(dtype, connectivity, order, in_place):
 
   assert np.all(ans == recovered)
 
-@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("dtype", INT_TYPES)
 @pytest.mark.parametrize("connectivity", (6,18,26))
 def test_dust_random(dtype, connectivity):
   threshold = 20
