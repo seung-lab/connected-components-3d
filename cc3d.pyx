@@ -585,7 +585,11 @@ def statistics(out_labels):
       voxel_counts: np.ndarray[uint64_t] (index is label) (N+1)
 
       # Structure is xmin,xmax,ymin,ymax,zmin,zmax by label
-      bounding_boxes: np.ndarray[uint64_t] (N+1 x 6)
+      bounding_boxes: List[ tuple(slice, slice, slice), ... ]
+        Index into list is the connected component ID, the 
+        tuple of slices can be directly used to extract the
+        region of interest from out_labels using slice
+        notation.
 
       # Structure is x,y,z
       centroids: np.ndarray[float64] (N+1,3)
