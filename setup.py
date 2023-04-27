@@ -39,13 +39,13 @@ if sys.platform == 'darwin':
 setuptools.setup(
   name="connected-components-3d",
   version="3.10.5",
-  setup_requires=['pbr', 'numpy'],
+  setup_requires=['pbr', 'numpy', 'cython'],
   install_requires=['numpy'],
   python_requires=">=3.7,<4.0",
   ext_modules=[
     setuptools.Extension(
       'cc3d',
-      sources=[ 'cc3d.cpp' ],
+      sources=[ 'cc3d.pyx' ],
       language='c++',
       include_dirs=[ NumpyImport() ],
       extra_compile_args=extra_compile_args,

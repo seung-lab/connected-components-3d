@@ -1,3 +1,4 @@
+# cython: language_level=3
 """
 Cython binding for connected components applied to 3D images
 with 26-connectivity and handling for multiple labels.
