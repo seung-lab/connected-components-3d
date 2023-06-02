@@ -83,6 +83,15 @@ labels_out = cc3d.connected_components(labels_in, out_dtype=np.uint64)
 # background and will not join to any other voxel.
 labels_out = cc3d.connected_components(labels_in, delta=10)
 
+# If you're working with an image that's larger than memory you can
+# use mmapped files. The input and output files can be used independently.
+# In this case an array labels.bin that is 5000x5000x2000 voxels and uint32_t
+# in Fortran order is computed and the results are written to out.bin in Fortran
+# order. You can find the properties of the file (shape, dtype, order) by inspecting
+# labels_out.
+labels_in = np.memmap("labels.bin", order="F", dtype=np.uint32, shape=(5000, 5000, 2000))
+labels_out = cc3d.connected_components(labels_in, delta=10, out_file="out.bin")
+
 # You can extract the number of labels (which is also the maximum 
 # label value) like so:
 labels_out, N = cc3d.connected_components(labels_in, return_N=True) # free
