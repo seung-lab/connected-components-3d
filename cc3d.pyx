@@ -5,7 +5,7 @@ with 26-connectivity and handling for multiple labels.
 
 Author: William Silversmith
 Affiliation: Seung Lab, Princeton Neuroscience Institute
-Date: August 2018 - Februrary 2022
+Date: August 2018 - June 2023
 
 ---
 This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,8 @@ import cython
 import operator
 from functools import reduce
 from typing import (
-  Dict, Union, Tuple, Iterator, Sequence, Optional, Any
+  Dict, Union, Tuple, Iterator, 
+  Sequence, Optional, Any, BinaryIO
 )
 
 from libc.stdlib cimport calloc, free
@@ -42,6 +43,7 @@ from libc.stdint cimport (
 from libcpp cimport bool as native_bool
 from cpython cimport array 
 import array
+import os
 import sys
 
 from libcpp.vector cimport vector
@@ -227,7 +229,8 @@ def estimate_provisional_labels(data:np.ndarray) -> Tuple[int,int,int]:
 def connected_components(
   data:np.ndarray, int64_t max_labels=-1, 
   int64_t connectivity=26, native_bool return_N=False,
-  delta:int = 0, out_dtype:Optional[Any] = None
+  delta:int = 0, out_dtype:Optional[Any] = None,
+  out_file:Optional[Union[str, BinaryIO]] = None
 ) -> np.ndarray:
   """
   Connected components applied to 3D images with 
@@ -253,6 +256,8 @@ def connected_components(
       you should leave this off so that the smallest safe dtype will be used.
       However, in some applications you can save an up-conversion in the next 
       operation by outputting the appropriately sized type instead.
+    out_file: If specified, the output array will be an mmapped
+      file. Can be a file-name or a file-like object.
 
   let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
@@ -359,14 +364,23 @@ def connected_components(
   else:
     out_dtype = np.uint64
 
+  def output_factory(out_file, voxels, out_dtype):
+    if out_file is None:
+      return np.zeros( (voxels,), dtype=out_dtype, order='F' )
+    else:
+      if isinstance(out_file, str):
+        with open(out_file, "wb") as f:
+          os.ftruncate(f.fileno(), voxels * np.dtype(out_dtype).itemsize)
+      return np.memmap(out_file, order='F', dtype=out_dtype, shape=(voxels,))
+
   if out_dtype == np.uint16:
-    out_labels16 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    out_labels16 = output_factory(out_file, voxels, out_dtype)
     out_labels = out_labels16
   elif out_dtype == np.uint32:
-    out_labels32 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    out_labels32 = output_factory(out_file, voxels, out_dtype)
     out_labels = out_labels32
   elif out_dtype == np.uint64:
-    out_labels64 = np.zeros( (voxels,), dtype=out_dtype, order='C' )
+    out_labels64 = output_factory(out_file, voxels, out_dtype)
     out_labels = out_labels64
 
   dtype = data.dtype
