@@ -1,2 +1,3 @@
 scipy
 pytest
+crackle-codec

@@ -1,9 +1,7 @@
 import cc3d
 from tqdm import tqdm
-import skimage.measure
-import scipy.ndimage.measurements
 import numpy as np
-import fastremap
+import crackle
 import time
 
 def prettyprint(tm, voxels):
@@ -36,6 +34,7 @@ structures = {
 }
 
 def scikit_image_multilabel_extraction(labels):
+  import skimage.measure
   s = time.time()
   res, N = skimage.measure.label(labels, return_num=True)
   for segid in tqdm(range(1, N+1)):
@@ -52,6 +51,7 @@ def cc3d_mutlilabel_extraction(labels):
   print(time.time() - s, "seconds")
 
 def ndimage_mutlilabel_extraction(labels):
+  import scipy.ndimage.measurements
   s = [
     [[1,1,1], [1,1,1], [1,1,1]],
     [[1,1,1], [1,1,1], [1,1,1]],
@@ -66,6 +66,7 @@ def ndimage_mutlilabel_extraction(labels):
       extracted = (res == ccid)
 
 def test_binary_image_processing(labels, connectivity=26):
+  import scipy.ndimage.measurements
   voxels = labels.size
   times = []
 
@@ -124,8 +125,8 @@ def test_contacts_speed(labels, connectivity=26):
     prettyprint(dt, voxels)
   summary(times, voxels)
 
-labels = np.load("connectomics.npy")
-scikit_image_multilabel_extraction(labels)
+labels = crackle.load("connectomics.npy.ckl.gz")
+# scikit_image_multilabel_extraction(labels)
 cc3d_mutlilabel_extraction(labels)
 # ndimage_mutlilabel_extraction(labels)
 # test_multilabel_speed(labels)
