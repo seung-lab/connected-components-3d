@@ -30,7 +30,9 @@ https://github.com/seung-lab/connected-components-3d
 import cython
 import operator
 from functools import reduce
-from typing import Union
+from typing import (
+  Dict, Union, Tuple, Iterator, Sequence, Optional, Any
+)
 
 from libc.stdlib cimport calloc, free
 from libc.stdint cimport (
@@ -108,7 +110,12 @@ class DimensionError(Exception):
   pass
 
 # from https://github.com/seung-lab/fastremap/blob/master/fastremap.pyx
-def reshape(arr, shape, order=None):
+@cython.binding(True)
+def reshape(
+  arr:np.ndarray, 
+  shape:Sequence[int], 
+  order:Optional[chr]=None
+) -> np.ndarray:
   """
   If the array is contiguous, attempt an in place reshape
   rather than potentially making a copy.
@@ -143,7 +150,8 @@ cdef int64_t even_ceil(int64_t N):
     return N << 1
   return N
 
-def estimate_provisional_labels(data):
+@cython.binding(True)
+def estimate_provisional_labels(data:np.ndarray) -> Tuple[int,int,int]:
   cdef uint8_t[:] arr_memview8u
   cdef uint16_t[:] arr_memview16u
   cdef uint32_t[:] arr_memview32u
@@ -215,18 +223,13 @@ def estimate_provisional_labels(data):
 
   return (epl, first_foreground_row, last_foreground_row)
 
+@cython.binding(True)
 def connected_components(
-  data, int64_t max_labels=-1, 
+  data:np.ndarray, int64_t max_labels=-1, 
   int64_t connectivity=26, native_bool return_N=False,
-  delta=0, out_dtype=None
-):
+  delta:int = 0, out_dtype:Optional[Any] = None
+) -> np.ndarray:
   """
-  ndarray connected_components(
-    data, max_labels=-1, 
-    connectivity=26, return_N=False,
-    delta=0, out_dtype=None
-  )
-
   Connected components applied to 3D images with 
   handling for multiple labels.
 
@@ -569,11 +572,9 @@ cdef size_t epl_special_row(
 
   return N
 
-
-def statistics(out_labels):
+@cython.binding(True)
+def statistics(out_labels:np.ndarray) -> dict:
   """
-  statistics(cnp.ndarray[UINT, ndim=3] out_labels):
-
   Compute basic statistics on the regions in the image.
   These are the voxel counts per label, the axis-aligned
   bounding box, and the centroid of each label.
@@ -673,7 +674,11 @@ def _statistics(cnp.ndarray[UINT, ndim=3] out_labels):
     "centroids": centroids.reshape((N+1,3)),
   }
 
-def voxel_connectivity_graph(data, int64_t connectivity=26):
+@cython.binding(True)
+def voxel_connectivity_graph(
+  data:np.ndarray, 
+  int64_t connectivity=26
+) -> np.ndarray:
   """
   Extracts the voxel connectivity graph from a multi-label image.
   A voxel is considered connected if the adjacent voxel is the same
@@ -828,10 +833,11 @@ def voxel_connectivity_graph(data, int64_t connectivity=26):
   else:
     return graph.reshape( (sx), order='F')
 
+@cython.binding(True)
 def region_graph(
-  labels,
+  labels:np.ndarray,
   int connectivity=26,
-):
+) -> set:
   """
   Get the N-connected region adjacancy graph of a 3D image.
   For backwards compatibility. "contacts" may be more useful.
@@ -846,12 +852,13 @@ def region_graph(
   res = contacts(labels, connectivity=connectivity)
   return set(res.keys())
 
+@cython.binding(True)
 def contacts(
-  labels, 
-  connectivity=26, 
-  surface_area=True, 
-  anisotropy=(1,1,1)
-):
+  labels:np.ndarray, 
+  int connectivity=26, 
+  surface_area:bool = True, 
+  anisotropy:Tuple[int,int,int] = (1,1,1)
+) -> Dict[Tuple[int,int], float]:
   """
   Get the N-connected region adjacancy graph of a 3D image
   and the contact area between two regions.
@@ -906,10 +913,9 @@ def _contacts(
 ## These below functions are concerned with fast rendering
 ## of a densely labeled image into a series of binary images.
 
-def runs(labels):
+@cython.binding(True)
+def runs(labels:np.ndarray):
   """
-  runs(labels)
-
   Returns a dictionary describing where each label is located.
   Use this data in conjunction with render and erase.
   """
@@ -930,13 +936,11 @@ def _runs(
     raise TypeError("Unsupported type: " + str(labels.dtype))
 
 def draw(
-  label, 
+  label:np.ndarray, 
   vector[cpp_pair[size_t, size_t]] runs,
-  image
-):
+  image:np.ndarray
+) -> np.ndarray:
   """
-  draw(label, runs, image)
-
   Draws label onto the provided image according to 
   runs.
   """
@@ -962,22 +966,24 @@ def _draw(
 
   return image
 
+@cython.embedsignature(True)
 def erase( 
   vector[cpp_pair[size_t, size_t]] runs, 
-  image
-):
+  image:np.ndarray
+) -> np.ndarray:
   """
-  erase(runs, image)
-
   Erases (sets to 0) part of the provided image according to 
   runs.
   """
   return draw(0, runs, image)
 
-def each(labels, binary=False, in_place=False):
+@cython.binding(True)
+def each(
+  labels:np.ndarray, 
+  binary:bool = False, 
+  in_place:bool = False
+) -> Iterator[Tuple[int, np.ndarray]]:
   """
-  each(labels, binary=False, in_place=False)
-
   Returns an iterator that extracts each label from a dense labeling.
 
   binary: create a binary image from each component (otherwise use the
@@ -1041,6 +1047,7 @@ def _view_as_unsigned(img:np.ndarray):
 
   return img
 
+@cython.binding(True)
 def dust(
   img:np.ndarray, 
   threshold:Union[int,float], 
@@ -1048,8 +1055,6 @@ def dust(
   in_place:bool = False,
 ) -> np.ndarray:
   """
-  dust(img, threshold, connectivity=26, in_place=False) -> np.ndarray
-
   Remove from the input image connected components
   smaller than threshold ("dust"). The name of the function
   can be read as a verb "to dust" the image.
@@ -1094,6 +1099,7 @@ def dust(
 
   return img.view(orig_dtype)
 
+@cython.binding(True)
 def largest_k(
   img:np.ndarray,
   k:int,
@@ -1102,14 +1108,6 @@ def largest_k(
   return_N:bool = False,
 ) -> np.ndarray:
   """
-  largest_k(
-    img:np.ndarray,
-    k:int,
-    connectivity:int = 26,
-    delta:float = 0,
-    return_N:bool = False,
-  ) -> np.ndarray:
-
   Returns the k largest connected components
   in the image.
   """
