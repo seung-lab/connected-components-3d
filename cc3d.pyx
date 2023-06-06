@@ -667,7 +667,7 @@ def _statistics(
   for label in range(0, <uint64_t>bounding_boxes.size, 2):
     bounding_boxes[label] = voxels
 
-  if out_labels.flags.c_contiguous:
+  if out_labels.flags.f_contiguous:
     for z in range(sz):
       for y in range(sy):
         for x in range(sx):
