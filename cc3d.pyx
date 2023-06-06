@@ -587,11 +587,17 @@ cdef size_t epl_special_row(
   return N
 
 @cython.binding(True)
-def statistics(out_labels:np.ndarray) -> dict:
+def statistics(
+  out_labels:np.ndarray, 
+  no_slice_conversion:bool = False,
+) -> dict:
   """
   Compute basic statistics on the regions in the image.
   These are the voxel counts per label, the axis-aligned
   bounding box, and the centroid of each label.
+  
+  no_slice_conversion: if True, return the bounding_boxes as 
+    a numpy array. This can save memory and time.
 
   Returns:
     Let N = np.max(out_labels)
@@ -616,13 +622,16 @@ def statistics(out_labels:np.ndarray) -> dict:
   if out_labels.dtype == bool:
     out_labels = out_labels.view(np.uint8)
 
-  return _statistics(out_labels)
+  return _statistics(out_labels, no_slice_conversion)
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.nonecheck(False)
-def _statistics(cnp.ndarray[UINT, ndim=3] out_labels):
+def _statistics(
+  cnp.ndarray[UINT, ndim=3] out_labels, 
+  native_bool no_slice_conversion
+):
   cdef uint64_t voxels = out_labels.size;
   cdef uint64_t sx = out_labels.shape[0]
   cdef uint64_t sy = out_labels.shape[1]
@@ -642,51 +651,79 @@ def _statistics(cnp.ndarray[UINT, ndim=3] out_labels):
       f"Statistics can only be computed on volumes containing labels with values lower than the number of voxels. Max: {N}"
     )
 
-  cdef cnp.ndarray[uint64_t] counts = np.zeros(N + 1, dtype=np.uint64)
-  cdef cnp.ndarray[uint64_t] bounding_boxes = np.zeros(6 * (N + 1), dtype=np.uint64)
-  cdef cnp.ndarray[double] centroids = np.zeros(3 * (N + 1), dtype=np.float64)
+  if np.any(np.array([sx, sy, sz]) > np.iinfo(np.uint16).max):
+    raise ValueError(f"Only dimensions shorter than 65536 are supported. Shape: {sx}, {sy}, {sz}")
 
-  cdef uint64_t x = 0
-  cdef uint64_t y = 0
-  cdef uint64_t z = 0
+  cdef cnp.ndarray[uint32_t] counts = np.zeros(N + 1, dtype=np.uint32)
+  cdef cnp.ndarray[uint16_t] bounding_boxes = np.zeros(6 * (N + 1), dtype=np.uint16)
+  cdef cnp.ndarray[float] centroids = np.zeros(3 * (N + 1), dtype=np.float32)
+
+  cdef uint16_t x = 0
+  cdef uint16_t y = 0
+  cdef uint16_t z = 0
 
   cdef uint64_t label = 0
 
   for label in range(0, <uint64_t>bounding_boxes.size, 2):
     bounding_boxes[label] = voxels
 
-  for z in range(sz):
-    for y in range(sy):
-      for x in range(sx):
-        label = <uint64_t>out_labels[x,y,z]
-        counts[label] += 1
-        bounding_boxes[6 * label + 0] = min(bounding_boxes[6 * label + 0], x)
-        bounding_boxes[6 * label + 1] = max(bounding_boxes[6 * label + 1], x)
-        bounding_boxes[6 * label + 2] = min(bounding_boxes[6 * label + 2], y)
-        bounding_boxes[6 * label + 3] = max(bounding_boxes[6 * label + 3], y)
-        bounding_boxes[6 * label + 4] = min(bounding_boxes[6 * label + 4], z)
-        bounding_boxes[6 * label + 5] = max(bounding_boxes[6 * label + 5], z)
-        centroids[3 * label + 0] += <double>x
-        centroids[3 * label + 1] += <double>y
-        centroids[3 * label + 2] += <double>z
+  if out_labels.flags.c_contiguous:
+    for z in range(sz):
+      for y in range(sy):
+        for x in range(sx):
+          label = <uint64_t>out_labels[x,y,z]
+          counts[label] += 1
+          bounding_boxes[6 * label + 0] = <uint16_t>min(bounding_boxes[6 * label + 0], x)
+          bounding_boxes[6 * label + 1] = <uint16_t>max(bounding_boxes[6 * label + 1], x)
+          bounding_boxes[6 * label + 2] = <uint16_t>min(bounding_boxes[6 * label + 2], y)
+          bounding_boxes[6 * label + 3] = <uint16_t>max(bounding_boxes[6 * label + 3], y)
+          bounding_boxes[6 * label + 4] = <uint16_t>min(bounding_boxes[6 * label + 4], z)
+          bounding_boxes[6 * label + 5] = <uint16_t>max(bounding_boxes[6 * label + 5], z)
+          centroids[3 * label + 0] += <float>x
+          centroids[3 * label + 1] += <float>y
+          centroids[3 * label + 2] += <float>z
+  else:
+    for x in range(sx):
+      for y in range(sy):
+        for z in range(sz):    
+          label = <uint64_t>out_labels[x,y,z]
+          counts[label] += 1
+          bounding_boxes[6 * label + 0] = <uint16_t>min(bounding_boxes[6 * label + 0], x)
+          bounding_boxes[6 * label + 1] = <uint16_t>max(bounding_boxes[6 * label + 1], x)
+          bounding_boxes[6 * label + 2] = <uint16_t>min(bounding_boxes[6 * label + 2], y)
+          bounding_boxes[6 * label + 3] = <uint16_t>max(bounding_boxes[6 * label + 3], y)
+          bounding_boxes[6 * label + 4] = <uint16_t>min(bounding_boxes[6 * label + 4], z)
+          bounding_boxes[6 * label + 5] = <uint16_t>max(bounding_boxes[6 * label + 5], z)
+          centroids[3 * label + 0] += <float>x
+          centroids[3 * label + 1] += <float>y
+          centroids[3 * label + 2] += <float>z
 
   for label in range(N+1):
-    centroids[3 * label + 0] /= <double>counts[label]
-    centroids[3 * label + 1] /= <double>counts[label]
-    centroids[3 * label + 2] /= <double>counts[label]
+    centroids[3 * label + 0] /= <float>counts[label]
+    centroids[3 * label + 1] /= <float>counts[label]
+    centroids[3 * label + 2] /= <float>counts[label]
+
+  bbxes = bounding_boxes.reshape((N+1,6))
+
+  output = {
+    "voxel_counts": counts,
+    "bounding_boxes": bbxes,
+    "centroids": centroids.reshape((N+1,3)),
+  }
+
+  if no_slice_conversion:
+    return output
 
   slices = []
-  for xs, xe, ys, ye, zs, ze in bounding_boxes.reshape((N+1,6)):
+  for xs, xe, ys, ye, zs, ze in bbxes:
     if xs < voxels and ys < voxels and zs < voxels:
       slices.append((slice(xs, int(xe+1)), slice(ys, int(ye+1)), slice(zs, int(ze+1))))
     else:
       slices.append(None)
   
-  return {
-    "voxel_counts": counts,
-    "bounding_boxes": slices,
-    "centroids": centroids.reshape((N+1,3)),
-  }
+  output["bounding_boxes"] = slices
+
+  return output
 
 @cython.binding(True)
 def voxel_connectivity_graph(

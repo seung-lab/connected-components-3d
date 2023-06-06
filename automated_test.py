@@ -949,6 +949,12 @@ def test_statistics(order):
   assert np.all(stats["bounding_boxes"][1] == (slice(10,20), slice(10,20), slice(10,20)))
   assert np.all(stats["bounding_boxes"][2] == (slice(40,50), slice(40,50), slice(40,51)))
 
+  stats = cc3d.statistics(labels, no_slice_conversion=True)
+  print(stats["bounding_boxes"])
+  assert np.all(stats["bounding_boxes"][0] == np.array([ 0, 122, 0, 127, 0, 124 ]))
+  assert np.all(stats["bounding_boxes"][1] == np.array([ 10, 19, 10, 19, 10, 19 ]))
+  assert np.all(stats["bounding_boxes"][2] == np.array([ 40, 49, 40, 49, 40, 50 ]))
+
   labels = np.zeros((1,1,1), dtype=np.uint8, order=order)
   stats = cc3d.statistics(labels)
   assert len(stats["voxel_counts"]) == 1

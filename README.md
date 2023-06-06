@@ -90,7 +90,7 @@ labels_out = cc3d.connected_components(labels_in, delta=10)
 # order. You can find the properties of the file (shape, dtype, order) by inspecting
 # labels_out.
 labels_in = np.memmap("labels.bin", order="F", dtype=np.uint32, shape=(5000, 5000, 2000))
-labels_out = cc3d.connected_components(labels_in, delta=10, out_file="out.bin")
+labels_out = cc3d.connected_components(labels_in, out_file="out.bin")
 
 # You can extract the number of labels (which is also the maximum 
 # label value) like so:
