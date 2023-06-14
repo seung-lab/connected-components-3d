@@ -664,8 +664,7 @@ def _statistics(
 
   cdef uint64_t label = 0
 
-  for label in range(0, <uint64_t>bounding_boxes.size, 2):
-    bounding_boxes[label] = voxels
+  bounding_boxes[::2] = np.iinfo(bounding_boxes.dtype).max
 
   if out_labels.flags.f_contiguous:
     for z in range(sz):
