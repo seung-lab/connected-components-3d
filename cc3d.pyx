@@ -1136,17 +1136,11 @@ def dust(
 
   if len(to_mask) == 0:
     return img
-  elif len(to_mask) <= 5:
-    for label in to_mask:
-      img *= (cc_labels != label)
-    return img
 
-  rns = runs(cc_labels)
+  mask = np.isin(cc_labels, to_mask)
   del cc_labels
-
-  for label in to_mask:
-    erase(rns[label], img)
-
+  np.logical_not(mask, out=mask)
+  np.multiply(img, mask, out=img)
   return img.view(orig_dtype)
 
 @cython.binding(True)
