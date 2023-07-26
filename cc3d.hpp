@@ -808,6 +808,7 @@ OUT* connected_components3d_6(
   int64_t loc = 0;
   int64_t row = 0;
   OUT next_label = 0;
+  T cur = 0;
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
@@ -817,46 +818,119 @@ OUT* connected_components3d_6(
       const int64_t xstart = runs[row << 1];
       const int64_t xend = runs[(row << 1) + 1];
 
-      for (int64_t x = xstart; x < xend; x++) {
-        loc = x + sx * (y + sy * z);
+      loc = xstart + sx * (y + sy * z) - 1;
+      int64_t x = xstart - 1;
 
-        const T cur = in_labels[loc];
+      STANDARD:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
 
-        if (cur == 0) {
-          continue;
-        }
+      cur = in_labels[loc];
 
-        if (x > 0 && cur == in_labels[loc + M]) {
-          out_labels[loc] = out_labels[loc + M];
+      if (cur == 0) {
+        goto YZPLANE;
+      }
 
-          if (y > 0 && cur == in_labels[loc + K] && cur != in_labels[loc + J]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + K]); 
-            if (z > 0 && cur == in_labels[loc + E]) {
-              if (cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
-                equivalences.unify(out_labels[loc], out_labels[loc + E]);
-              }
+      if (x > 0 && cur == in_labels[loc + M]) {
+        out_labels[loc] = out_labels[loc + M];
+
+        if (y > 0 && cur == in_labels[loc + K] && cur != in_labels[loc + J]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+          if (z > 0 && cur == in_labels[loc + E]) {
+            if (cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + E]);
+              goto TRIFECTA;
             }
           }
-          else if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]); 
-          }
         }
-        else if (y > 0 && cur == in_labels[loc + K]) {
-          out_labels[loc] = out_labels[loc + K];
-
-          if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + B]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]); 
-          }
-        }
-        else if (z > 0 && cur == in_labels[loc + E]) {
-          out_labels[loc] = out_labels[loc + E];
-        }
-        else {
-          next_label++;
-          out_labels[loc] = next_label;
-          equivalences.add(out_labels[loc]);
+        else if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]); 
         }
       }
+      else if (y > 0 && cur == in_labels[loc + K]) {
+        out_labels[loc] = out_labels[loc + K];
+
+        if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + B]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+        }
+      }
+      else if (z > 0 && cur == in_labels[loc + E]) {
+        out_labels[loc] = out_labels[loc + E];
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+      }
+      goto STANDARD;
+
+      TRIFECTA:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      cur = in_labels[loc];
+
+      if (cur == 0) {
+        goto YZPLANE;
+      }
+
+      if (x > 0 && cur == in_labels[loc + M]) {
+        out_labels[loc] = out_labels[loc + M];
+      }
+      else if (y > 0 && cur == in_labels[loc + K]) {
+        out_labels[loc] = out_labels[loc + K];
+
+        if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + B]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+          goto TRIFECTA;
+        }
+      }
+      else if (z > 0 && cur == in_labels[loc + E]) {
+        out_labels[loc] = out_labels[loc + E];
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+      }
+      goto STANDARD;
+
+      YZPLANE:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      cur = in_labels[loc];
+
+      if (cur == 0) {
+        goto YZPLANE;
+      }
+
+      if (y > 0 && cur == in_labels[loc + K]) {
+        out_labels[loc] = out_labels[loc + K];
+
+        if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + B]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+          goto TRIFECTA;
+        }
+      }
+      else if (z > 0 && cur == in_labels[loc + E]) {
+        out_labels[loc] = out_labels[loc + E];
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+      }
+      goto STANDARD;
     }
   }
 
