@@ -1157,8 +1157,10 @@ def largest_k(
   """
   assert k >= 0
 
+  order = "C" if img.flags.c_contiguous else "F"
+
   if k == 0:
-    return np.zeros(img.shape, dtype=np.uint16)
+    return np.zeros(img.shape, dtype=np.uint16, order=order)
 
   cc_labels, N = connected_components(
     img, connectivity=connectivity, 
@@ -1176,9 +1178,11 @@ def largest_k(
 
   shape, dtype = cc_labels.shape, cc_labels.dtype
   rns = runs(cc_labels)
-  del cc_labels
 
-  cc_out = np.zeros(shape, dtype=dtype)
+  order = "C" if cc_labels.flags.c_contiguous else "F"
+  del cc_labels
+  
+  cc_out = np.zeros(shape, dtype=dtype, order=order)
   for i, label in enumerate(preserve):
     draw(i+1, rns[label], cc_out)
   
