@@ -229,7 +229,7 @@ def estimate_provisional_labels(data:np.ndarray) -> Tuple[int,int,int]:
 def connected_components(
   data:np.ndarray, int64_t max_labels=-1, 
   int64_t connectivity=26, native_bool return_N=False,
-  delta:int = 0, out_dtype:Optional[Any] = None,
+  delta:Union[int,float] = 0, out_dtype:Optional[Any] = None,
   out_file:Optional[Union[str, BinaryIO]] = None
 ) -> np.ndarray:
   """
@@ -384,6 +384,11 @@ def connected_components(
     out_labels = out_labels64
 
   dtype = data.dtype
+
+  if np.issubdtype(dtype, np.floating):
+    delta = float(delta)
+  else:
+    delta = int(delta)
 
   cdef size_t N = 0
   
@@ -1148,7 +1153,7 @@ def largest_k(
   img:np.ndarray,
   k:int,
   connectivity:int = 26,
-  delta:float = 0,
+  delta:Union[int,float] = 0,
   return_N:bool = False,
 ) -> np.ndarray:
   """
