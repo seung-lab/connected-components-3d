@@ -6,7 +6,7 @@ on:
     tags:
       - '*'
 env:
-  CIBW_SKIP: cp27-* cp33-* cp34-* cp35-* pp27* pp36* pp37* pp38* pp39* pp310* *-musllinux*
+  CIBW_SKIP: cp27-* cp33-* cp34-* cp35-* pp27* pp36* pp37* pp38* pp39* pp310* *-musllinux* cp312-manylinux_i686
 
 jobs:
   build_wheels:
