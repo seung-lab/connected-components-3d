@@ -942,8 +942,8 @@ def test_statistics(order):
   assert stats["voxel_counts"][1] == 1000
   assert stats["voxel_counts"][2] == 10 * 10 * 11
   
-  assert np.all(stats["centroids"][1,:] == [14.5,14.5,14.5])
-  assert np.all(stats["centroids"][2,:] == [44.5,44.5,45])
+  assert np.all(np.isclose(stats["centroids"][1,:], [14.5,14.5,14.5]))
+  assert np.all(np.isclose(stats["centroids"][2,:], [44.5,44.5,45]))
 
   assert np.all(stats["bounding_boxes"][0] == (slice(0,123), slice(0,128), slice(0,125)))
   assert np.all(stats["bounding_boxes"][1] == (slice(10,20), slice(10,20), slice(10,20)))
@@ -967,6 +967,11 @@ def test_statistics(order):
     "bounding_boxes": None, 
     "centroids": None 
   }
+
+  labels = np.zeros((512,512,512), dtype=np.uint8, order=order)
+  stats = cc3d.statistics(labels)
+  assert np.all(stats["centroids"][0] == np.array([255.5,255.5,255.5]))
+
 
 @pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
