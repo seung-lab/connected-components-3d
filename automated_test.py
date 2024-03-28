@@ -972,6 +972,23 @@ def test_statistics(order):
   stats = cc3d.statistics(labels)
   assert np.all(stats["centroids"][0] == np.array([255.5,255.5,255.5]))
 
+@pytest.mark.parametrize("order", ["C", "F"])
+def test_statistics_big(order):
+  labels = np.zeros((50,66000,1), dtype=np.uint8, order=order)
+  labels[10:20,10:20,:2] = 1
+  labels[40:50,40:50,:2] = 2
+
+  stats = cc3d.statistics(labels)
+  assert stats["voxel_counts"][1] == 100
+  assert stats["voxel_counts"][2] == 10 * 10 * 1
+
+  labels = np.zeros((66000,60,1), dtype=np.uint8, order=order)
+  labels[10:20,10:20,:2] = 1
+  labels[40:50,40:50,:2] = 2
+
+  stats = cc3d.statistics(labels)
+  assert stats["voxel_counts"][1] == 100
+  assert stats["voxel_counts"][2] == 10 * 10 * 1
 
 @pytest.mark.parametrize("connectivity", (8, 18, 26))
 @pytest.mark.parametrize("dtype", TEST_TYPES)
