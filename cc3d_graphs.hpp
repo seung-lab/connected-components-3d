@@ -317,7 +317,6 @@ extract_region_graph(
 
 	T cur = 0;
 	T label = 0;
-	T last_label = 0;
 
 	std::unordered_map<std::pair<T,T>, float, pair_hash> edges;
 
@@ -332,25 +331,19 @@ extract_region_graph(
 				}
 
 				compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
-				
-				last_label = cur;
 
 				for (int i = 0; i < connectivity / 2; i++) {
 					int64_t neighboridx = loc + neighborhood[i];
 					label = labels[neighboridx];
 
-					if (label == 0 || label == last_label) {
+					if (label == 0) {
 						continue;
 					}
-					else if (label != cur) {
-						if (cur > label) {
-							edges[std::pair<T,T>(label, cur)] += areas[i];
-						}
-						else {
-							edges[std::pair<T,T>(cur, label)] += areas[i];
-						}
-
-						last_label = label;
+					else if (cur > label) {
+						edges[std::pair<T,T>(label, cur)] += areas[i];
+					}
+					else if (cur < label) {
+						edges[std::pair<T,T>(cur, label)] += areas[i];
 					}
 				}
 			}

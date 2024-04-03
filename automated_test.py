@@ -723,7 +723,13 @@ def test_contacts_surface_area():
   assert res[(1,3)] == 1
   assert res[(1,4)] == 1
   assert res[(1,5)] == 1
-  
+
+  data = np.ones((3,3,3))
+  data[1,1,1] = 2
+  labels_out = cc3d.connected_components(data, connectivity=6)
+  res = cc3d.contacts(labels_out, connectivity=6, surface_area=True)
+  assert res[(1,2)] == 6
+
 def test_contacts_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
