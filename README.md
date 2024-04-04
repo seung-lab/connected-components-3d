@@ -5,7 +5,7 @@ cc3d: Connected Components on Multilabel 3D Images
 
 <p style="font-style: italics;" align="center">
 <img height=348 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/ccl_figure.png" alt="Binary and multilabel connected components. (a) A binary image (foreground white,  background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image" /><br>
-<b>Fig. 1. Binary and Multilabel Connected Components Labeling (CCL)</b> 2D images are shown for simplicity. (a) A binary image (foreground white, background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image
+<b>Fig. 1. Binary and Multilabel Connected Components Labeling (CCL)</b> 2D images are shown for simplicity. Black is the background color (zero). (a) A binary image (foreground white, background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image.
 </p>
 
 <p style="font-style: italics;" align="center">
