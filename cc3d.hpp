@@ -760,7 +760,8 @@ OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    bool periodic_boundary = false
   ) {
 
   const int64_t sxy = sx * sy;
@@ -861,6 +862,33 @@ OUT* connected_components3d_6(
     }
   }
 
+  if (periodic_boundary) {
+    for (int64_t z = 0; z < sz; z++) {
+      for (int64_t y = 0; y < sy; y++) {
+        loc = sx * (y + sy * z);
+        if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + sx - 1]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + sx - 1]);
+        }
+      }
+    }
+    for (int64_t z = 0; z < sz; z++) {
+      for (int64_t x = 0; x < sx; x++) {
+        loc = x + sxy * z;
+        if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + sx * (sy - 1)]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + sx * (sy - 1)]);
+        }
+      }
+    }
+    for (int64_t y = 0; y < sy; y++) {
+      for (int64_t x = 0; x < sx; x++) {
+        loc = x + sx * y;
+        if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + sxy * (sz - 1)]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + sxy * (sz - 1)]);
+        }
+      }
+    }
+  }
+
   return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
@@ -874,7 +902,8 @@ OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    const bool periodic_boundary = false
   ) {
 
   const int64_t voxels = sx * sy;
@@ -942,6 +971,20 @@ OUT* connected_components2d_4(
         next_label++;
         out_labels[loc + A] = next_label;
         equivalences.add(out_labels[loc + A]);
+      }
+    }
+  }
+
+  if (periodic_boundary) {
+    for (int64_t x = 0; x < sx; x++) {
+      if (in_labels[x] != 0 && in_labels[x] == in_labels[x + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[x], out_labels[x + sx * (sy - 1)]);
+      }
+    }
+    for (int64_t y = 0; y < sy; y++) {
+      loc = sx * y;
+      if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + (sx - 1)]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
       }
     }
   }
@@ -1051,7 +1094,8 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity,
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N, 
+    bool periodic_boundary = false
   ) {
 
   if (connectivity == 26) {
@@ -1069,7 +1113,7 @@ OUT* connected_components3d(
   else if (connectivity == 6) {
     return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, periodic_boundary
     );
   }
   else if (connectivity == 8) {
@@ -1087,7 +1131,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, periodic_boundary
     );
   }
   else {
@@ -1099,11 +1143,16 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity=26, size_t &N = _dummy_N
+    const int64_t connectivity=26, size_t &N = _dummy_N,
+    const bool periodic_boundary = false
   ) {
   const size_t voxels = sx * sy * sz;
   size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, max_labels, connectivity, NULL, N);
+  return connected_components3d<T, OUT>(
+    in_labels, sx, sy, sz, 
+    max_labels, connectivity, 
+    NULL, N, periodic_boundary
+  );
 }
 
 };

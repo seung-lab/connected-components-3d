@@ -402,7 +402,8 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity, const T delta,
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N, 
+    const bool periodic_boundary = false
   ) {
 
   // for performance, shouldn't be "more correct"
@@ -410,8 +411,12 @@ OUT* connected_components3d(
     return connected_components3d<T,OUT>(
       in_labels, sx, sy, sz, 
       max_labels, connectivity, 
-      out_labels, N
+      out_labels, N, periodic_boundary
     );
+  }
+
+  if (periodic_boundary) {
+    throw std::runtime_error("periodic_boundary is not currently supported for continuous data.");
   }
 
   if (connectivity == 26 || connectivity == 18 || connectivity == 6) {
