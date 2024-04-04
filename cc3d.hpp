@@ -49,10 +49,11 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
+#include <limits>
+#include <memory>
 #include <stdexcept>
 #include <unordered_set>
 #include <vector>
-#include <limits>
 
 namespace cc3d {
 
@@ -252,7 +253,7 @@ OUT* relabel(
   }
 
   OUT label;
-  OUT* renumber = new OUT[num_labels + 1]();
+  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
   OUT next_label = 1;
 
   for (int64_t i = 1; i <= num_labels; i++) {
@@ -279,7 +280,6 @@ OUT* relabel(
     }
   }
 
-  delete[] renumber;
   return out_labels;
 }
 
@@ -366,7 +366,9 @@ OUT* connected_components3d_26(
   
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, sz)
+  );
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -590,10 +592,7 @@ OUT* connected_components3d_26(
     }
   }
   
-
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -621,7 +620,9 @@ OUT* connected_components3d_18(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, sz)
+  );
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -751,9 +752,7 @@ OUT* connected_components3d_18(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -781,7 +780,9 @@ OUT* connected_components3d_6(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, sz)
+  );
 
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -860,9 +861,7 @@ OUT* connected_components3d_6(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 
@@ -894,7 +893,9 @@ OUT* connected_components2d_4(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, /*sz=*/1)
+  );
     
   /*
     Layout of forward pass mask. 
@@ -945,9 +946,7 @@ OUT* connected_components2d_4(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
 }
 
 // K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
@@ -979,7 +978,9 @@ OUT* connected_components2d_8(
   
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, /*sz=*/1)
+  );
 
   /*
     Layout of mask. We start from e.
@@ -1042,9 +1043,7 @@ OUT* connected_components2d_8(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
