@@ -118,7 +118,9 @@ OUT* connected_components3d_continuous(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, sz)
+  );
 
 
   int64_t loc = 0;
@@ -183,9 +185,7 @@ OUT* connected_components3d_continuous(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -212,7 +212,9 @@ OUT* connected_components2d_4(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, /*sz=*/1)
+  );
 
   /*
     Layout of forward pass mask. 
@@ -265,12 +267,10 @@ OUT* connected_components2d_4(
     }
   }
 
-  out_labels = relabel<OUT>(
+  return relabel<OUT>(
     out_labels, sx, sy, /*sz=*/1, next_label, 
-    equivalences, N, runs
+    equivalences, N, runs.get()
   );
-  delete[] runs;
-  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -297,7 +297,9 @@ OUT* connected_components2d_8(
   
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, /*sz=*/1)
+  );
 
   T gmax = in_labels[0];
   T gmin = in_labels[0];
@@ -392,9 +394,7 @@ OUT* connected_components2d_8(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -402,7 +402,8 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity, const T delta,
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N, 
+    const bool periodic_boundary = false
   ) {
 
   // for performance, shouldn't be "more correct"
@@ -410,8 +411,12 @@ OUT* connected_components3d(
     return connected_components3d<T,OUT>(
       in_labels, sx, sy, sz, 
       max_labels, connectivity, 
-      out_labels, N
+      out_labels, N, periodic_boundary
     );
+  }
+
+  if (periodic_boundary) {
+    throw std::runtime_error("periodic_boundary is not currently supported for continuous data.");
   }
 
   if (connectivity == 26 || connectivity == 18 || connectivity == 6) {

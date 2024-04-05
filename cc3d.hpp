@@ -49,10 +49,11 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
+#include <limits>
+#include <memory>
 #include <stdexcept>
 #include <unordered_set>
 #include <vector>
-#include <limits>
 
 namespace cc3d {
 
@@ -252,7 +253,7 @@ OUT* relabel(
   }
 
   OUT label;
-  OUT* renumber = new OUT[num_labels + 1]();
+  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
   OUT next_label = 1;
 
   for (int64_t i = 1; i <= num_labels; i++) {
@@ -279,7 +280,6 @@ OUT* relabel(
     }
   }
 
-  delete[] renumber;
   return out_labels;
 }
 
@@ -366,7 +366,9 @@ OUT* connected_components3d_26(
   
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, sz)
+  );
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -590,10 +592,7 @@ OUT* connected_components3d_26(
     }
   }
   
-
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -621,7 +620,9 @@ OUT* connected_components3d_18(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, sz)
+  );
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -751,9 +752,7 @@ OUT* connected_components3d_18(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -761,7 +760,8 @@ OUT* connected_components3d_6(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    bool periodic_boundary = false
   ) {
 
   const int64_t sxy = sx * sy;
@@ -781,7 +781,9 @@ OUT* connected_components3d_6(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, sz)
+  );
 
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -860,9 +862,34 @@ OUT* connected_components3d_6(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  if (periodic_boundary) {
+    for (int64_t z = 0; z < sz; z++) {
+      for (int64_t y = 0; y < sy; y++) {
+        loc = sx * (y + sy * z);
+        if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + sx - 1]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + sx - 1]);
+        }
+      }
+    }
+    for (int64_t z = 0; z < sz; z++) {
+      for (int64_t x = 0; x < sx; x++) {
+        loc = x + sxy * z;
+        if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + sx * (sy - 1)]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + sx * (sy - 1)]);
+        }
+      }
+    }
+    for (int64_t y = 0; y < sy; y++) {
+      for (int64_t x = 0; x < sx; x++) {
+        loc = x + sx * y;
+        if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + sxy * (sz - 1)]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + sxy * (sz - 1)]);
+        }
+      }
+    }
+  }
+
+  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 
@@ -875,7 +902,8 @@ OUT* connected_components2d_4(
     T* in_labels, 
     const int64_t sx, const int64_t sy, 
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    const bool periodic_boundary = false
   ) {
 
   const int64_t voxels = sx * sy;
@@ -894,7 +922,9 @@ OUT* connected_components2d_4(
 
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, /*sz=*/1)
+  );
     
   /*
     Layout of forward pass mask. 
@@ -945,9 +975,21 @@ OUT* connected_components2d_4(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  if (periodic_boundary) {
+    for (int64_t x = 0; x < sx; x++) {
+      if (in_labels[x] != 0 && in_labels[x] == in_labels[x + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[x], out_labels[x + sx * (sy - 1)]);
+      }
+    }
+    for (int64_t y = 0; y < sy; y++) {
+      loc = sx * y;
+      if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + (sx - 1)]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
+      }
+    }
+  }
+
+  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
 }
 
 // K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
@@ -979,7 +1021,9 @@ OUT* connected_components2d_8(
   
   DisjointSet<OUT> equivalences(max_labels);
 
-  const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, /*sz=*/1);
+  const std::unique_ptr<uint32_t[]> runs(
+    compute_foreground_index(in_labels, sx, sy, /*sz=*/1)
+  );
 
   /*
     Layout of mask. We start from e.
@@ -1042,9 +1086,7 @@ OUT* connected_components2d_8(
     }
   }
 
-  out_labels = relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs);
-  delete[] runs;
-  return out_labels;
+  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
@@ -1052,7 +1094,8 @@ OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity,
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N, 
+    bool periodic_boundary = false
   ) {
 
   if (connectivity == 26) {
@@ -1070,7 +1113,7 @@ OUT* connected_components3d(
   else if (connectivity == 6) {
     return connected_components3d_6<T, OUT>(
       in_labels, sx, sy, sz, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, periodic_boundary
     );
   }
   else if (connectivity == 8) {
@@ -1088,7 +1131,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_4<T, OUT>(
       in_labels, sx, sy, 
-      max_labels, out_labels, N
+      max_labels, out_labels, N, periodic_boundary
     );
   }
   else {
@@ -1100,11 +1143,16 @@ template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz,
-    const int64_t connectivity=26, size_t &N = _dummy_N
+    const int64_t connectivity=26, size_t &N = _dummy_N,
+    const bool periodic_boundary = false
   ) {
   const size_t voxels = sx * sy * sz;
   size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
-  return connected_components3d<T, OUT>(in_labels, sx, sy, sz, max_labels, connectivity, NULL, N);
+  return connected_components3d<T, OUT>(
+    in_labels, sx, sy, sz, 
+    max_labels, connectivity, 
+    NULL, N, periodic_boundary
+  );
 }
 
 };

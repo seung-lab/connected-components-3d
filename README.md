@@ -69,6 +69,13 @@ labels_out = cc3d.connected_components(labels_in) # 26-connected
 connectivity = 6 # only 4,8 (2D) and 26, 18, and 6 (3D) are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
+# If you need the borders to wrap around (useful for simulations)
+# specify periodic_boundary=True, currently only supported for
+# 4 (2d) and 6 (3d) connectivities.
+labels_out = cc3d.connected_components(
+  labels_in, connectivity=connectivity, periodic_boundary=True
+)
+
 # If you need a particular dtype you can specify np.uint16, np.uint32, or np.uint64
 # You can go bigger, not smaller, than the default which is selected
 # to be the smallest that can be safely used. This can save you the copy
