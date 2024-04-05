@@ -1188,3 +1188,14 @@ def test_periodic_boundary_6():
   assert N == 1
 
 
+  labels[:,:,:] = 0
+  labels[1,:,:] = 1
+  labels[-2,:,:] = 1
+
+  out, N = cc3d.connected_components(labels, connectivity=6, return_N=True, periodic_boundary=False)
+  assert N == 2
+
+  out, N = cc3d.connected_components(labels, connectivity=6, return_N=True, periodic_boundary=True)
+  assert N == 2
+
+
