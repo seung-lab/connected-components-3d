@@ -38,7 +38,7 @@ if sys.platform == 'darwin':
 
 setuptools.setup(
   name="connected-components-3d",
-  version="3.13.0",
+  version="3.14.0",
   setup_requires=['pbr', 'numpy', 'cython'],
   install_requires=['numpy'],
   python_requires=">=3.7,<4.0",
@@ -59,11 +59,11 @@ setuptools.setup(
       'LICENSE',
     ],
   },
-  description="Connected components on 2D and 3D images. Supports multiple labels.",
+  description="Connected components on discrete and continuous multilabel 3D and 2D images. Handles 26, 18, and 6 connected variants; periodic boundaries (4, 8, & 6).",
   long_description=read('README.md'),
   long_description_content_type="text/markdown",
   license = "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-  keywords = "connected-components CCL volumetric-data numpy connectomics image-processing biomedical-image-processing decision-tree union-find sauf bbdt 2d 3d",
+  keywords = "connected-components CCL volumetric-data numpy connectomics image-processing biomedical-image-processing decision-tree union-find sauf 2d 3d",
   url = "https://github.com/seung-lab/connected-components-3d/",
   classifiers=[
     "Intended Audience :: Developers",
