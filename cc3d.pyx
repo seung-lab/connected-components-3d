@@ -290,7 +290,7 @@ def connected_components(
   elif dims != 2 and connectivity not in (6, 18, 26):
     raise ValueError("Only 6, 18, and 26 connectivities are supported for 3D images. Got: " + str(connectivity))
 
-  if periodic_boundary and connectivity not in (4, 6):
+  if periodic_boundary and connectivity not in (4, 8, 6):
     raise ValueError(f"periodic_boundary is not yet implemented for {connectivity}-connectivity.")
   if periodic_boundary and delta != 0:
     raise ValueError(f"periodic_boundary is not yet implemented continuous data.")

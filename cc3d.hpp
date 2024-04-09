@@ -1002,7 +1002,8 @@ OUT* connected_components2d_8(
     T* in_labels, 
     const int64_t sx, const int64_t sy,
     size_t max_labels, 
-    OUT *out_labels = NULL, size_t &N = _dummy_N
+    OUT *out_labels = NULL, size_t &N = _dummy_N,
+    bool periodic_boundary = false
   ) {
 
   const int64_t voxels = sx * sy;
@@ -1086,6 +1087,38 @@ OUT* connected_components2d_8(
     }
   }
 
+  if (periodic_boundary) {
+    for (int64_t x = 0; x < sx; x++) {
+      if (in_labels[x] == 0) {
+        continue;
+      }
+
+      if (x > 0 && in_labels[x] == in_labels[x - 1 + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[x], out_labels[x - 1 + sx * (sy - 1)]);
+      }
+      if (in_labels[x] == in_labels[x + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[x], out_labels[x + sx * (sy - 1)]);
+      }
+      if (x < sx - 1 && in_labels[x] == in_labels[x + 1 + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[x], out_labels[x + 1 + sx * (sy - 1)]);
+      }
+    }
+
+    if (in_labels[0] == in_labels[voxels - 1]) {
+      equivalences.unify(out_labels[0], out_labels[voxels - 1]);
+    }
+    if (in_labels[sx - 1] == in_labels[sx * (sy - 1)]) {
+      equivalences.unify(out_labels[sx - 1], out_labels[sx * (sy - 1)]);
+    }
+
+    for (int64_t y = 0; y < sy; y++) {
+      loc = sx * y;
+      if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + (sx - 1)]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
+      }
+    }
+  }
+
   return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
 }
 
@@ -1122,7 +1155,7 @@ OUT* connected_components3d(
     }
     return connected_components2d_8<T,OUT>(
       in_labels, sx, sy,
-      max_labels, out_labels, N
+      max_labels, out_labels, N, periodic_boundary
     );
   }
   else if (connectivity == 4) {
