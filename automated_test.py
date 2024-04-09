@@ -1132,16 +1132,17 @@ def test_largest_k(k):
 
   assert np.all(lbls == retained_labels)
 
-def test_periodic_boundary_4():
+@pytest.mark.parametrize("connectivity", [4,8])
+def test_periodic_boundary_2d(connectivity):
   labels = np.zeros((10,10), dtype=np.uint32, order="F")
 
   labels[:,0] = 1
   labels[:,-1] = 1
 
-  out, N = cc3d.connected_components(labels, connectivity=4, return_N=True, periodic_boundary=False)
+  out, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True, periodic_boundary=False)
   assert N == 2
 
-  out, N = cc3d.connected_components(labels, connectivity=4, return_N=True, periodic_boundary=True)
+  out, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True, periodic_boundary=True)
   assert N == 1
 
   labels = np.zeros((10,10), dtype=np.uint32, order="F")
@@ -1149,11 +1150,56 @@ def test_periodic_boundary_4():
   labels[0,:] = 1
   labels[-1,:] = 1
 
-  out, N = cc3d.connected_components(labels, connectivity=4, return_N=True, periodic_boundary=False)
+  out, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True, periodic_boundary=False)
   assert N == 2
 
-  out, N = cc3d.connected_components(labels, connectivity=4, return_N=True, periodic_boundary=True)
+  out, N = cc3d.connected_components(labels, connectivity=connectivity, return_N=True, periodic_boundary=True)
   assert N == 1
+
+def test_periodic_boundary_8():
+  labels = np.zeros((10,10), dtype=np.uint32, order="F")
+
+  labels[:,0] = 1
+  labels[:,-1] = 1
+
+  labels[0,0] = 2
+  labels[-1,0] = 2
+  labels[0,-1] = 2
+  labels[-1,-1] = 2
+ 
+  out, N = cc3d.connected_components(labels, connectivity=8, return_N=True, periodic_boundary=True)
+  assert N == 2
+
+  labels[0,0] = 2
+  labels[-1,0] = 3
+  labels[0,-1] = 3
+  labels[-1,-1] = 2
+
+  out, N = cc3d.connected_components(labels, connectivity=8, return_N=True, periodic_boundary=True)
+  assert N == 3
+
+  labels = np.zeros((4,4), dtype=np.uint32, order="F")
+
+  labels[2,0] = 1
+  labels[3,3] = 1
+
+  out, N = cc3d.connected_components(labels, connectivity=8, return_N=True, periodic_boundary=True)
+  assert N == 1
+
+  labels = np.zeros((4,4), dtype=np.uint32, order="F")
+  labels[1,0] = 1
+  labels[3,3] = 1
+
+  out, N = cc3d.connected_components(labels, connectivity=8, return_N=True, periodic_boundary=True)
+  assert N == 2
+
+  labels = np.zeros((4,4), dtype=np.uint32, order="F")
+  labels[3,0] = 1
+  labels[2,3] = 1
+
+  out, N = cc3d.connected_components(labels, connectivity=8, return_N=True, periodic_boundary=True)
+  assert N == 1
+
 
 def test_periodic_boundary_6():
   labels = np.zeros((10,10,10), dtype=np.uint32, order="F")
