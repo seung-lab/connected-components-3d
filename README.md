@@ -69,9 +69,9 @@ labels_out = cc3d.connected_components(labels_in) # 26-connected
 connectivity = 6 # only 4,8 (2D) and 26, 18, and 6 (3D) are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
-# If you need the borders to wrap around (useful for simulations)
+# If you need the borders to wrap around (e.g. for simulations, world maps)
 # specify periodic_boundary=True, currently only supported for
-# 4 (2d) and 6 (3d) connectivities.
+# 4 and 8 (2d) and 6 (3d) connectivities.
 labels_out = cc3d.connected_components(
   labels_in, connectivity=connectivity, periodic_boundary=True
 )
