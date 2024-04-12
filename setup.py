@@ -57,6 +57,7 @@ setuptools.setup(
   package_data={
     'cc3d': [
       'LICENSE',
+      'COPYING.LESSER',
     ],
   },
   description="Connected components on discrete and continuous multilabel 3D and 2D images. Handles 26, 18, and 6 connected variants; periodic boundaries (4, 8, & 6).",
@@ -68,7 +69,7 @@ setuptools.setup(
   classifiers=[
     "Intended Audience :: Developers",
     "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
