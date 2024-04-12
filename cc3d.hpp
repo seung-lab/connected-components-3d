@@ -24,7 +24,7 @@
  *
  * Author: William Silversmith
  * Affiliation: Seung Lab, Princeton University
- * Date: August 2018 - October 2020
+ * Date: August 2018 - April 2024
  *
  * ----
  * This program is free software: you can redistribute it and/or modify
