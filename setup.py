@@ -63,7 +63,7 @@ setuptools.setup(
   description="Connected components on discrete and continuous multilabel 3D and 2D images. Handles 26, 18, and 6 connected variants; periodic boundaries (4, 8, & 6).",
   long_description=read('README.md'),
   long_description_content_type="text/markdown",
-  license = "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  license = "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
   keywords = "connected-components CCL volumetric-data numpy connectomics image-processing biomedical-image-processing decision-tree union-find sauf 2d 3d",
   url = "https://github.com/seung-lab/connected-components-3d/",
   classifiers=[
