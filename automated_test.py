@@ -9,7 +9,7 @@ INT_TYPES = [
   np.uint8, np.uint16, np.uint32, np.uint64,
 ]
 
-TEST_TYPES = INT_TYPES + [ np.float32, np.float64 ]
+TEST_TYPES = INT_TYPES + [ np.float16, np.float32, np.float64 ]
 
 OUT_TYPES = [ np.uint16, np.uint32, np.uint64 ]
 
@@ -1006,6 +1006,11 @@ def test_continuous_ccl_diagonal(order, dtype, connectivity):
   labels[0,1] = 3
   labels[1,1] = 4
 
+  if dtype == np.float16:
+    with pytest.raises(TypeError) as e_info:
+      out = cc3d.connected_components(labels, delta=1, connectivity=connectivity)
+    return
+
   out = cc3d.connected_components(labels, delta=0, connectivity=connectivity)
   assert np.all(np.unique(labels) == [1,2,3,4])
 
@@ -1024,6 +1029,11 @@ def test_continuous_ccl_4_6(order, dtype, connectivity):
 
   out = cc3d.connected_components(labels, delta=0, connectivity=connectivity)
   assert np.all(np.unique(labels) == [1,2,3,4])
+
+  if dtype == np.float16:
+    with pytest.raises(TypeError) as e_info:
+      out = cc3d.connected_components(labels, delta=1, connectivity=connectivity)
+    return
 
   out = cc3d.connected_components(labels, delta=1, connectivity=connectivity)
   assert np.all(out == np.array([
@@ -1048,6 +1058,11 @@ def test_continuous_blocks(dtype, connectivity, order):
     img, connectivity=connectivity, delta=0
   )
   assert np.unique(out).size > 1000
+
+  if dtype == np.float16:
+    with pytest.raises(TypeError) as e_info:
+      out = cc3d.connected_components(img, delta=1, connectivity=connectivity)
+    return
 
   out = cc3d.connected_components(
     img, connectivity=connectivity, delta=1

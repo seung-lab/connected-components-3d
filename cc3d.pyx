@@ -222,7 +222,10 @@ def estimate_provisional_labels(data:np.ndarray) -> Tuple[int,int,int]:
         first_foreground_row, last_foreground_row
       )
     else:
-      raise TypeError("Type {} not currently supported.".format(dtype))
+      raise TypeError(
+        f"Type {dtype} is not currently supported. "
+        f"Supported: bool, int8, int16, int32, int64, uint8, uint16, uint32, uint64, float16, float32, float64"
+      )
   finally:
     if data.flags.owndata:
       data.setflags(write=writable)
@@ -311,6 +314,12 @@ def connected_components(
 
   if not data.flags.c_contiguous and not data.flags.f_contiguous:
     data = np.copy(data, order=order)
+
+  if data.dtype == np.float16:
+    if delta == 0:
+      data = data.view(np.uint16)
+    else:
+      raise TypeError("float16 is not supported for continuous images (delta != 0).")
 
   shape = list(data.shape)
 
@@ -541,7 +550,10 @@ def connected_components(
           <uint64_t*>&out_labels64[0], N, periodic_boundary
         )
     else:
-      raise TypeError("Type {} not currently supported.".format(dtype))
+      raise TypeError(
+        f"Type {dtype} is not currently supported. "
+        f"Supported: bool, int8, int16, int32, int64, uint8, uint16, uint32, uint64, float16, float32, float64"
+      )
   finally:
     if data.flags.owndata:
       data.setflags(write=writable)
