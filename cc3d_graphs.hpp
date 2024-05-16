@@ -212,7 +212,7 @@ OUT* extract_voxel_connectivity_graph(
 		graph = extract_voxel_connectivity_graph_3d<T, OUT>(
 			in_labels, sx, sy, sz, graph
 		);
-	 return and_mask<OUT>(0b00111111, graph, sx, sy, sz);
+		return and_mask<OUT>(0b00111111, graph, sx, sy, sz);
 	}
 	else if (connectivity == 8) {
 		if (sz != 1) {
