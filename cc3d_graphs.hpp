@@ -1,6 +1,7 @@
 #ifndef CC3D_GRAPHS_HPP
 #define CC3D_GRAPHS_HPP 
 
+#include <memory>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -9,6 +10,8 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+
+#include "cc3d.hpp"
 
 namespace cc3d {
 
@@ -403,6 +406,188 @@ void set_run_voxels(
 		for (size_t loc = run.first; loc < run.second; loc++) {
 			labels[loc] = val;
 		}
+	}
+}
+
+template <typename OUT>
+OUT* simplified_relabel(
+    OUT* out_labels, const int64_t voxels,
+    const int64_t num_labels, DisjointSet<OUT> &equivalences,
+    size_t &N = _dummy_N
+  ) {
+
+  OUT label;
+  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
+  OUT next_label = 1;
+
+  for (int64_t i = 1; i <= num_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
+      renumber[label] = next_label;
+      renumber[i] = next_label;
+      next_label++;
+    }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  // Raster Scan 2: Write final labels based on equivalences
+  N = next_label - 1;
+  for (int64_t loc = 0; loc < voxels; loc++) {
+    out_labels[loc] = renumber[out_labels[loc]] - 1; // first label is 0 not 1
+  }
+
+  return out_labels;
+}
+
+template <typename VCG_t, typename OUT>
+OUT* color_connectivity_graph_6(
+	const VCG_t* vcg, // voxel connectivity graph
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	OUT* out_labels = NULL,
+	size_t &N = _dummy_N
+) {
+	const int64_t sxy = sx * sy;
+	const int64_t voxels = sx * sy * sz;
+
+	uint64_t max_labels = static_cast<uint64_t>(voxels) + 1; // + 1L for an array with no zeros
+	max_labels = std::min(max_labels, static_cast<uint64_t>(std::numeric_limits<OUT>::max()));
+
+	if (out_labels == NULL) {
+		out_labels = new OUT[voxels]();
+	}
+
+	DisjointSet<OUT> equivalences(max_labels);
+
+	const int64_t B = -1;
+	const int64_t C = -sx;
+
+
+	OUT new_label = 0;
+	for (int64_t z = 0; z < sz; z++) {
+		new_label++;
+		equivalences.add(new_label);
+
+		for (int64_t x = 0; x < sx; x++) {
+			if (x > 0 && (vcg[x + sxy * z] & 0b0010) == 0) {
+				new_label++;
+				equivalences.add(new_label);
+			}
+			out_labels[x + sxy * z] = new_label;
+		}
+
+		for (int64_t y = 1; y < sy; y++) {
+			for (int64_t x = 0; x < sx; x++) {
+				int64_t loc = x + sx * y + sxy * z;
+
+				if (x > 0 && (vcg[loc] & 0b0010)) {
+					out_labels[loc] = out_labels[loc+B];
+					if (y > 0 && (vcg[loc + C] & 0b0010) == 0 && (vcg[loc] & 0b1000)) {
+						equivalences.unify(out_labels[loc], out_labels[loc+C]);
+					}
+				}
+				else if (y > 0 && vcg[loc] & 0b1000) {
+					out_labels[loc] = out_labels[loc+C];
+				}
+				else {
+					new_label++;
+					out_labels[loc] = new_label;
+					equivalences.add(new_label);
+				}
+			}
+		}
+	}
+
+	for (int64_t z = 1; z < sz; z++) {
+		for (int64_t y = 0; y < sy; y++) {
+			for (int64_t x = 0; x < sx; x++) {  
+				int64_t loc = x + sx * y + sxy * z;
+
+				if (vcg[loc] & 0b100000) {
+					equivalences.unify(out_labels[loc], out_labels[loc-sxy]);
+				}
+			}
+		}
+	}
+
+	return simplified_relabel<OUT>(out_labels, voxels, new_label, equivalences, N);
+}
+
+
+template <typename VCG_t, typename OUT>
+OUT* color_connectivity_graph_4(
+  const VCG_t* vcg, // voxel connectivity graph
+  const int64_t sx, const int64_t sy,
+  OUT* out_labels = NULL,
+  size_t &N = _dummy_N
+) {
+	const int64_t sxy = sx * sy;
+
+	uint64_t max_labels = static_cast<uint64_t>(sxy) + 1; // + 1L for an array with no zeros
+	max_labels = std::min(max_labels, static_cast<uint64_t>(std::numeric_limits<OUT>::max()));
+
+	if (out_labels == NULL) {
+		out_labels = new OUT[sxy]();
+	}
+
+	DisjointSet<OUT> equivalences(max_labels);
+
+	OUT new_label = 1;
+	equivalences.add(new_label);
+
+	for (int64_t x = 0; x < sx; x++) {
+		if (x > 0 && (vcg[x] & 0b0010) == 0) {
+			new_label++;
+			equivalences.add(new_label);
+		}
+		out_labels[x] = new_label;
+	}
+
+	const int64_t B = -1;
+	const int64_t C = -sx;
+
+	for (int64_t y = 1; y < sy; y++) {
+		for (int64_t x = 0; x < sx; x++) {
+			int64_t loc = x + sx * y;
+
+			if (x > 0 && (vcg[loc] & 0b0010)) {
+				out_labels[loc] = out_labels[loc+B];
+				if (y > 0 && (vcg[loc + C] & 0b0010) == 0 && (vcg[loc] & 0b1000)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+C]);
+				}
+			}
+			else if (y > 0 && vcg[loc] & 0b1000) {
+				out_labels[loc] = out_labels[loc+C];
+			}
+			else {
+				new_label++;
+				out_labels[loc] = new_label;
+				equivalences.add(new_label);
+			}
+		}
+	}
+
+	return simplified_relabel<OUT>(out_labels, sxy, new_label, equivalences, N);
+}
+
+template <typename VCG_t, typename OUT>
+OUT* color_connectivity_graph_N(
+  const VCG_t* vcg, // voxel connectivity graph
+  const int64_t sx, const int64_t sy, const int64_t sz,
+  const int connectivity,
+  OUT* out_labels = NULL,
+  size_t &N = _dummy_N
+) {
+	if (connectivity != 6 && connectivity != 4) {
+		throw std::runtime_error("Only 4 and 6 connectivities are supported.");
+	}
+
+	if (sz == 1) {
+		return color_connectivity_graph_4<VCG_t, OUT>(vcg, sx, sy, out_labels, N);
+	}
+	else {
+		return color_connectivity_graph_6<VCG_t, OUT>(vcg, sx, sy, sz, out_labels, N);
 	}
 }
 

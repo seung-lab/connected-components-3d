@@ -93,6 +93,13 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
     vector[cpp_pair[size_t, size_t]] all_runs,
     T* labels, size_t voxels
   ) except +
+  cdef OUT* color_connectivity_graph_N[T,OUT](
+    T* vcg,
+    int64_t sx, int64_t sy, int64_t sz,
+    int connectivity,
+    OUT* out_labels,
+    uint64_t& N
+  ) except +
 
 ctypedef fused UINT:
   uint8_t
@@ -780,6 +787,68 @@ def _statistics_helper(
   output["bounding_boxes"] = slices
 
   return output
+
+@cython.binding(True)
+def color_connectivity_graph(
+  vcg, 
+  connectivity, 
+  return_N = False, 
+):
+  """my docstring"""
+  cdef int dims = len(vcg.shape)
+  if dims not in (2,3):
+    raise DimensionError("Only 2D, and 3D arrays supported. Got: " + str(dims))
+
+  if dims == 2 and connectivity not in [4]:
+    raise ValueError(f"Only 4 connectivity is supported for 2D images. Got: {connectivity}")
+  elif dims != 2 and connectivity not in [6]:
+    raise ValueError(f"Only 6 connectivity are supported for 3D images. Got: {connectivity}")
+
+  dtype = vcg.dtype
+  if dtype not in [np.uint8, np.uint32]:
+    raise ValueError(f"Only uint8 and uint32 are supported. Got: {vcg.dtype}")
+
+  vcg = np.asfortranarray(vcg)
+
+  shape = vcg.shape
+
+  cdef int sx = shape[0]
+  cdef int sy = shape[1]
+  cdef int sz = shape[2]
+
+  cdef uint8_t[:,:,:] arr_memview8u
+  cdef uint32_t[:,:,:] arr_memview32u
+  cdef uint32_t[:,:,:] out_labels32
+
+  cdef int64_t voxels = <int64_t>sx * <int64_t>sy * <int64_t>sz
+  cdef cnp.ndarray[uint32_t, ndim=3] out_labels = np.zeros( (sx,sy,sz,), dtype=np.uint32, order='F' )
+  
+  out_labels32 = out_labels
+
+  cdef size_t N = 0
+
+  if dtype == np.uint32:
+    arr_memview32u = vcg
+    color_connectivity_graph_N[uint32_t, uint32_t](
+      &arr_memview32u[0,0,0],
+      sx, sy, sz,
+      connectivity,
+      &out_labels32[0,0,0],
+      N
+    )
+  else:
+    arr_memview8u = vcg
+    color_connectivity_graph_N[uint8_t, uint32_t](
+      &arr_memview8u[0,0,0],
+      sx, sy, sz,
+      connectivity,
+      &out_labels32[0,0,0],
+      N
+    )
+
+  if return_N:
+    return (out_labels, N)
+  return out_labels
 
 @cython.binding(True)
 def voxel_connectivity_graph(
