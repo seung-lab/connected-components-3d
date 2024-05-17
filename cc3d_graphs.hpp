@@ -625,6 +625,76 @@ OUT* color_connectivity_graph_8(
 	*/
 
 	const int64_t A = -1 - sx;
+	const int64_t A_mask = 0b10000000;
+	const int64_t B = -sx;
+	const int64_t B_mask = 0b1000;
+	const int64_t C = +1 - sx;
+	const int64_t C_mask = 0b1000000;
+	const int64_t D = -1;
+	const int64_t D_mask = 0b10;
+
+	for (int64_t y = 1; y < sy; y++) {
+		for (int64_t x = 0; x < sx; x++) {
+			int64_t loc = x + sx * y;
+
+			out_labels[loc] = new_label++;
+			equivalences.add(new_label);
+
+			if (vcg[loc] & B_mask) {
+				equivalences.unify(out_labels[loc], out_labels[loc+B]);
+			}
+			if (x > 0 && (vcg[loc] & A_mask)) {
+				equivalences.unify(out_labels[loc], out_labels[loc+A]);
+			}
+			if (x > 0 && (vcg[loc] & D_mask)) {
+				equivalences.unify(out_labels[loc], out_labels[loc+D]);
+			}
+			if (x < sx - 1 && (vcg[loc] & C_mask)) {
+				equivalences.unify(out_labels[loc], out_labels[loc+C]);
+			}
+		}
+	}
+
+	return simplified_relabel<OUT>(out_labels, sxy, new_label, equivalences, N);
+}
+
+// 8 and 32 bit inputs have different encodings so 
+// need to write this two ways
+OUT* color_connectivity_graph_8(
+  const uint8_t* vcg, // voxel connectivity graph
+  const int64_t sx, const int64_t sy,
+  OUT* out_labels = NULL,
+  size_t &N = _dummy_N
+) {
+	const int64_t sxy = sx * sy;
+
+	uint64_t max_labels = static_cast<uint64_t>(sxy) + 1; // + 1L for an array with no zeros
+	max_labels = std::min(max_labels, static_cast<uint64_t>(std::numeric_limits<OUT>::max()));
+
+	if (out_labels == NULL) {
+		out_labels = new OUT[sxy]();
+	}
+
+	DisjointSet<OUT> equivalences(max_labels);
+
+	OUT new_label = 1;
+	equivalences.add(new_label);
+
+	for (int64_t x = 0; x < sx; x++) {
+		if (x > 0 && (vcg[x] & 0b0010) == 0) {
+			new_label++;
+			equivalences.add(new_label);
+		}
+		out_labels[x] = new_label;
+	}
+
+	/*
+	Layout of mask. We start from e.
+	a | b | c
+	d | e |
+	*/
+
+	const int64_t A = -1 - sx;
 	const int64_t A_mask = 0b1000000000;
 	const int64_t B = -sx;
 	const int64_t B_mask = 0b1000;
@@ -657,7 +727,6 @@ OUT* color_connectivity_graph_8(
 
 	return simplified_relabel<OUT>(out_labels, sxy, new_label, equivalences, N);
 }
-
 
 template <typename VCG_t, typename OUT>
 OUT* color_connectivity_graph_4(
