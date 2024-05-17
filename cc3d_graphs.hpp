@@ -516,6 +516,150 @@ OUT* color_connectivity_graph_6(
 
 
 template <typename VCG_t, typename OUT>
+OUT* color_connectivity_graph_6(
+	const VCG_t* vcg, // voxel connectivity graph
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	OUT* out_labels = NULL,
+	size_t &N = _dummy_N
+) {
+	const int64_t sxy = sx * sy;
+	const int64_t voxels = sx * sy * sz;
+
+	uint64_t max_labels = static_cast<uint64_t>(voxels) + 1; // + 1L for an array with no zeros
+	max_labels = std::min(max_labels, static_cast<uint64_t>(std::numeric_limits<OUT>::max()));
+
+	if (out_labels == NULL) {
+		out_labels = new OUT[voxels]();
+	}
+
+	DisjointSet<OUT> equivalences(max_labels);
+
+	const int64_t B = -1;
+	const int64_t C = -sx;
+
+
+	OUT new_label = 0;
+	for (int64_t z = 0; z < sz; z++) {
+		new_label++;
+		equivalences.add(new_label);
+
+		for (int64_t x = 0; x < sx; x++) {
+			if (x > 0 && (vcg[x + sxy * z] & 0b0010) == 0) {
+				new_label++;
+				equivalences.add(new_label);
+			}
+			out_labels[x + sxy * z] = new_label;
+		}
+
+		for (int64_t y = 1; y < sy; y++) {
+			for (int64_t x = 0; x < sx; x++) {
+				int64_t loc = x + sx * y + sxy * z;
+
+				if (x > 0 && (vcg[loc] & 0b0010)) {
+					out_labels[loc] = out_labels[loc+B];
+					if (y > 0 && (vcg[loc + C] & 0b0010) == 0 && (vcg[loc] & 0b1000)) {
+						equivalences.unify(out_labels[loc], out_labels[loc+C]);
+					}
+				}
+				else if (y > 0 && vcg[loc] & 0b1000) {
+					out_labels[loc] = out_labels[loc+C];
+				}
+				else {
+					new_label++;
+					out_labels[loc] = new_label;
+					equivalences.add(new_label);
+				}
+			}
+		}
+	}
+
+	for (int64_t z = 1; z < sz; z++) {
+		for (int64_t y = 0; y < sy; y++) {
+			for (int64_t x = 0; x < sx; x++) {  
+				int64_t loc = x + sx * y + sxy * z;
+
+				if (vcg[loc] & 0b100000) {
+					equivalences.unify(out_labels[loc], out_labels[loc-sxy]);
+				}
+			}
+		}
+	}
+
+	return simplified_relabel<OUT>(out_labels, voxels, new_label, equivalences, N);
+}
+
+// 8 and 32 bit inputs have different encodings so 
+// need to write this two ways
+OUT* color_connectivity_graph_8(
+  const uint32_t* vcg, // voxel connectivity graph
+  const int64_t sx, const int64_t sy,
+  OUT* out_labels = NULL,
+  size_t &N = _dummy_N
+) {
+	const int64_t sxy = sx * sy;
+
+	uint64_t max_labels = static_cast<uint64_t>(sxy) + 1; // + 1L for an array with no zeros
+	max_labels = std::min(max_labels, static_cast<uint64_t>(std::numeric_limits<OUT>::max()));
+
+	if (out_labels == NULL) {
+		out_labels = new OUT[sxy]();
+	}
+
+	DisjointSet<OUT> equivalences(max_labels);
+
+	OUT new_label = 1;
+	equivalences.add(new_label);
+
+	for (int64_t x = 0; x < sx; x++) {
+		if (x > 0 && (vcg[x] & 0b0010) == 0) {
+			new_label++;
+			equivalences.add(new_label);
+		}
+		out_labels[x] = new_label;
+	}
+
+	/*
+	Layout of mask. We start from e.
+	a | b | c
+	d | e |
+	*/
+
+	const int64_t A = -1 - sx;
+	const int64_t A_mask = 0b1000000000;
+	const int64_t B = -sx;
+	const int64_t B_mask = 0b1000;
+	const int64_t C = +1 - sx;
+	const int64_t C_mask = 0b100000000;
+	const int64_t D = -1;
+	const int64_t D_mask = 0b10;
+
+	for (int64_t y = 1; y < sy; y++) {
+		for (int64_t x = 0; x < sx; x++) {
+			int64_t loc = x + sx * y;
+
+			out_labels[loc] = new_label++;
+			equivalences.add(new_label);
+
+			if (vcg[loc] & B_mask) {
+				equivalences.unify(out_labels[loc], out_labels[loc+B]);
+			}
+			if (x > 0 && (vcg[loc] & A_mask)) {
+				equivalences.unify(out_labels[loc], out_labels[loc+A]);
+			}
+			if (x > 0 && (vcg[loc] & D_mask)) {
+				equivalences.unify(out_labels[loc], out_labels[loc+D]);
+			}
+			if (x < sx - 1 && (vcg[loc] & C_mask)) {
+				equivalences.unify(out_labels[loc], out_labels[loc+C]);
+			}
+		}
+	}
+
+	return simplified_relabel<OUT>(out_labels, sxy, new_label, equivalences, N);
+}
+
+
+template <typename VCG_t, typename OUT>
 OUT* color_connectivity_graph_4(
   const VCG_t* vcg, // voxel connectivity graph
   const int64_t sx, const int64_t sy,
