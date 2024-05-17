@@ -441,9 +441,19 @@ OUT* simplified_relabel(
   return out_labels;
 }
 
-template <typename VCG_t, typename OUT>
-OUT* color_connectivity_graph_6(
-	const VCG_t* vcg, // voxel connectivity graph
+template <typename OUT>
+OUT* color_connectivity_graph_26(
+	const uint8_t* vcg, // voxel connectivity graph
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	OUT* out_labels = NULL,
+	size_t &N = _dummy_N
+) {
+	throw new std::runtime_error("26-connectivity requires a 32-bit voxel graph for color_connectivity_graph_26.");
+}
+
+template <typename OUT>
+OUT* color_connectivity_graph_26(
+	const uint32_t* vcg, // voxel connectivity graph
 	const int64_t sx, const int64_t sy, const int64_t sz,
 	OUT* out_labels = NULL,
 	size_t &N = _dummy_N
@@ -460,9 +470,47 @@ OUT* color_connectivity_graph_6(
 
 	DisjointSet<OUT> equivalences(max_labels);
 
-	const int64_t B = -1;
-	const int64_t C = -sx;
+	/*
+	Layout of forward pass mask (which faces backwards). 
+	N is the current location.
 
+	z = -1     z = 0
+	A B C      J K L   y = -1 
+	D E F      M N     y =  0
+	G H I              y = +1
+	-1 0 +1    -1 0   <-- x axis
+	*/
+
+	// Z - 1
+	const int64_t A = -1 - sx - sxy;
+	const int64_t A_mask = 0b10000000000000000000000000;
+	const int64_t B = -sx - sxy;
+	const int64_t B_mask = 0b100000000000000000;
+	const int64_t C = +1 - sx - sxy;
+	const int64_t C_mask = 0b1000000000000000000000000;
+	const int64_t D = -1 - sxy;
+	const int64_t D_mask = 0b1000000000000000;
+	const int64_t E = -sxy;
+	const int64_t E_mask = 0b100000;
+	const int64_t F = +1 - sxy;
+	const int64_t F_mask = 0b100000000000000;
+	const int64_t G = -1 + sx - sxy;
+	const int64_t G_mask = 0b100000000000000000000000;
+	const int64_t H = +sx - sxy;
+	const int64_t H_mask = 0b10000000000000000;
+	const int64_t I = +1 + sx - sxy;
+	const int64_t I_mask = 0b10000000000000000000000;
+
+	// Current Z
+	const int64_t J = -1 - sx;
+	const int64_t J_mask = 0b1000000000;
+	const int64_t K = -sx;
+	const int64_t K_mask = 0b1000;
+	const int64_t L = +1 - sx;
+	const int64_t L_mask = 0b100000000; 
+	const int64_t M = -1;
+	const int64_t M_mask = 0b10;
+	// N = 0;
 
 	OUT new_label = 0;
 	for (int64_t z = 0; z < sz; z++) {
@@ -479,21 +527,22 @@ OUT* color_connectivity_graph_6(
 
 		for (int64_t y = 1; y < sy; y++) {
 			for (int64_t x = 0; x < sx; x++) {
-				int64_t loc = x + sx * y + sxy * z;
+				int64_t loc = x + sx * y;
 
-				if (x > 0 && (vcg[loc] & 0b0010)) {
-					out_labels[loc] = out_labels[loc+B];
-					if (y > 0 && (vcg[loc + C] & 0b0010) == 0 && (vcg[loc] & 0b1000)) {
-						equivalences.unify(out_labels[loc], out_labels[loc+C]);
-					}
+				out_labels[loc] = new_label++;
+				equivalences.add(new_label);
+
+				if (vcg[loc] & K_mask) {
+					equivalences.unify(out_labels[loc], out_labels[loc+K]);
 				}
-				else if (y > 0 && vcg[loc] & 0b1000) {
-					out_labels[loc] = out_labels[loc+C];
+				if (x > 0 && (vcg[loc] & J_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+J]);
 				}
-				else {
-					new_label++;
-					out_labels[loc] = new_label;
-					equivalences.add(new_label);
+				if (x > 0 && (vcg[loc] & M_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+M]);
+				}
+				if (x < sx - 1 && (vcg[loc] & L_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+L]);
 				}
 			}
 		}
@@ -504,8 +553,32 @@ OUT* color_connectivity_graph_6(
 			for (int64_t x = 0; x < sx; x++) {  
 				int64_t loc = x + sx * y + sxy * z;
 
-				if (vcg[loc] & 0b100000) {
-					equivalences.unify(out_labels[loc], out_labels[loc-sxy]);
+				if (vcg[loc] & E_mask) {
+					equivalences.unify(out_labels[loc], out_labels[loc+E]);
+				}
+				if (x > 0 && (vcg[loc] & D_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+D]);
+				}
+				if (x < sx - 1 && (vcg[loc] & F_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+F]);
+				}
+				if (x > 0 && y > 0 && (vcg[loc] & A_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+A]);
+				}
+				if (y > 0 && (vcg[loc] & B_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+B]);
+				}
+				if (x > 0 && y < sy - 1 && (vcg[loc] & C_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+C]);
+				}
+				if (x > 0 && y < sy - 1 && (vcg[loc] & G_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+G]);
+				}
+				if (y < sy - 1 && (vcg[loc] & H_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+H]);
+				}
+				if (x < sx - 1 && y < sy - 1 && (vcg[loc] & I_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+I]);
 				}
 			}
 		}
@@ -514,10 +587,19 @@ OUT* color_connectivity_graph_6(
 	return simplified_relabel<OUT>(out_labels, voxels, new_label, equivalences, N);
 }
 
-
-template <typename VCG_t, typename OUT>
+template <typename OUT>
 OUT* color_connectivity_graph_6(
-	const VCG_t* vcg, // voxel connectivity graph
+	const uint8_t* vcg, // voxel connectivity graph
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	OUT* out_labels = NULL,
+	size_t &N = _dummy_N
+) {
+	throw new std::runtime_error("6-connectivity requires a 32-bit voxel graph for color_connectivity_graph_6.");
+}
+
+template <typename OUT>
+OUT* color_connectivity_graph_6(
+	const uint32_t* vcg, // voxel connectivity graph
 	const int64_t sx, const int64_t sy, const int64_t sz,
 	OUT* out_labels = NULL,
 	size_t &N = _dummy_N
@@ -590,6 +672,7 @@ OUT* color_connectivity_graph_6(
 
 // 8 and 32 bit inputs have different encodings so 
 // need to write this two ways
+template <typename OUT>
 OUT* color_connectivity_graph_8(
   const uint32_t* vcg, // voxel connectivity graph
   const int64_t sx, const int64_t sy,
@@ -660,6 +743,7 @@ OUT* color_connectivity_graph_8(
 
 // 8 and 32 bit inputs have different encodings so 
 // need to write this two ways
+template <typename OUT>
 OUT* color_connectivity_graph_8(
   const uint8_t* vcg, // voxel connectivity graph
   const int64_t sx, const int64_t sy,
@@ -792,12 +876,12 @@ OUT* color_connectivity_graph_N(
   OUT* out_labels = NULL,
   size_t &N = _dummy_N
 ) {
-	if (connectivity != 6 && connectivity != 4 && connectivity != 8) {
-		throw std::runtime_error("Only 4, 8, and 6 connectivities are supported.");
+	if (connectivity != 26 && connectivity != 6 && connectivity != 4 && connectivity != 8) {
+		throw std::runtime_error("Only 4, 8, 6 and 26 connectivities are supported.");
 	}
 
-	if (sz > 1 && connectivity != 6) {
-		throw std::runtime_error("Only 6 connectivity is supported in 3D.");
+	if (sz > 1 && (connectivity != 6 && connectivity != 26)) {
+		throw std::runtime_error("Only 6 and 26 connectivity is supported in 3D.");
 	}
 
 	if (sz == 1) {
@@ -808,8 +892,11 @@ OUT* color_connectivity_graph_N(
 			return color_connectivity_graph_8(vcg, sx, sy, out_labels, N);
 		}
 	}
+	else if (connectivity == 6) {
+		return color_connectivity_graph_6<OUT>(vcg, sx, sy, sz, out_labels, N);
+	}
 	else {
-		return color_connectivity_graph_6<VCG_t, OUT>(vcg, sx, sy, sz, out_labels, N);
+		return color_connectivity_graph_26<OUT>(vcg, sx, sy, sz, out_labels, N);
 	}
 }
 

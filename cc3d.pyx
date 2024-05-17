@@ -791,18 +791,25 @@ def _statistics_helper(
 @cython.binding(True)
 def color_connectivity_graph(
   vcg, 
-  connectivity, 
+  connectivity = 26, 
   return_N = False, 
-):
-  """my docstring"""
+) -> np.ndarray:
+  """
+  Given a voxel connectivity graph following the same bit convention as 
+  cc3d.voxel_connectivity_graph (see docstring), assuming an undirected
+  graph (the format supports directed graphs, but this is not implemented
+  for the sake of efficiency), this function will return a uint32 image
+  that contains connected components labeled according to the boundaries 
+  described in the voxel connectivity graph (vcg).
+  """
   cdef int dims = len(vcg.shape)
   if dims not in (2,3):
     raise DimensionError("Only 2D, and 3D arrays supported. Got: " + str(dims))
 
-  if dims == 2 and connectivity not in [4]:
-    raise ValueError(f"Only 4 connectivity is supported for 2D images. Got: {connectivity}")
-  elif dims != 2 and connectivity not in [6]:
-    raise ValueError(f"Only 6 connectivity are supported for 3D images. Got: {connectivity}")
+  if dims == 2 and connectivity not in [4,8,6,26]:
+    raise ValueError(f"Only 4 and 8 connectivity is supported for 2D images. Got: {connectivity}")
+  elif dims != 2 and connectivity not in [6,26]:
+    raise ValueError(f"Only 6 and 26 connectivity are supported for 3D images. Got: {connectivity}")
 
   dtype = vcg.dtype
   if dtype not in [np.uint8, np.uint32]:
