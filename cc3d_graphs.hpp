@@ -792,12 +792,21 @@ OUT* color_connectivity_graph_N(
   OUT* out_labels = NULL,
   size_t &N = _dummy_N
 ) {
-	if (connectivity != 6 && connectivity != 4) {
-		throw std::runtime_error("Only 4 and 6 connectivities are supported.");
+	if (connectivity != 6 && connectivity != 4 && connectivity != 8) {
+		throw std::runtime_error("Only 4, 8, and 6 connectivities are supported.");
+	}
+
+	if (sz > 1 && connectivity != 6) {
+		throw std::runtime_error("Only 6 connectivity is supported in 3D.");
 	}
 
 	if (sz == 1) {
-		return color_connectivity_graph_4<VCG_t, OUT>(vcg, sx, sy, out_labels, N);
+		if (connectivity == 6 || connectivity == 4) {
+			return color_connectivity_graph_4<VCG_t, OUT>(vcg, sx, sy, out_labels, N);
+		}
+		else {
+			return color_connectivity_graph_8(vcg, sx, sy, out_labels, N);
+		}
 	}
 	else {
 		return color_connectivity_graph_6<VCG_t, OUT>(vcg, sx, sy, sz, out_labels, N);
