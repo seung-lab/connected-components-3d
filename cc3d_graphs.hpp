@@ -435,7 +435,7 @@ OUT* simplified_relabel(
   // Raster Scan 2: Write final labels based on equivalences
   N = next_label - 1;
   for (int64_t loc = 0; loc < voxels; loc++) {
-    out_labels[loc] = renumber[out_labels[loc]] - 1; // first label is 0 not 1
+    out_labels[loc] = renumber[out_labels[loc]];
   }
 
   return out_labels;
@@ -527,7 +527,7 @@ OUT* color_connectivity_graph_26(
 
 		for (int64_t y = 1; y < sy; y++) {
 			for (int64_t x = 0; x < sx; x++) {
-				int64_t loc = x + sx * y;
+				int64_t loc = x + sx * y + sxy * z;
 
 				out_labels[loc] = new_label++;
 				equivalences.add(new_label);
