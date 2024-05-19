@@ -1260,3 +1260,25 @@ def test_periodic_boundary_6():
   assert N == 2
 
 
+def test_color_connectivity_graph_6():
+  vcg = np.zeros([10,10,10], dtype=np.uint32, order="F")
+  vcg[:,:,:] = 0b11111111111111111111111111
+
+  vcg[:,:,5] = vcg[:,:,5] & 0b1111
+  vcg[:,5,:] = vcg[:,5,:] & 0b110011
+  vcg[5,:,:] = vcg[5,:,:] & 0b111100
+
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=6)
+
+  out = np.zeros(vcg.shape, dtype=np.uint32, order="F")
+  out[:5,:5,:5] = 1
+  out[5:,:5,:5] = 2
+  out[:5,5:,:5] = 3
+  out[5:,5:,:5] = 4
+  out[:5,:5,5:] = 5
+  out[5:,:5,5:] = 6
+  out[:5,5:,5:] = 7
+  out[5:,5:,5:] = 8
+  
+  assert np.all(out == cc_labels)
+
