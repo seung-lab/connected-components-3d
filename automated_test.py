@@ -1260,25 +1260,63 @@ def test_periodic_boundary_6():
   assert N == 2
 
 
-def test_color_connectivity_graph_6():
-  vcg = np.zeros([10,10,10], dtype=np.uint32, order="F")
-  vcg[:,:,:] = 0b11111111111111111111111111
+@pytest.mark.parametrize("dtype", [np.uint8, np.uint32])
+@pytest.mark.parametrize("connectivity", [4,8])
+def test_color_connectivity_graph_4(dtype, connectivity):
+  vcg = np.array([[]], dtype=dtype)
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  assert cc_labels.size == 0
 
-  vcg[:,:,5] = vcg[:,:,5] & 0b1111
-  vcg[:,5,:] = vcg[:,5,:] & 0b110011
-  vcg[5,:,:] = vcg[5,:,:] & 0b111100
+  vcg = np.zeros([2,1], dtype=dtype)
+  vcg[:] = 0x0f
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  ans = np.array([1,1], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
 
-  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=6)
+  vcg = np.zeros([2,1], dtype=dtype)
+  vcg[:] = 0b1100
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  ans = np.array([[1],[2]], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
+  print("THIS TEST")
+  vcg = np.zeros([1,2], dtype=dtype)
+  vcg[:] = 0b1100
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  ans = np.array([1,1], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
+  print("REACHED HERE")
+  vcg[:] = 0b0011
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  print(cc_labels)
+  ans = np.array([1,2], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
+  print("REACHED HERE2")
+  vcg = np.zeros([2,2], dtype=dtype)
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  ans = np.array([[1, 3],[2, 4]], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
+  print("REACHED HERE3")
+  vcg[:] = 0b1111
+  vcg[0,0] = 0b1110
+  vcg[1,0] = 0b1101
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  ans = np.array([[1, 1],[1, 1]], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
+  print("REACHED HERE4")
+  vcg[:] = 0b1111
+  vcg[0,0] = 0b1110
+  vcg[1,0] = 0b1101
+  vcg[1,1] = 0b0111
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  ans = np.array([[1, 1],[2, 1]], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
 
-  out = np.zeros(vcg.shape, dtype=np.uint32, order="F")
-  out[:5,:5,:5] = 1
-  out[5:,:5,:5] = 2
-  out[:5,5:,:5] = 3
-  out[5:,5:,:5] = 4
-  out[:5,:5,5:] = 5
-  out[5:,:5,5:] = 6
-  out[:5,5:,5:] = 7
-  out[5:,5:,5:] = 8
-  
-  assert np.all(out == cc_labels)
+  vcg[:] = 0b1111
+  vcg[0,0] = 0b1010
+  vcg[1,0] = 0b1101
+  vcg[0,1] = 0b0111
+  vcg[1,1] = 0b0111
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  ans = np.array([[1, 3],[2, 3]], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
 
