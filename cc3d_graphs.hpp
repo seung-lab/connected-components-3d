@@ -568,7 +568,7 @@ OUT* color_connectivity_graph_26(
 				if (y > 0 && (vcg[loc] & B_mask)) {
 					equivalences.unify(out_labels[loc], out_labels[loc+B]);
 				}
-				if (x < sx - 1 && y < sy - 1 && (vcg[loc] & C_mask)) {
+				if (x < sx - 1 && y > 0 && (vcg[loc] & C_mask)) {
 					equivalences.unify(out_labels[loc], out_labels[loc+C]);
 				}
 				if (x > 0 && (vcg[loc] & D_mask)) {
