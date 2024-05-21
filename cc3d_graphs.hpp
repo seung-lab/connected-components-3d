@@ -451,6 +451,22 @@ OUT* color_connectivity_graph_26(
 	throw new std::runtime_error("26-connectivity requires a 32-bit voxel graph for color_connectivity_graph_26.");
 }
 
+template <typename T>
+uint64_t estimate_vcg_provisional_label_count(
+  T* vcg, const int64_t sx, const int64_t voxels
+) {
+  uint64_t count = 0; // number of transitions between labels
+
+  for (int64_t row = 0, loc = 0; loc < voxels; loc += sx, row++) {
+    count++;
+    for (int64_t x = 1; x < sx; x++) {
+      count += static_cast<uint64_t>((vcg[loc + x] & 0b10) == 0);
+    }
+  }
+
+  return count;
+}
+
 template <typename OUT>
 OUT* color_connectivity_graph_26(
 	const uint32_t* vcg, // voxel connectivity graph
@@ -463,6 +479,7 @@ OUT* color_connectivity_graph_26(
 
 	uint64_t max_labels = static_cast<uint64_t>(voxels) + 1; // + 1L for an array with no zeros
 	max_labels = std::min(max_labels, static_cast<uint64_t>(std::numeric_limits<OUT>::max()));
+	max_labels = std::min(max_labels, estimate_vcg_provisional_label_count(vcg, sx, voxels) + 1);
 
 	if (out_labels == NULL) {
 		out_labels = new OUT[voxels]();
