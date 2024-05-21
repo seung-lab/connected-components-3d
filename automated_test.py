@@ -1278,31 +1278,31 @@ def test_color_connectivity_graph_4(dtype, connectivity):
   cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
   ans = np.array([[1],[2]], dtype=np.uint32)
   assert np.all(cc_labels == ans)
-  print("THIS TEST")
+
   vcg = np.zeros([1,2], dtype=dtype)
   vcg[:] = 0b1100
   cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
   ans = np.array([1,1], dtype=np.uint32)
   assert np.all(cc_labels == ans)
-  print("REACHED HERE")
+
   vcg[:] = 0b0011
   cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
-  print(cc_labels)
+
   ans = np.array([1,2], dtype=np.uint32)
   assert np.all(cc_labels == ans)
-  print("REACHED HERE2")
+
   vcg = np.zeros([2,2], dtype=dtype)
   cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
   ans = np.array([[1, 3],[2, 4]], dtype=np.uint32)
   assert np.all(cc_labels == ans)
-  print("REACHED HERE3")
+
   vcg[:] = 0b1111
   vcg[0,0] = 0b1110
   vcg[1,0] = 0b1101
   cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
   ans = np.array([[1, 1],[1, 1]], dtype=np.uint32)
   assert np.all(cc_labels == ans)
-  print("REACHED HERE4")
+
   vcg[:] = 0b1111
   vcg[0,0] = 0b1110
   vcg[1,0] = 0b1101
