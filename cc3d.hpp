@@ -1083,7 +1083,7 @@ OUT* connected_components2d_8(
       else {
         next_label++;
         out_labels[loc] = next_label;
-        equivalences.add(out_labels[loc]);        
+        equivalences.add(out_labels[loc]);      
       }
     }
   }
