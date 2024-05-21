@@ -137,7 +137,8 @@ public:
   }
 
   void print() {
-    for (int i = 0; i < 15; i++) {
+    int size = std::min(static_cast<int>(length), 15);
+    for (int i = 0; i < size; i++) {
       printf("%d, ", ids[i]);
     }
     printf("\n");
@@ -1082,7 +1083,7 @@ OUT* connected_components2d_8(
       else {
         next_label++;
         out_labels[loc] = next_label;
-        equivalences.add(out_labels[loc]);        
+        equivalences.add(out_labels[loc]);      
       }
     }
   }
