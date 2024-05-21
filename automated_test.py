@@ -1339,3 +1339,34 @@ def test_color_connectivity_graph_8_uint32():
   cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=8)
   ans = np.array([[1, 2],[2, 1]], dtype=np.uint32)
   assert np.all(cc_labels == ans)
+
+def test_color_connectivity_graph_6():
+  vcg = np.zeros([2,1])
+
+
+  vcg = np.zeros([10,10,10], dtype=np.uint32, order="F")
+  vcg[:,:,:] = 0b11111111111111111111111111
+
+  vcg[:,:,4] = vcg[:,:,4] & 0b101111
+  vcg[:,:,5] = vcg[:,:,5] & 0b011111
+
+  vcg[:,4,:] = vcg[:,4,:] & 0b111011
+  vcg[:,5,:] = vcg[:,5,:] & 0b110111
+
+  vcg[4,:,:] = vcg[4,:,:] & 0b111110
+  vcg[5,:,:] = vcg[5,:,:] & 0b111101
+
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=6)
+
+  out = np.zeros(vcg.shape, dtype=np.uint32, order="F")
+  out[:5,:5,:5] = 1
+  out[5:,:5,:5] = 2
+  out[:5,5:,:5] = 3
+  out[5:,5:,:5] = 4
+  out[:5,:5,5:] = 5
+  out[5:,:5,5:] = 6
+  out[:5,5:,5:] = 7
+  out[5:,5:,5:] = 8
+
+  assert np.all(out == cc_labels)
+
