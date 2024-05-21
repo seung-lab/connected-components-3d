@@ -676,7 +676,7 @@ OUT* color_connectivity_graph_6(
 // need to write this two ways
 template <typename OUT>
 OUT* color_connectivity_graph_8(
-  const uint32_t* vcg, // voxel connectivity graph
+  const uint8_t* vcg, // voxel connectivity graph
   const int64_t sx, const int64_t sy,
   OUT* out_labels = NULL,
   size_t &N = _dummy_N
@@ -750,7 +750,7 @@ OUT* color_connectivity_graph_8(
 // need to write this two ways
 template <typename OUT>
 OUT* color_connectivity_graph_8(
-  const uint8_t* vcg, // voxel connectivity graph
+  const uint32_t* vcg, // voxel connectivity graph
   const int64_t sx, const int64_t sy,
   OUT* out_labels = NULL,
   size_t &N = _dummy_N
