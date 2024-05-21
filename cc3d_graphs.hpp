@@ -554,23 +554,23 @@ OUT* color_connectivity_graph_26(
 			for (int64_t x = 0; x < sx; x++) {  
 				int64_t loc = x + sx * y + sxy * z;
 
-				if (vcg[loc] & E_mask) {
-					equivalences.unify(out_labels[loc], out_labels[loc+E]);
-				}
-				if (x > 0 && (vcg[loc] & D_mask)) {
-					equivalences.unify(out_labels[loc], out_labels[loc+D]);
-				}
-				if (x < sx - 1 && (vcg[loc] & F_mask)) {
-					equivalences.unify(out_labels[loc], out_labels[loc+F]);
-				}
 				if (x > 0 && y > 0 && (vcg[loc] & A_mask)) {
 					equivalences.unify(out_labels[loc], out_labels[loc+A]);
 				}
 				if (y > 0 && (vcg[loc] & B_mask)) {
 					equivalences.unify(out_labels[loc], out_labels[loc+B]);
 				}
-				if (x > 0 && y < sy - 1 && (vcg[loc] & C_mask)) {
+				if (x < sx - 1 && y < sy - 1 && (vcg[loc] & C_mask)) {
 					equivalences.unify(out_labels[loc], out_labels[loc+C]);
+				}
+				if (x > 0 && (vcg[loc] & D_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+D]);
+				}
+				if (vcg[loc] & E_mask) {
+					equivalences.unify(out_labels[loc], out_labels[loc+E]);
+				}
+				if (x < sx - 1 && (vcg[loc] & F_mask)) {
+					equivalences.unify(out_labels[loc], out_labels[loc+F]);
 				}
 				if (x > 0 && y < sy - 1 && (vcg[loc] & G_mask)) {
 					equivalences.unify(out_labels[loc], out_labels[loc+G]);
