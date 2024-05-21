@@ -633,6 +633,8 @@ OUT* color_connectivity_graph_6(
 			out_labels[x + sxy * z] = new_label;
 		}
 
+		new_label++;
+
 		for (int64_t y = 1; y < sy; y++) {
 			for (int64_t x = 0; x < sx; x++) {
 				int64_t loc = x + sx * y + sxy * z;
@@ -701,6 +703,8 @@ OUT* color_connectivity_graph_8(
 		out_labels[x] = new_label;
 	}
 
+	new_label++;
+
 	/*
 	Layout of mask. We start from e.
 	a | b | c
@@ -720,8 +724,9 @@ OUT* color_connectivity_graph_8(
 		for (int64_t x = 0; x < sx; x++) {
 			int64_t loc = x + sx * y;
 
-			out_labels[loc] = new_label++;
+			out_labels[loc] = new_label;
 			equivalences.add(new_label);
+			new_label++;
 
 			if (vcg[loc] & B_mask) {
 				equivalences.unify(out_labels[loc], out_labels[loc+B]);
@@ -772,6 +777,8 @@ OUT* color_connectivity_graph_8(
 		out_labels[x] = new_label;
 	}
 
+	new_label++;
+
 	/*
 	Layout of mask. We start from e.
 	a | b | c
@@ -791,8 +798,9 @@ OUT* color_connectivity_graph_8(
 		for (int64_t x = 0; x < sx; x++) {
 			int64_t loc = x + sx * y;
 
-			out_labels[loc] = new_label++;
+			out_labels[loc] = new_label;
 			equivalences.add(new_label);
+			new_label++;
 
 			if (vcg[loc] & B_mask) {
 				equivalences.unify(out_labels[loc], out_labels[loc+B]);
