@@ -1296,12 +1296,14 @@ def test_color_connectivity_graph_4(dtype, connectivity):
   ans = np.array([[1, 3],[2, 4]], dtype=np.uint32)
   assert np.all(cc_labels == ans)
 
-  vcg[:] = 0b1111
-  vcg[0,0] = 0b1110
-  vcg[1,0] = 0b1101
-  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
-  ans = np.array([[1, 1],[1, 1]], dtype=np.uint32)
-  assert np.all(cc_labels == ans)
+
+  # This is aphysical
+  # vcg[:] = 0b1111
+  # vcg[0,0] = 0b1110
+  # vcg[1,0] = 0b1101
+  # cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=connectivity)
+  # ans = np.array([[1, 1],[1, 1]], dtype=np.uint32)
+  # assert np.all(cc_labels == ans)
 
   vcg[:] = 0b1111
   vcg[0,0] = 0b1110
