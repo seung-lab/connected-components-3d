@@ -815,6 +815,12 @@ def color_connectivity_graph(
   if dtype not in [np.uint8, np.uint32]:
     raise ValueError(f"Only uint8 and uint32 are supported. Got: {vcg.dtype}")
 
+  if vcg.size == 0:
+    return np.zeros([0] * dims, dtype=np.uint32, order="F")
+
+  while vcg.ndim < 3:
+    vcg = vcg[..., np.newaxis]
+
   vcg = np.asfortranarray(vcg)
 
   shape = vcg.shape
@@ -828,8 +834,7 @@ def color_connectivity_graph(
   cdef uint32_t[:,:,:] out_labels32
 
   cdef int64_t voxels = <int64_t>sx * <int64_t>sy * <int64_t>sz
-  cdef cnp.ndarray[uint32_t, ndim=3] out_labels = np.zeros( (sx,sy,sz,), dtype=np.uint32, order='F' )
-  
+  out_labels = np.zeros( (sx,sy,sz,), dtype=np.uint32, order='F' )
   out_labels32 = out_labels
 
   cdef size_t N = 0
@@ -852,6 +857,9 @@ def color_connectivity_graph(
       &out_labels32[0,0,0],
       N
     )
+
+  while out_labels.ndim > dims:
+    out_labels = out_labels[...,0]
 
   if return_N:
     return (out_labels, N)
