@@ -1341,7 +1341,10 @@ def test_color_connectivity_graph_8_uint32():
   assert np.all(cc_labels == ans)
 
 def test_color_connectivity_graph_6():
-  vcg = np.zeros([2,1])
+
+  with pytest.raises(ValueError):
+    vcg = np.zeros([2,2,2], dtype=np.uint8, order="F")
+    cc3d.color_connectivity_graph(vcg, connectivity=6)
 
 
   vcg = np.zeros([10,10,10], dtype=np.uint32, order="F")

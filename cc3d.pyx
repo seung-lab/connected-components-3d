@@ -829,6 +829,9 @@ def color_connectivity_graph(
   cdef int sy = shape[1]
   cdef int sz = shape[2]
 
+  if connectivity in [6,8] and sz > 1 and dtype != np.uint32:
+    raise ValueError(f"Only uint32 is supported for 3d connectivites. Got: {vcg.dtype}")
+
   cdef uint8_t[:,:,:] arr_memview8u
   cdef uint32_t[:,:,:] arr_memview32u
   cdef uint32_t[:,:,:] out_labels32
