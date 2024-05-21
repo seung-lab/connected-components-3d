@@ -529,7 +529,8 @@ OUT* color_connectivity_graph_26(
 			for (int64_t x = 0; x < sx; x++) {
 				int64_t loc = x + sx * y + sxy * z;
 
-				out_labels[loc] = new_label++;
+				new_label++;
+				out_labels[loc] = new_label;
 				equivalences.add(new_label);
 
 				if (vcg[loc] & K_mask) {
@@ -632,8 +633,6 @@ OUT* color_connectivity_graph_6(
 			}
 			out_labels[x + sxy * z] = new_label;
 		}
-
-		new_label++;
 
 		for (int64_t y = 1; y < sy; y++) {
 			for (int64_t x = 0; x < sx; x++) {
