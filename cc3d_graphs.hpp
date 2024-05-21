@@ -547,25 +547,41 @@ OUT* color_connectivity_graph_26(
 			for (int64_t x = 0; x < sx; x++) {
 				int64_t loc = x + sx * y + sxy * z;
 
+				bool stolen = false;
+
 				if (vcg[loc] & K_mask) {
 					out_labels[loc] = out_labels[loc+K];
+					stolen = true;
 				}
-				else if (x > 0 && (vcg[loc] & J_mask)) {
-					out_labels[loc] = out_labels[loc+J];
-					if (x < sx - 1 && (vcg[loc] & L_mask)) {
+				if (x > 0 && (vcg[loc] & J_mask)) {
+					if (!stolen) {
+						out_labels[loc] = out_labels[loc+J];
+						stolen = true;	
+					}
+					else {
+						equivalences.unify(out_labels[loc], out_labels[loc+J]);
+					}
+				}
+				if (x > 0 && (vcg[loc] & M_mask)) {
+					if (!stolen) {
+						out_labels[loc] = out_labels[loc+M];
+						stolen = true;	
+					}
+					else {
+						equivalences.unify(out_labels[loc], out_labels[loc+M]);
+					}
+				}
+				if (x < sx - 1 && (vcg[loc] & L_mask)) {
+					if (!stolen) {
+						out_labels[loc] = out_labels[loc+L];
+						stolen = true;	
+					}
+					else {
 						equivalences.unify(out_labels[loc], out_labels[loc+L]);
 					}
 				}
-				else if (x > 0 && (vcg[loc] & M_mask)) {
-					out_labels[loc] = out_labels[loc+M];
-					if (x < sx - 1 && (vcg[loc] & L_mask)) {
-						equivalences.unify(out_labels[loc], out_labels[loc+L]);
-					}
-				}
-				else if (x < sx - 1 && (vcg[loc] & L_mask)) {
-					out_labels[loc] = out_labels[loc+L];
-				}
-				else {
+
+				if (!stolen) {
 					new_label++;
 					out_labels[loc] = new_label;
 					equivalences.add(out_labels[loc]);
@@ -635,6 +651,7 @@ OUT* color_connectivity_graph_6(
 
 	uint64_t max_labels = static_cast<uint64_t>(voxels) + 1; // + 1L for an array with no zeros
 	max_labels = std::min(max_labels, static_cast<uint64_t>(std::numeric_limits<OUT>::max()));
+	max_labels = std::min(max_labels, estimate_vcg_provisional_label_count(vcg, sx, voxels) + 1);
 
 	if (out_labels == NULL) {
 		out_labels = new OUT[voxels]();
@@ -643,7 +660,9 @@ OUT* color_connectivity_graph_6(
 	DisjointSet<OUT> equivalences(max_labels);
 
 	const int64_t B = -1;
+	const int64_t B_mask = 0b10;
 	const int64_t C = -sx;
+	const int64_t C_mask = 0b1000;
 
 
 	OUT new_label = 0;
@@ -652,7 +671,7 @@ OUT* color_connectivity_graph_6(
 		equivalences.add(new_label);
 
 		for (int64_t x = 0; x < sx; x++) {
-			if (x > 0 && (vcg[x + sxy * z] & 0b0010) == 0) {
+			if (x > 0 && (vcg[x + sxy * z] & B_mask) == 0) {
 				new_label++;
 				equivalences.add(new_label);
 			}
@@ -663,19 +682,26 @@ OUT* color_connectivity_graph_6(
 			for (int64_t x = 0; x < sx; x++) {
 				int64_t loc = x + sx * y + sxy * z;
 
-				if (x > 0 && (vcg[loc] & 0b0010)) {
-					out_labels[loc] = out_labels[loc+B];
-					if (y > 0 && (vcg[loc + C] & 0b0010) == 0 && (vcg[loc] & 0b1000)) {
-						equivalences.unify(out_labels[loc], out_labels[loc+C]);
+				bool stolen = false;
+
+				if (vcg[loc] & C_mask) {
+					out_labels[loc] = out_labels[loc+C];
+					stolen = true;
+				}
+				if (x > 0 && (vcg[loc] & B_mask)) {
+					if (!stolen) {
+						out_labels[loc] = out_labels[loc+B];
+						stolen = true;	
+					}
+					else {
+						equivalences.unify(out_labels[loc], out_labels[loc+B]);
 					}
 				}
-				else if (y > 0 && vcg[loc] & 0b1000) {
-					out_labels[loc] = out_labels[loc+C];
-				}
-				else {
+
+				if (!stolen) {
 					new_label++;
 					out_labels[loc] = new_label;
-					equivalences.add(new_label);
+					equivalences.add(out_labels[loc]);
 				}
 			}
 		}
@@ -746,29 +772,45 @@ OUT* color_connectivity_graph_8(
 		for (int64_t x = 0; x < sx; x++) {
 			int64_t loc = x + sx * y;
 
-				if (vcg[loc] & B_mask) {
-					out_labels[loc] = out_labels[loc+B];
-				}
-				else if (x > 0 && (vcg[loc] & A_mask)) {
+			bool stolen = false;
+
+			if (vcg[loc] & B_mask) {
+				out_labels[loc] = out_labels[loc+B];
+				stolen = true;
+			}
+			if (x > 0 && (vcg[loc] & A_mask)) {
+				if (!stolen) {
 					out_labels[loc] = out_labels[loc+A];
-					if (x < sx - 1 && (vcg[loc] & C_mask)) {
-						equivalences.unify(out_labels[loc], out_labels[loc+C]);
-					}
-				}
-				else if (x > 0 && (vcg[loc] & D_mask)) {
-					out_labels[loc] = out_labels[loc+D];
-					if (x < sx - 1 && (vcg[loc] & C_mask)) {
-						equivalences.unify(out_labels[loc], out_labels[loc+C]);
-					}
-				}
-				else if (x < sx - 1 && (vcg[loc] & C_mask)) {
-					out_labels[loc] = out_labels[loc+C];
+					stolen = true;	
 				}
 				else {
-					new_label++;
-					out_labels[loc] = new_label;
-					equivalences.add(out_labels[loc]);
+					equivalences.unify(out_labels[loc], out_labels[loc+A]);
 				}
+			}
+			if (x > 0 && (vcg[loc] & D_mask)) {
+				if (!stolen) {
+					out_labels[loc] = out_labels[loc+D];
+					stolen = true;	
+				}
+				else {
+					equivalences.unify(out_labels[loc], out_labels[loc+D]);
+				}
+			}
+			if (x < sx - 1 && (vcg[loc] & C_mask)) {
+				if (!stolen) {
+					out_labels[loc] = out_labels[loc+C];
+					stolen = true;	
+				}
+				else {
+					equivalences.unify(out_labels[loc], out_labels[loc+C]);
+				}
+			}
+
+			if (!stolen) {
+				new_label++;
+				out_labels[loc] = new_label;
+				equivalences.add(out_labels[loc]);
+			}
 		}
 	}
 
@@ -825,29 +867,45 @@ OUT* color_connectivity_graph_8(
 		for (int64_t x = 0; x < sx; x++) {
 			int64_t loc = x + sx * y;
 
-				if (vcg[loc] & B_mask) {
-					out_labels[loc] = out_labels[loc+B];
-				}
-				else if (x > 0 && (vcg[loc] & A_mask)) {
+			bool stolen = false;
+
+			if (vcg[loc] & B_mask) {
+				out_labels[loc] = out_labels[loc+B];
+				stolen = true;
+			}
+			if (x > 0 && (vcg[loc] & A_mask)) {
+				if (!stolen) {
 					out_labels[loc] = out_labels[loc+A];
-					if (x < sx - 1 && (vcg[loc] & C_mask)) {
-						equivalences.unify(out_labels[loc], out_labels[loc+C]);
-					}
-				}
-				else if (x > 0 && (vcg[loc] & D_mask)) {
-					out_labels[loc] = out_labels[loc+D];
-					if (x < sx - 1 && (vcg[loc] & C_mask)) {
-						equivalences.unify(out_labels[loc], out_labels[loc+C]);
-					}
-				}
-				else if (x < sx - 1 && (vcg[loc] & C_mask)) {
-					out_labels[loc] = out_labels[loc+C];
+					stolen = true;	
 				}
 				else {
-					new_label++;
-					out_labels[loc] = new_label;
-					equivalences.add(out_labels[loc]);
+					equivalences.unify(out_labels[loc], out_labels[loc+A]);
 				}
+			}
+			if (x > 0 && (vcg[loc] & D_mask)) {
+				if (!stolen) {
+					out_labels[loc] = out_labels[loc+D];
+					stolen = true;	
+				}
+				else {
+					equivalences.unify(out_labels[loc], out_labels[loc+D]);
+				}
+			}
+			if (x < sx - 1 && (vcg[loc] & C_mask)) {
+				if (!stolen) {
+					out_labels[loc] = out_labels[loc+C];
+					stolen = true;	
+				}
+				else {
+					equivalences.unify(out_labels[loc], out_labels[loc+C]);
+				}
+			}
+
+			if (!stolen) {
+				new_label++;
+				out_labels[loc] = new_label;
+				equivalences.add(out_labels[loc]);
+			}
 		}
 	}
 
