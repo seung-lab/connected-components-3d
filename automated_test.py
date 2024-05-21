@@ -1320,3 +1320,13 @@ def test_color_connectivity_graph_4(dtype, connectivity):
   ans = np.array([[1, 3],[2, 3]], dtype=np.uint32)
   assert np.all(cc_labels == ans)
 
+def test_color_connectivity_graph_8_uint8():
+  vcg = np.zeros([2,2], dtype=np.uint8)
+  vcg[0,0] = 0b10000
+  vcg[1,1] = 0b10000000
+  vcg[1,0] = 0b100000
+  vcg[0,1] = 0b1000000
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=8)
+  ans = np.array([[1, 2],[2, 1]], dtype=np.uint32)
+  assert np.all(cc_labels == ans)
+
