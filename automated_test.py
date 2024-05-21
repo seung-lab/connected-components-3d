@@ -1382,6 +1382,9 @@ def test_color_connectivity_graph_26():
   vcg = np.zeros([10,10,10], dtype=np.uint32, order="F")
   vcg[:,:,:] = 0b11111111111111111111111111
 
+  cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=26)
+  assert np.all(cc_labels == 1)
+
   vcg[:,:,4] = vcg[:,:,4] & 0b101111
   vcg[:,:,5] = vcg[:,:,5] & 0b011111
 
