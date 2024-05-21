@@ -874,19 +874,21 @@ OUT* color_connectivity_graph_4(
 	}
 
 	const int64_t B = -1;
+	const int64_t B_mask = 0b0010;
 	const int64_t C = -sx;
+	const int64_t C_mask = 0b1000;
 
 	for (int64_t y = 1; y < sy; y++) {
 		for (int64_t x = 0; x < sx; x++) {
 			int64_t loc = x + sx * y;
 
-			if (x > 0 && (vcg[loc] & 0b0010)) {
+			if (x > 0 && (vcg[loc] & B_mask)) {
 				out_labels[loc] = out_labels[loc+B];
-				if (y > 0 && (vcg[loc + C] & 0b0010) == 0 && (vcg[loc] & 0b1000)) {
+				if (vcg[loc] & C_mask) {
 					equivalences.unify(out_labels[loc], out_labels[loc+C]);
 				}
 			}
-			else if (y > 0 && vcg[loc] & 0b1000) {
+			else if (vcg[loc] & C_mask) {
 				out_labels[loc] = out_labels[loc+C];
 			}
 			else {
