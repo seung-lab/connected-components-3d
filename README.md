@@ -157,6 +157,11 @@ edges = cc3d.region_graph(labels_out, connectivity=connectivity)
 # See help(cc3d.voxel_connectivity_graph) for details.
 graph = cc3d.voxel_connectivity_graph(labels, connectivity=connectivity)
 
+# ...and turn it back into labeled values (probably
+# not exactly the same ones). Note: this function currently
+# assumes an undirected graph, so single voxel alterations are
+# likely to go awry.
+new_labels = cc3d.color_connectivity_graph(graph, connectivity=connectivity)
 ```
 
 *Note: C and Fortran order arrays will be processed in row major and column major order respectively, so the numbering of labels will be "transposed". The scare quotes are there because the dimensions of the array will not change.*
