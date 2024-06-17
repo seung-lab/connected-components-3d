@@ -51,6 +51,8 @@ from libcpp.map cimport map as mapcpp
 from libcpp.unordered_map cimport unordered_map
 from libcpp.utility cimport pair as cpp_pair
 cimport numpy as cnp
+cnp.import_array()
+
 import numpy as np
 import time
 
