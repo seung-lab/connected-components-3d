@@ -41,7 +41,7 @@ setuptools.setup(
   version="3.16.1",
   setup_requires=['pbr', 'numpy', 'cython'],
   install_requires=['numpy'],
-  python_requires=">=3.7,<4.0",
+  python_requires=">=3.8,<4.0",
   ext_modules=[
     setuptools.Extension(
       'cc3d',
