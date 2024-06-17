@@ -1421,6 +1421,25 @@ def test_color_connectivity_graph_26():
   cc_labels = cc3d.color_connectivity_graph(vcg, connectivity=26)
   assert np.all(cc_labels == 1)
 
+def test_pytorch_integration_ccl_doesnt_crash():
+    torch = pytest.importorskip("torch")
+
+    labels = torch.from_numpy(np.zeros([100,100,100], dtype=np.uint16))
+
+    out = cc3d.connected_components(labels)
+
+    assert isinstance(out, torch.Tensor)
+    assert torch.all(out == labels)
+
+
+
+
+
+
+
+
+
+
 
 
 

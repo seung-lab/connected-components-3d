@@ -293,6 +293,11 @@ def connected_components(
     if return_N: (OUT, N)
     else: OUT
   """
+  is_torch = hasattr(data, "cpu")
+  if is_torch:
+    # don't need to call .detach() b/c its read-only
+    data = data.cpu().numpy() 
+
   cdef int dims = len(data.shape)
   if dims not in (1,2,3):
     raise DimensionError("Only 1D, 2D, and 3D arrays supported. Got: " + str(dims))
@@ -568,6 +573,10 @@ def connected_components(
       data.setflags(write=writable)
 
   out_labels = _final_reshape(out_labels, sx, sy, sz, dims, order)
+
+  if is_torch:
+    import torch
+    out_labels = torch.from_numpy(out_labels)
 
   if return_N:
     return (out_labels, N)
