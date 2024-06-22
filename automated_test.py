@@ -939,7 +939,7 @@ def test_voxel_graph_3d():
   assert np.all(gt.T == graph)
 
 @pytest.mark.parametrize("order", ("C", "F"))
-def test_statistics(order):
+def test_statistics_3d(order):
   labels = np.zeros((123,128,125), dtype=np.uint8, order=order)
   labels[10:20,10:20,10:20] = 1
   labels[40:50,40:50,40:51] = 2
@@ -977,6 +977,49 @@ def test_statistics(order):
   labels = np.zeros((512,512,512), dtype=np.uint8, order=order)
   stats = cc3d.statistics(labels)
   assert np.all(stats["centroids"][0] == np.array([255.5,255.5,255.5]))
+
+@pytest.mark.parametrize("order", ("C", "F"))
+def test_statistics_2d(order):
+  labels = np.zeros((123,128), dtype=np.uint8, order=order)
+  labels[10:20,10:20] = 1
+  labels[40:50,40:50] = 2
+
+  stats = cc3d.statistics(labels)
+  assert stats["voxel_counts"][1] == 100
+  assert stats["voxel_counts"][2] == 10 * 10
+  
+  assert np.all(np.isclose(stats["centroids"][1,:], [14.5,14.5]))
+  assert np.all(np.isclose(stats["centroids"][2,:], [44.5,44.5]))
+
+  print(stats["bounding_boxes"])
+
+  assert np.all(stats["bounding_boxes"][0] == (slice(0,123), slice(0,128)))
+  assert np.all(stats["bounding_boxes"][1] == (slice(10,20), slice(10,20)))
+  assert np.all(stats["bounding_boxes"][2] == (slice(40,50), slice(40,50)))
+
+  stats = cc3d.statistics(labels, no_slice_conversion=True)
+  print(stats["bounding_boxes"])
+  assert np.all(stats["bounding_boxes"][0] == np.array([ 0, 122, 0, 127 ]))
+  assert np.all(stats["bounding_boxes"][1] == np.array([ 10, 19, 10, 19 ]))
+  assert np.all(stats["bounding_boxes"][2] == np.array([ 40, 49, 40, 49 ]))
+
+  labels = np.zeros((1,1), dtype=np.uint8, order=order)
+  stats = cc3d.statistics(labels)
+  assert len(stats["voxel_counts"]) == 1
+  assert stats["voxel_counts"][0] == 1
+
+  labels = np.zeros((0,1), dtype=np.uint8, order=order)
+  stats = cc3d.statistics(labels)
+  assert stats == { 
+    "voxel_counts": None, 
+    "bounding_boxes": None, 
+    "centroids": None 
+  }
+
+  labels = np.zeros((512,512), dtype=np.uint8, order=order)
+  stats = cc3d.statistics(labels)
+  assert np.all(stats["centroids"][0] == np.array([255.5,255.5]))
+
 
 @pytest.mark.parametrize("order", ["C", "F"])
 def test_statistics_big(order):

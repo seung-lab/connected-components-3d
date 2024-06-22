@@ -665,26 +665,16 @@ def statistics(
       centroids: np.ndarray[float64] (N+1,3)
     }
   """
-  while out_labels.ndim < 3:
+  while out_labels.ndim < 2:
     out_labels = out_labels[..., np.newaxis]
 
   if out_labels.dtype == bool:
     out_labels = out_labels.view(np.uint8)
 
-  return _statistics(out_labels, no_slice_conversion)
-
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.nonecheck(False)
-def _statistics(
-  cnp.ndarray[UINT, ndim=3] out_labels, 
-  native_bool no_slice_conversion
-):
   cdef uint64_t voxels = out_labels.size;
   cdef uint64_t sx = out_labels.shape[0]
   cdef uint64_t sy = out_labels.shape[1]
-  cdef uint64_t sz = out_labels.shape[2]
+  cdef uint64_t sz = (out_labels.shape[2] if out_labels.ndim > 2 else 1)
 
   if voxels == 0:
     return {
@@ -704,17 +694,102 @@ def _statistics(
   cdef cnp.ndarray[uint32_t] bounding_boxes32
 
   if np.any(np.array([sx,sy,sz]) > np.iinfo(np.uint16).max):
-    bounding_boxes32 = np.zeros(6 * (N + 1), dtype=np.uint32)
-    return _statistics_helper(out_labels, no_slice_conversion, bounding_boxes32, N)
+    if out_labels.ndim == 2:
+      bounding_boxes32 = np.zeros(4 * (N + 1), dtype=np.uint32)
+      return _statistics_helper2d(out_labels, no_slice_conversion, bounding_boxes32, N)
+    else:
+      bounding_boxes32 = np.zeros(6 * (N + 1), dtype=np.uint32)
+      return _statistics_helper3d(out_labels, no_slice_conversion, bounding_boxes32, N)
   else:
-    bounding_boxes16 = np.zeros(6 * (N + 1), dtype=np.uint16)
-    return _statistics_helper(out_labels, no_slice_conversion, bounding_boxes16, N)
+    if out_labels.ndim == 2:
+      bounding_boxes32 = np.zeros(4 * (N + 1), dtype=np.uint32)
+      return _statistics_helper2d(out_labels, no_slice_conversion, bounding_boxes32, N)
+    else:
+      bounding_boxes16 = np.zeros(6 * (N + 1), dtype=np.uint16)
+      return _statistics_helper3d(out_labels, no_slice_conversion, bounding_boxes16, N)
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.nonecheck(False)
-def _statistics_helper(
+def _statistics_helper2d(
+  cnp.ndarray[UINT, ndim=2] out_labels, 
+  native_bool no_slice_conversion,
+  cnp.ndarray[BBOX_T, ndim=1] bounding_boxes,
+  uint64_t N
+):
+  cdef uint64_t voxels = out_labels.size;
+  cdef uint64_t sx = out_labels.shape[0]
+  cdef uint64_t sy = out_labels.shape[1]
+
+  cdef cnp.ndarray[uint32_t] counts = np.zeros(N + 1, dtype=np.uint32)
+  cdef cnp.ndarray[double] centroids = np.zeros(2 * (N + 1), dtype=np.float64)
+
+  cdef BBOX_T x = 0
+  cdef BBOX_T y = 0
+
+  cdef uint64_t label = 0
+
+  bounding_boxes[::2] = np.iinfo(bounding_boxes.dtype).max
+
+  if out_labels.flags.f_contiguous:
+    for y in range(sy):
+      for x in range(sx):
+        label = <uint64_t>out_labels[x,y]
+        counts[label] += 1
+        bounding_boxes[4 * label + 0] = <BBOX_T>min(bounding_boxes[4 * label + 0], x)
+        bounding_boxes[4 * label + 1] = <BBOX_T>max(bounding_boxes[4 * label + 1], x)
+        bounding_boxes[4 * label + 2] = <BBOX_T>min(bounding_boxes[4 * label + 2], y)
+        bounding_boxes[4 * label + 3] = <BBOX_T>max(bounding_boxes[4 * label + 3], y)
+        centroids[2 * label + 0] += <double>x
+        centroids[2 * label + 1] += <double>y
+  else:
+    for x in range(sx):
+      for y in range(sy):
+        label = <uint64_t>out_labels[x,y]
+        counts[label] += 1
+        bounding_boxes[4 * label + 0] = <BBOX_T>min(bounding_boxes[4 * label + 0], x)
+        bounding_boxes[4 * label + 1] = <BBOX_T>max(bounding_boxes[4 * label + 1], x)
+        bounding_boxes[4 * label + 2] = <BBOX_T>min(bounding_boxes[4 * label + 2], y)
+        bounding_boxes[4 * label + 3] = <BBOX_T>max(bounding_boxes[4 * label + 3], y)
+        centroids[2 * label + 0] += <double>x
+        centroids[2 * label + 1] += <double>y
+
+  for label in range(N+1):
+    if <double>counts[label] == 0:
+      centroids[2 * label + 0] = float('NaN')
+      centroids[2 * label + 1] = float('NaN')
+    else:
+      centroids[2 * label + 0] /= <double>counts[label]
+      centroids[2 * label + 1] /= <double>counts[label]
+
+  bbxes = bounding_boxes.reshape((N+1,4))
+
+  output = {
+    "voxel_counts": counts,
+    "bounding_boxes": bbxes,
+    "centroids": centroids.reshape((N+1,2)),
+  }
+
+  if no_slice_conversion:
+    return output
+
+  slices = []
+  for xs, xe, ys, ye in bbxes:
+    if xs < voxels and ys < voxels:
+      slices.append((slice(xs, int(xe+1)), slice(ys, int(ye+1))))
+    else:
+      slices.append(None)
+
+  output["bounding_boxes"] = slices
+
+  return output
+
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.nonecheck(False)
+def _statistics_helper3d(
   cnp.ndarray[UINT, ndim=3] out_labels, 
   native_bool no_slice_conversion,
   cnp.ndarray[BBOX_T, ndim=1] bounding_boxes,
