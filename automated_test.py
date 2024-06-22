@@ -991,8 +991,6 @@ def test_statistics_2d(order):
   assert np.all(np.isclose(stats["centroids"][1,:], [14.5,14.5]))
   assert np.all(np.isclose(stats["centroids"][2,:], [44.5,44.5]))
 
-  print(stats["bounding_boxes"])
-
   assert np.all(stats["bounding_boxes"][0] == (slice(0,123), slice(0,128)))
   assert np.all(stats["bounding_boxes"][1] == (slice(10,20), slice(10,20)))
   assert np.all(stats["bounding_boxes"][2] == (slice(40,50), slice(40,50)))
