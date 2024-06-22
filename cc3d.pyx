@@ -56,8 +56,6 @@ cnp.import_array()
 import numpy as np
 import time
 
-__VERSION__ = '3.12.4'
-
 cdef extern from "cc3d.hpp" namespace "cc3d":
   cdef size_t estimate_provisional_label_count[T](
     T* in_labels, int64_t sx, int64_t voxels,
