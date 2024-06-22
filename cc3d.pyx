@@ -702,8 +702,8 @@ def statistics(
       return _statistics_helper3d(out_labels, no_slice_conversion, bounding_boxes32, N)
   else:
     if out_labels.ndim == 2:
-      bounding_boxes32 = np.zeros(4 * (N + 1), dtype=np.uint32)
-      return _statistics_helper2d(out_labels, no_slice_conversion, bounding_boxes32, N)
+      bounding_boxes16 = np.zeros(4 * (N + 1), dtype=np.uint16)
+      return _statistics_helper2d(out_labels, no_slice_conversion, bounding_boxes16, N)
     else:
       bounding_boxes16 = np.zeros(6 * (N + 1), dtype=np.uint16)
       return _statistics_helper3d(out_labels, no_slice_conversion, bounding_boxes16, N)
