@@ -56,7 +56,7 @@ setuptools.setup(
   packages=setuptools.find_packages(),
   package_data={
     'cc3d': [
-      'LICENSE',
+      'COPYING',
       'COPYING.LESSER',
     ],
   },
