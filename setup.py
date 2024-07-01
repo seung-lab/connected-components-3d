@@ -23,18 +23,41 @@ def requirements():
 # NOTE: If cc3d.cpp does not exist:
 # cython -3 --fast-fail -v --cplus cc3d.pyx
 
-extra_compile_args = []
-if sys.platform == 'win32':
-  extra_compile_args += [
-    '/std:c++11', '/O2'
-  ]
-else:
-  extra_compile_args += [
-    '-std=c++11', '-O3'
-  ]
+def configure_cpu_extension():
+  extra_compile_args = []
+
+  if sys.platform == 'win32':
+    extra_compile_args += [
+      '/std:c++11', '/O2'
+    ]
+  else:
+    extra_compile_args += [
+      '-std=c++11', '-O3'
+    ]
+
+  if sys.platform == 'darwin':
+    extra_compile_args += [ '-stdlib=libc++', '-mmacosx-version-min=10.9' ]
+
+  return setuptools.Extension(
+    'cc3d',
+    sources=[ 'cc3d.pyx' ],
+    language='c++',
+    include_dirs=[ str(NumpyImport()) ],
+    extra_compile_args=extra_compile_args,
+  )
+
+def configure_metal_gpu_extension():
+  return setuptools.Extension(
+      'cc3d_mps',
+      sources=['src/gpu/cc3d_mps.pyx', 'src/gpu/cc3d_mps.mm'],
+      extra_compile_args=['-ObjC++'],
+      extra_link_args=['-framework', 'Metal', '-framework', 'MetalPerformanceShaders']
+  )
+
+extensions = [ configure_cpu_extension() ]
 
 if sys.platform == 'darwin':
-  extra_compile_args += [ '-stdlib=libc++', '-mmacosx-version-min=10.9' ]
+  extensions.append(configure_metal_gpu_extension())
 
 setuptools.setup(
   name="connected-components-3d",
@@ -42,15 +65,7 @@ setuptools.setup(
   setup_requires=['pbr', 'numpy', 'cython'],
   install_requires=['numpy'],
   python_requires=">=3.8,<4.0",
-  ext_modules=[
-    setuptools.Extension(
-      'cc3d',
-      sources=[ 'cc3d.pyx' ],
-      language='c++',
-      include_dirs=[ str(NumpyImport()) ],
-      extra_compile_args=extra_compile_args,
-    )
-  ],
+  ext_modules=extensions,
   author="William Silversmith",
   author_email="ws9@princeton.edu",
   packages=setuptools.find_packages(),
