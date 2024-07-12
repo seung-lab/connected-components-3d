@@ -2,13 +2,16 @@
 using namespace metal;
 
 kernel void init_labels(
-    texture2d<uint, access::read_write> labelTexture [[texture(0)]],
-    uint2 gid [[thread_position_in_grid]]
+    device uint* labelBuffer [[ buffer(0) ]],
+    uint2 gid [[ thread_position_in_grid ]],
+    uint sx, uint sy
 ) {
-    if (gid.x >= labelTexture.get_width() || gid.y >= labelTexture.get_height()) return;
+    uint index = gid.y * sx + gid.x;
     
-    uint label = gid.y * labelTexture.get_width() + gid.x + 1; // +1 to avoid label 0
-    labelTexture.write(label, gid);
+    if (gid.x < sx && gid.y < sy) {
+        uint label = index + 1; // +1 to avoid label 0
+        labelBuffer[index] = label;
+    }
 }
 
 
@@ -51,6 +54,3 @@ kernel void check_convergence(
         atomic_store_explicit(converged, 0, memory_order_relaxed);
     }
 }
-
-
-

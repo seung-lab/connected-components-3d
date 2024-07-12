@@ -1,7 +1,7 @@
 import os
 import setuptools
 import sys
-
+import platform
 
 class NumpyImport:
   def __repr__(self):
@@ -47,16 +47,27 @@ def configure_cpu_extension():
   )
 
 def configure_metal_gpu_extension():
+  from torch.utils import cpp_extension
   return setuptools.Extension(
       'cc3d_mps',
-      sources=['src/gpu/cc3d_mps.pyx', 'src/gpu/cc3d_mps.mm'],
-      extra_compile_args=['-ObjC++'],
-      extra_link_args=['-framework', 'Metal', '-framework', 'MetalPerformanceShaders']
+      sources=['src/gpu/cc3d_mps.pyx', "src/gpu/cc3d_mps_impl.m"],
+      include_dirs=cpp_extension.include_paths(),
+      language="c++",
+      extra_compile_args=[
+        '-xobjective-c++', '-std=c++14', 
+        '-mmacosx-version-min=10.13', '-ObjC++',
+      ],
+      extra_link_args=[
+        '-stdlib=libc++', 
+        '-framework', 'Metal', 
+        '-framework', 'MetalPerformanceShaders',
+      ]
   )
 
 extensions = [ configure_cpu_extension() ]
 
-if sys.platform == 'darwin':
+# 17 is the major release number for MacOS High Sierra 10.13
+if sys.platform == 'darwin' and int(platform.release().split(".")[0]) >= 17:
   extensions.append(configure_metal_gpu_extension())
 
 setuptools.setup(

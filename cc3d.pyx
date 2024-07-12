@@ -316,6 +316,15 @@ def connected_components(
       return (out_labels, 0)
     return out_labels
 
+  if is_torch and connectivity in [4]:
+    try:
+      import torch
+      if torch.backends.mps.is_available() and data.device.is_mps():
+        import cc3d_mps
+        return cc3d_mps.connected_components_4(data)
+    except ImportError:
+      data = data.numpy(force=True)
+
   order = 'F' if data.flags.f_contiguous else 'C'
 
   while len(data.shape) < 3:
