@@ -47,6 +47,10 @@ def configure_cpu_extension():
   )
 
 def configure_metal_gpu_extension():
+  # you'll need to run:
+  # xcrun -sdk macosx metal -c cc3d.metal -o cc3d.air    
+  # xcrun -sdk macosx metallib my_shader.air -o default.metallib
+
   from torch.utils import cpp_extension
   return setuptools.Extension(
       'cc3d_mps',

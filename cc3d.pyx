@@ -292,9 +292,6 @@ def connected_components(
     else: OUT
   """
   is_torch = hasattr(data, "cpu")
-  if is_torch:
-    # don't need to call .detach() b/c its read-only
-    data = data.cpu().numpy() 
 
   cdef int dims = len(data.shape)
   if dims not in (1,2,3):
@@ -319,7 +316,7 @@ def connected_components(
   if is_torch and connectivity in [4]:
     try:
       import torch
-      if torch.backends.mps.is_available() and data.device.is_mps():
+      if torch.backends.mps.is_available() and data.device.type == "mps":
         import cc3d_mps
         return cc3d_mps.connected_components_4(data)
     except ImportError:

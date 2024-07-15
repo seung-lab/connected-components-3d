@@ -12,23 +12,25 @@ cdef extern from "cc3d_mps_impl.h":
     void connected_components_4_mps(
         uint64_t labelsAddr,
         uint64_t sx, uint64_t sy,
-        uint64_t outputAddr,
-        uint64_t osx, uint64_t osy
+        uint64_t outputAddr
     ) except +
 
 def connected_components_4(labels):
-    if not labels.device.is_mps():
+    if labels.device.type != "mps":
         raise RuntimeError("Unable to run non-mps tensor on an MPS device.")
 
+    labels = labels.contiguous()
+
     output = torch.zeros(
-        labels.shape, dtype=torch.uint32, device='mps'
+        labels.shape, dtype=torch.int32, device=labels.device
     )
 
     connected_components_4_mps(
-        labels.data_ptr(), labels.shape[0], labels.shape[1],
-        output.data_ptr(), output.shape[0], output.shape[1]
+        labels.data_ptr(), 
+        labels.shape[0], labels.shape[1],
+        output.data_ptr()
     )
 
-    return output
+    return output 
 
 
