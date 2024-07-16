@@ -30,7 +30,7 @@ setuptools.setup(
   ext_modules=[
     setuptools.Extension(
       'cc3d',
-      sources=[ 'cc3d.cpp' ],
+      sources=[ 'cc3d.pyx' ],
       language='c++',
       include_dirs=[ np.get_include() ],
       extra_compile_args=extra_compile_args,

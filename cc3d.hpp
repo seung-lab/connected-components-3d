@@ -394,13 +394,27 @@ OUT* connected_components3d_26(
     return out_labels;
   }
 
+  const int64_t partition = sz / parallel;
+
+  std::vector<size_t> label_offsets(parallel * 2);
+
+  uint64_t epl_total = 0;
+  uint64_t partition_size = sxy * partition;
+  for (int i = 0; i < parallel; i++) {
+    uint64_t epl = estimate_provisional_label_count<T>(
+      in_labels + i * partition_size, sx, partition_size
+    );
+    label_offsets[i * 2] = epl_total;
+    epl_total += epl;
+  }
+
   if (parallel == 1) {
     max_labels++; // corrects Cython estimation
     max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
     max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
   }
   else {
-    max_labels = static_cast<size_t>(voxels) + 1;
+    max_labels = static_cast<size_t>(epl_total) + 1;
   }
 
   // printf("max_labels: %d\n", max_labels);
@@ -438,13 +452,10 @@ OUT* connected_components3d_26(
   const int64_t M = -1;
   // N = 0;
 
-  const int64_t partition = sz / parallel;
-  std::vector<size_t> label_offsets(parallel * 2);
-
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
   std::function<void(int64_t,T*,OUT*,int64_t)> equivfn = [&](int64_t p, T* in_labels, OUT* out_labels, const int64_t sz) {
-    const OUT next_label_start = p * sz * sxy;
+    const OUT next_label_start = label_offsets[p * 2];
     
     OUT next_label = next_label_start;
     int64_t loc = 0;
@@ -639,7 +650,6 @@ OUT* connected_components3d_26(
       }
     }
 
-    label_offsets[p * 2] = next_label_start + 1;
     label_offsets[p * 2 + 1] = next_label;
   };
 

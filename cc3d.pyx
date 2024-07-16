@@ -278,7 +278,10 @@ def connected_components(
   cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
   cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
-  epl, first_foreground_row, last_foreground_row = estimate_provisional_labels(data)
+  # epl, first_foreground_row, last_foreground_row = estimate_provisional_labels(data)
+  epl = voxels
+  first_foreground_row = 0
+  last_foreground_row = 2
 
   if max_labels <= 0:
     max_labels = voxels
