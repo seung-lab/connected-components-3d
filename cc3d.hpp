@@ -53,6 +53,8 @@
 #include <unordered_set>
 #include <vector>
 #include <limits>
+#include <chrono>
+#include <iostream>
 
 #include "threadpool.h"
 
@@ -398,14 +400,30 @@ OUT* connected_components3d_26(
 
   std::vector<size_t> label_offsets(parallel * 2);
 
-  uint64_t epl_total = 0;
+  ThreadPool pool1(parallel);
+
+  auto time_begin = std::chrono::high_resolution_clock::now();
+  
+
   uint64_t partition_size = sxy * partition;
   for (int i = 0; i < parallel; i++) {
-    uint64_t epl = estimate_provisional_label_count<T>(
-      in_labels + i * partition_size, sx, partition_size
+    pool1.enqueue(
+      [&, i, partition_size](){
+        uint64_t epl = estimate_provisional_label_count<T>(
+          in_labels + i * partition_size, sx, partition_size
+        );
+        label_offsets[i * 2] = epl;
+      }
     );
-    label_offsets[i * 2] = epl_total;
-    epl_total += epl;
+  }
+
+  pool1.join();
+
+  uint64_t epl_total = 0;
+  for (int i = 0; i < parallel; i++) {
+    auto epl_tmp = epl_total;
+    epl_total += label_offsets[i * 2];
+    label_offsets[i * 2] = epl_tmp;
   }
 
   if (parallel == 1) {
@@ -417,11 +435,23 @@ OUT* connected_components3d_26(
     max_labels = static_cast<size_t>(epl_total) + 1;
   }
 
+  auto time_end = std::chrono::high_resolution_clock::now();
+  
+  std::cout << "epl: " << std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_begin).count() << "µs" << std::endl;
+
   // printf("max_labels: %d\n", max_labels);
   
+  time_begin = std::chrono::high_resolution_clock::now();
   DisjointSet<OUT> equivalences(max_labels);
+  time_end = std::chrono::high_resolution_clock::now();
+  
+  std::cout << "allocate: " << std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_begin).count() << "µs" << std::endl;
 
+  time_begin = std::chrono::high_resolution_clock::now();
   const uint32_t *runs = compute_foreground_index(in_labels, sx, sy, sz);
+  time_end = std::chrono::high_resolution_clock::now();
+  
+  std::cout << "foreground index: " << std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_begin).count() << "µs" << std::endl;
      
   /*
     Layout of forward pass mask (which faces backwards). 
@@ -655,6 +685,8 @@ OUT* connected_components3d_26(
 
   ThreadPool pool(parallel);
 
+  time_begin = std::chrono::high_resolution_clock::now();
+
   int64_t partition_offset = 0;
   for (int64_t p = 0; p < parallel; p++) {
     const int64_t zstart = p * partition;
@@ -676,6 +708,13 @@ OUT* connected_components3d_26(
 
   pool.join();
 
+  time_end = std::chrono::high_resolution_clock::now();
+  
+  std::cout << "first pass: " << std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_begin).count() << "µs" << std::endl;
+
+
+  time_begin = std::chrono::high_resolution_clock::now();
+  
   if (parallel > 1) {
     // I think this can be parallelized too
     // if unify skips path compression.
@@ -768,9 +807,18 @@ OUT* connected_components3d_26(
     }
   }
 
-  // printf("relabel begin\n");
+  time_end = std::chrono::high_resolution_clock::now();
+  
+  std::cout << "unify pass: " << std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_begin).count() << "µs" << std::endl;
 
+  time_begin = std::chrono::high_resolution_clock::now();
+  
   out_labels = relabel<OUT>(out_labels, sx, sy, sz, label_offsets, equivalences, N, runs, parallel);
+  
+  time_end = std::chrono::high_resolution_clock::now();
+  
+  std::cout << "relabel: " << std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_begin).count() << "µs" << std::endl;
+
   delete[] runs;
   return out_labels;
 }
