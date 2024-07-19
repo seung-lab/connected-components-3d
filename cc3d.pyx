@@ -172,7 +172,7 @@ def connected_components(
   # For 3D six-connected data the same ratio holds
   # for a 2x2x2 block, where 1/2 the slots are filled
   # in the worst case. 
-  if data.dtype == np.bool:
+  if data.dtype == bool:
     max_labels = min(max_labels, ((data.size + 1) // 2) + 1)
 
   dtype = data.dtype
@@ -237,7 +237,7 @@ def connected_components(
         sx, sy, sz, max_labels, connectivity,
         <uint64_t*>&out_labels64[0]
       )
-  elif dtype in (np.uint8, np.int8) or (dtype == np.bool and connectivity != 8):
+  elif dtype in (np.uint8, np.int8) or (dtype == bool and connectivity != 8):
     arr_memview8u = data.view(np.uint8)
     if out_dtype == np.uint16:
       connected_components3d[uint8_t, uint16_t](
@@ -257,7 +257,7 @@ def connected_components(
         sx, sy, sz, max_labels, connectivity,
         <uint64_t*>&out_labels64[0]
       )
-  elif dtype == np.bool and connectivity == 8:
+  elif dtype == bool and connectivity == 8:
     arr_memview8u = data.view(np.uint8)
     if out_dtype == np.uint16:
       connected_components2d_8_bbdt[uint8_t, uint16_t](

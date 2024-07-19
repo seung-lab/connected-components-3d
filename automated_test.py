@@ -416,7 +416,7 @@ def test_compare_scipy_26(out_dtype):
   import scipy.ndimage.measurements
 
   sx, sy, sz = 128, 128, 128
-  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
 
   structure = [
     [[1,1,1], [1,1,1], [1,1,1]],
@@ -436,7 +436,7 @@ def test_compare_scipy_18():
   import scipy.ndimage.measurements
 
   sx, sy, sz = 256, 256, 256
-  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
 
   structure = [
     [[0,1,0], [1,1,1], [0,1,0]],
@@ -457,7 +457,7 @@ def test_compare_scipy_6():
   import scipy.ndimage.measurements
 
   sx, sy, sz = 256, 256, 256
-  labels = np.random.randint(0,2, (sx,sy,sz), dtype=np.bool)
+  labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
 
   cc3d_labels = cc3d.connected_components(labels, connectivity=6)
   scipy_labels, wow = scipy.ndimage.measurements.label(labels)
@@ -574,7 +574,7 @@ def test_region_graph_6():
   ])
 
 def test_stress_upper_bound_for_binary():
-  labels = np.zeros((256,256,256), dtype=np.bool)
+  labels = np.zeros((256,256,256), dtype=bool)
   for z in range(256):
     for y in range(256):
       off = (y + (z % 2)) % 2
