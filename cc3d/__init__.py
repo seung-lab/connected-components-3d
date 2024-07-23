@@ -188,8 +188,8 @@ def connected_components_stack(
   bottom_cc_img = None
   bottom_cc_labels = None
 
-  if connectivity != 6:
-    raise ValueError(f"Only connectivity 6 is currently supported.")
+  if connectivity not in (6,18,26):
+    raise ValueError(f"Connectivity must be 6, 18, or 26. Got: {connectivity}")
 
   offset = 0
 
@@ -220,12 +220,28 @@ def connected_components_stack(
     for u in tuniq:
       equivalences.makeset(u)
 
-    for y in range(image.shape[1]):
-      for x in range(image.shape[0]):
-        if bottom_cc_labels[x,y] == 0 or top_cc_labels[x,y] == 0:
-          continue
-        if bottom_cc_img[x,y] == image[x,y,0]:
-          equivalences.union(bottom_cc_labels[x,y], top_cc_labels[x,y])
+    if connectivity == 6:
+      for y in range(image.shape[1]):
+        for x in range(image.shape[0]):
+          if bottom_cc_labels[x,y] == 0 or top_cc_labels[x,y] == 0:
+            continue
+          if bottom_cc_img[x,y] == image[x,y,0]:
+            equivalences.union(bottom_cc_labels[x,y], top_cc_labels[x,y])
+    else:
+      for y in range(image.shape[1]):
+        for x in range(image.shape[0]):
+          if bottom_cc_labels[x,y] == 0:
+            continue
+
+          for y0 in range(max(y - 1, 0), min(y + 1, image.shape[1] - 1)):
+            for x0 in range(max(x - 1, 0), min(x + 1, image.shape[0] - 1)):
+              if top_cc_labels[x0,y0] == 0:
+                continue
+              
+              if bottom_cc_img[x,y] == image[x0,y0,0]:
+                equivalences.union(
+                  bottom_cc_labels[x,y], top_cc_labels[x0,y0]
+                )
     
     relabel = {}
     for u in buniq:

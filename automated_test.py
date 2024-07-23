@@ -1491,7 +1491,7 @@ def test_pytorch_integration_ccl_doesnt_crash():
     assert isinstance(out, torch.Tensor)
     assert torch.all(out == labels)
 
-def test_connected_components_stack_6():
+def test_connected_components_stack():
   stack = [
     np.ones([100,100,100], dtype=np.uint32)
     for i in range(4)
