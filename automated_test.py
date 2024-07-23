@@ -1517,6 +1517,7 @@ def test_connected_components_stack(connectivity):
   image = np.random.randint(0,100, size=[100,100,11], dtype=np.uint8)
 
   ans = cc3d.connected_components(image, connectivity=connectivity)
+  ans, _ = fastremap.renumber(ans[:])
 
   stack = [
     image[:,:,:2],
