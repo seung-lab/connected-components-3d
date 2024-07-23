@@ -188,8 +188,8 @@ def connected_components_stack(
   bottom_cc_img = None
   bottom_cc_labels = None
 
-  if connectivity not in (6,18,26):
-    raise ValueError(f"Connectivity must be 6, 18, or 26. Got: {connectivity}")
+  if connectivity not in (6,26):
+    raise ValueError(f"Connectivity must be 6 or 26. Got: {connectivity}")
 
   offset = 0
 
