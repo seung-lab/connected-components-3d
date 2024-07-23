@@ -233,8 +233,8 @@ def connected_components_stack(
           if bottom_cc_labels[x,y] == 0:
             continue
 
-          for y0 in range(max(y - 1, 0), min(y + 1, image.shape[1] - 1)):
-            for x0 in range(max(x - 1, 0), min(x + 1, image.shape[0] - 1)):
+          for y0 in range(max(y - 1, 0), min(y + 1, image.shape[1])):
+            for x0 in range(max(x - 1, 0), min(x + 1, image.shape[0])):
               if top_cc_labels[x0,y0] == 0:
                 continue
               
