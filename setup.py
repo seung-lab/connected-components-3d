@@ -42,12 +42,15 @@ setuptools.setup(
   setup_requires=['pbr', 'numpy', 'cython'],
   install_requires=['numpy'],
   python_requires=">=3.8,<4.0",
+  extras_requires={
+    "stack": [ "crackle-codec", "fastremap" ],
+  },
   ext_modules=[
     setuptools.Extension(
-      'cc3d',
-      sources=[ 'cc3d.pyx' ],
+      'fastcc3d',
+      sources=[ 'cc3d/fastcc3d.pyx' ],
       language='c++',
-      include_dirs=[ str(NumpyImport()) ],
+      include_dirs=[ 'cc3d', str(NumpyImport()) ],
       extra_compile_args=extra_compile_args,
     )
   ],
