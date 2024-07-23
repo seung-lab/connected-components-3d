@@ -42,7 +42,7 @@ setuptools.setup(
   setup_requires=['pbr', 'numpy', 'cython'],
   install_requires=['numpy'],
   python_requires=">=3.8,<4.0",
-  extras_require={
+  extras_requires={
     "stack": [ "crackle-codec", "fastremap" ],
   },
   ext_modules=[
