@@ -154,10 +154,7 @@ def connected_components_stack(
   stacked_images:Sequence[np.ndarray], 
   connectivity:int = 26,
   return_N:bool = False,
-  delta:Union[int,float] = 0, 
   out_dtype:Optional[Any] = None,
-  # out_file:Optional[Union[str, BinaryIO]] = None,
-  # periodic_boundary:bool = False,
 ):
   """
   This is for performing connected component labeling
@@ -188,6 +185,7 @@ def connected_components_stack(
   import fastremap
 
   full_binary = None
+  bottom_cc_img = None
   bottom_cc_labels = None
 
   if connectivity != 6:
@@ -198,8 +196,7 @@ def connected_components_stack(
   for image in stacked_images:
     cc_labels, N = connected_components(
       image, connectivity=connectivity,
-      delta=delta, out_dtype=out_dtype,
-      return_N=True,
+      return_N=True, out_dtype=np.uint64,
     )
     cc_labels[cc_labels != 0] += offset
     offset += N
@@ -207,6 +204,7 @@ def connected_components_stack(
 
     if full_binary is None:
       full_binary = binary
+      bottom_cc_img = image[:,:,-1]
       bottom_cc_labels = cc_labels[:,:,-1]
       continue
 
@@ -222,16 +220,18 @@ def connected_components_stack(
     for u in tuniq:
       equivalences.makeset(u)
 
-    for x,y in zip(range(image.shape[0]), range(image.shape[1])):
-      if bottom_cc_labels[x,y] == 0 or top_cc_labels[x,y] == 0:
-        continue
-      equivalences.union(bottom_cc_labels[x,y], top_cc_labels[x,y])
+    for y in range(image.shape[1]):
+      for x in range(image.shape[0]):
+        if bottom_cc_labels[x,y] == 0 or top_cc_labels[x,y] == 0:
+          continue
+        if bottom_cc_img[x,y] == image[x,y,0]:
+          equivalences.union(bottom_cc_labels[x,y], top_cc_labels[x,y])
     
     relabel = {}
     for u in buniq:
-      relabel[u] = equivalences.find(u)
+      relabel[int(u)] = int(equivalences.find(u))
     for u in tuniq:
-      relabel[u] = equivalences.find(u)
+      relabel[int(u)] = int(equivalences.find(u))
 
     full_binary = crackle.zstack([
       full_binary,
@@ -239,8 +239,9 @@ def connected_components_stack(
     ])
     full_binary = crackle.remap(full_binary, relabel, preserve_missing_labels=True)
 
+    bottom_cc_img = image[:,:,-1]
     bottom_cc_labels = cc_labels[:,:,-1]
-    bottom_cc_labels = fastremap.remap(bottom_cc_labels, relabel)
+    bottom_cc_labels = fastremap.remap(bottom_cc_labels, relabel, preserve_missing_labels=True)
 
   if crackle.contains(full_binary, 0):
     start = 0

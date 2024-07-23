@@ -1,6 +1,7 @@
 import pytest
 import sys
 
+import fastremap
 import cc3d
 import numpy as np
 
@@ -1491,7 +1492,6 @@ def test_pytorch_integration_ccl_doesnt_crash():
     assert torch.all(out == labels)
 
 def test_connected_components_stack_6():
-
   stack = [
     np.ones([100,100,100], dtype=np.uint32)
     for i in range(4)
@@ -1513,14 +1513,19 @@ def test_connected_components_stack_6():
   assert np.all(np.unique(arr[:]) == [ 0, 1, 2 ])
   assert np.all(arr[:] == ans)
 
+  image = np.random.randint(0,100, size=[100,100,11], dtype=np.uint8)
 
+  ans = cc3d.connected_components(image, connectivity=6)
 
+  stack = [
+    image[:,:,:2],
+    image[:,:,2:6],
+    image[:,:,6:9],
+    image[:,:,9:11],
+  ]
 
+  res = cc3d.connected_components_stack(stack, connectivity=6)
+  res, _ = fastremap.renumber(res[:])
 
-
-
-
-
-
-
+  assert np.all(res[:] == ans[:,:,:11])
 
