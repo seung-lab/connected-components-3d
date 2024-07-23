@@ -181,8 +181,12 @@ def connected_components_stack(
   to obtain a numpy array (but presumably this will blow
   out your RAM since the image is so big).
   """
-  import crackle
-  import fastremap
+  try:
+    import crackle
+    import fastremap
+  except ImportError:
+    print("You need to pip install connected-components-3d[stack]")
+    raise
 
   full_binary = None
   bottom_cc_img = None
