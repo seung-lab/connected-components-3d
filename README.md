@@ -104,6 +104,7 @@ labels_out = cc3d.connected_components(labels_in, out_file="out.bin")
 # thick z sections of the input array that are in sequential order.
 # The output is a highly compressed CrackleArray that is still random access.
 # See: https://github.com/seung-lab/crackle
+# You need to pip install connected-components-3d[stack] to get the extra modules.
 def sections(labels_in):
   """
   A generator that produces thick Z slices
