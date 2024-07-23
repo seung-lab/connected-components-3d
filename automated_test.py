@@ -1490,6 +1490,24 @@ def test_pytorch_integration_ccl_doesnt_crash():
     assert isinstance(out, torch.Tensor)
     assert torch.all(out == labels)
 
+def test_connected_components_stack_6():
+
+  stack = [
+    np.ones([100,100,100], dtype=np.uint32)
+    for i in range(4)
+  ]
+
+  stack += [ np.zeros([100,100,1], dtype=np.uint32) ]
+
+  stack += [
+    np.ones([100,100,100], dtype=np.uint32)
+    for i in range(2)
+  ]
+
+  arr = cc3d.connected_components_stack(stack, connectivity=6)
+
+  assert np.all(np.unique(arr[:]) == [ 0, 1, 2 ])
+
 
 
 
