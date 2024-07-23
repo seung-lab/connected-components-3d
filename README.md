@@ -99,6 +99,22 @@ labels_out = cc3d.connected_components(labels_in, delta=10)
 labels_in = np.memmap("labels.bin", order="F", dtype=np.uint32, shape=(5000, 5000, 2000))
 labels_out = cc3d.connected_components(labels_in, out_file="out.bin")
 
+# Here's another strategy that you can use for huge files that won't even
+# take up any disk space. Provide any iterator to this function that produces
+# thick z sections of the input array that are in sequential order.
+# The output is a highly compressed CrackleArray that is still random access.
+# See: https://github.com/seung-lab/crackle
+# You need to pip install connected-components-3d[stack] to get the extra modules.
+def sections(labels_in):
+  """
+  A generator that produces thick Z slices
+  of an image
+  """
+  for z in range(0, labels_in.shape[2], 100):
+    yield labels_in[:,:,z:z+100]
+
+compressed_labels_out = cc3d.connected_components_stack(sections(labels))
+
 # You can extract the number of labels (which is also the maximum 
 # label value) like so:
 labels_out, N = cc3d.connected_components(labels_in, return_N=True) # free

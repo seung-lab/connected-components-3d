@@ -311,7 +311,10 @@ def connected_components(
     raise ValueError(f"periodic_boundary is not yet implemented continuous data.")
 
   if data.size == 0:
-    out_labels = np.zeros(shape=(0,), dtype=data.dtype)
+    dtype = data.dtype
+    if out_dtype is not None:
+      dtype = out_dtype
+    out_labels = np.zeros(shape=(0,), dtype=dtype)
     if return_N:
       return (out_labels, 0)
     return out_labels
