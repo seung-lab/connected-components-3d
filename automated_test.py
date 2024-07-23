@@ -1506,8 +1506,12 @@ def test_connected_components_stack_6():
 
   arr = cc3d.connected_components_stack(stack, connectivity=6)
 
-  assert np.all(np.unique(arr[:]) == [ 0, 1, 2 ])
+  ans = np.ones([100,100,601], dtype=np.uint32)
+  ans[:,:,400] = 0
+  ans[:,:,401:] = 2
 
+  assert np.all(np.unique(arr[:]) == [ 0, 1, 2 ])
+  assert np.all(arr[:] == ans)
 
 
 
