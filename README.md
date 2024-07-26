@@ -113,7 +113,17 @@ def sections(labels_in):
   for z in range(0, labels_in.shape[2], 100):
     yield labels_in[:,:,z:z+100]
 
+# You can access compressed_labels_out using array notation
 compressed_labels_out = cc3d.connected_components_stack(sections(labels))
+# convert to numpy array, probably a big mistake since
+# you probably expected it was going to blow up RAM
+cc_labels = compressed_labels_out.numpy()
+# if you don't like hanging onto this exotic format, you 
+# can write it as a numpy array to disk in a memory efficient way.
+compressed_labels_out.save("example.npy.gz")
+# or hang onto it
+compressed_labels_out.save("example.ckl")
+
 
 # You can extract the number of labels (which is also the maximum 
 # label value) like so:
