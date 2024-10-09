@@ -1491,8 +1491,9 @@ def test_pytorch_integration_ccl_doesnt_crash():
     assert isinstance(out, torch.Tensor)
     assert torch.all(out == labels)
 
+@pytest.mark.parametrize("binary_image", [False, True])
 @pytest.mark.parametrize("connectivity", [6, 26])
-def test_connected_components_stack(connectivity):
+def test_connected_components_stack(binary_image, connectivity):
   stack = [
     np.ones([100,100,100], dtype=np.uint32)
     for i in range(4)
@@ -1505,7 +1506,7 @@ def test_connected_components_stack(connectivity):
     for i in range(2)
   ]
 
-  arr = cc3d.connected_components_stack(stack, connectivity=connectivity)
+  arr = cc3d.connected_components_stack(stack, connectivity=connectivity, binary_image=binary_image)
 
   ans = np.ones([100,100,601], dtype=np.uint32)
   ans[:,:,400] = 0
@@ -1516,7 +1517,7 @@ def test_connected_components_stack(connectivity):
 
   image = np.random.randint(0,100, size=[100,100,11], dtype=np.uint8)
 
-  ans = cc3d.connected_components(image, connectivity=connectivity)
+  ans = cc3d.connected_components(image, connectivity=connectivity, binary_image=binary_image)
   ans, _ = fastremap.renumber(ans[:])
 
   stack = [
@@ -1526,7 +1527,7 @@ def test_connected_components_stack(connectivity):
     image[:,:,9:11],
   ]
 
-  res = cc3d.connected_components_stack(stack, connectivity=connectivity)
+  res = cc3d.connected_components_stack(stack, connectivity=connectivity, binary_image=binary_image)
   res, _ = fastremap.renumber(res[:])
 
   assert np.all(res[:] == ans[:,:,:11])

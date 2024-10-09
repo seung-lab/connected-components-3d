@@ -235,7 +235,9 @@ def connected_components_stack(
         for x in range(image.shape[0]):
           if bottom_cc_labels[x,y] == 0 or top_cc_labels[x,y] == 0:
             continue
-          if bottom_cc_img[x,y] == image[x,y,0]:
+          if ((not binary_image and bottom_cc_img[x,y] == image[x,y,0]) 
+            or (binary_image and bottom_cc_img[x,y] and image[x,y,0])):
+
             equivalences.union(bottom_cc_labels[x,y], top_cc_labels[x,y])
     else:
       for y in range(image.shape[1]):
@@ -248,7 +250,9 @@ def connected_components_stack(
               if top_cc_labels[x0,y0] == 0:
                 continue
               
-              if bottom_cc_img[x,y] == image[x0,y0,0]:
+              if ((not binary_image and bottom_cc_img[x,y] == image[x0,y0,0])
+                  or (binary_image and bottom_cc_img[x,y] and image[x0,y0,0])):
+
                 equivalences.union(
                   bottom_cc_labels[x,y], top_cc_labels[x0,y0]
                 )
