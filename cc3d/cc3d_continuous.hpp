@@ -29,7 +29,7 @@
 #ifndef CC3D_CONTINUOUS_HPP
 #define CC3D_CONTINUOUS_HPP 
 
-#include "cc3d.hpp"
+#include "cc3d_binary.hpp"
 
 namespace {
 
@@ -403,11 +403,22 @@ OUT* connected_components3d(
     const int64_t sx, const int64_t sy, const int64_t sz,
     size_t max_labels, const int64_t connectivity, const T delta,
     OUT *out_labels = NULL, size_t &N = _dummy_N, 
-    const bool periodic_boundary = false
+    const bool periodic_boundary = false, 
+    const bool is_binary_image = false
   ) {
 
+  // see fastcc3d.pyx, we try to determine what 
+  // should be considered a binary image via 
+  // user input and array characteristics
+  if (is_binary_image) {
+    return connected_components3d_binary<T,OUT>(
+      in_labels, sx, sy, sz, 
+      max_labels, connectivity, 
+      out_labels, N, periodic_boundary
+    );
+  }
   // for performance, shouldn't be "more correct"
-  if (delta == 0) {
+  else if (delta == 0) {
     return connected_components3d<T,OUT>(
       in_labels, sx, sy, sz, 
       max_labels, connectivity, 

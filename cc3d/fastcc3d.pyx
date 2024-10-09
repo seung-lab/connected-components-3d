@@ -68,7 +68,8 @@ cdef extern from "cc3d_continuous.hpp" namespace "cc3d":
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t max_labels, int64_t connectivity, T delta,
-    U* out_labels, size_t &N, native_bool periodic_boundary
+    U* out_labels, size_t &N, 
+    native_bool periodic_boundary, native_bool binary_image
   ) except +
 
 cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
@@ -249,6 +250,7 @@ def connected_components(
   out_dtype:Optional[Any] = None,
   out_file:Optional[Union[str, BinaryIO]] = None,
   periodic_boundary:bool = False,
+  binary_image:bool = False,
 ) -> np.ndarray:
   """
   Connected components applied to 3D images with 
@@ -277,6 +279,10 @@ def connected_components(
     out_file: If specified, the output array will be an mmapped
       file. Can be a file-name or a file-like object.
     periodic_boundary: the boundary edges wrap around
+    binary_image: if True, regardless of the input type,
+      treat as a binary image (foreground > 0, background == 0).
+      Certain inputs will always be treated as a binary 
+      image (e.g. bool dtype, delta == max int or max float etc.).
 
   let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
@@ -363,6 +369,16 @@ def connected_components(
     max_labels = voxels
   max_labels = min(max_labels, epl, voxels)
 
+  dtype = data.dtype
+  binary_image = binary_image or (dtype == bool)
+
+  if np.issubdtype(dtype, np.floating):
+    delta = float(delta)
+    binary_image = binary_image or (delta == np.finfo(dtype).max)
+  else:
+    delta = int(delta)
+    binary_image = binary_image or (delta == np.iinfo(dtype).max)
+
   # OpenCV made a great point that for binary images,
   # the highest number of provisional labels is 
   # 1 0  for a 4-connected that's 1/2 the size + 1 
@@ -375,7 +391,7 @@ def connected_components(
   # connected, 2x2x2 blocks are connected, so at most 1/8 + 1
   cdef int64_t union_find_voxels = even_ceil(data.shape[0]) * even_ceil(data.shape[1]) * even_ceil(data.shape[2])
 
-  if data.dtype == bool:
+  if binary_image:
     if connectivity in (4,6):
       max_labels = min(max_labels, (union_find_voxels // 2) + 1)
     elif connectivity == (8,18):
@@ -421,13 +437,6 @@ def connected_components(
     out_labels64 = output_factory(out_file, voxels, out_dtype)
     out_labels = out_labels64
 
-  dtype = data.dtype
-
-  if np.issubdtype(dtype, np.floating):
-    delta = float(delta)
-  else:
-    delta = int(delta)
-
   cdef size_t N = 0
   
   try:
@@ -450,19 +459,22 @@ def connected_components(
         connected_components3d[uint64_t, uint16_t](
           &arr_memview64u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint16_t*>&out_labels16[0], N, periodic_boundary
+          <uint16_t*>&out_labels16[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint64_t, uint32_t](
           &arr_memview64u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint32_t*>&out_labels32[0], N, periodic_boundary
+          <uint32_t*>&out_labels32[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint64_t, uint64_t](
           &arr_memview64u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint64_t*>&out_labels64[0], N, periodic_boundary
+          <uint64_t*>&out_labels64[0], N, 
+          periodic_boundary, binary_image
         )
     elif dtype in (np.uint32, np.int32):
       arr_memview32u = data.view(np.uint32)
@@ -470,19 +482,22 @@ def connected_components(
         connected_components3d[uint32_t, uint16_t](
           &arr_memview32u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint16_t*>&out_labels16[0], N, periodic_boundary
+          <uint16_t*>&out_labels16[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint32_t, uint32_t](
           &arr_memview32u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint32_t*>&out_labels32[0], N, periodic_boundary
+          <uint32_t*>&out_labels32[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint32_t, uint64_t](
           &arr_memview32u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint64_t*>&out_labels64[0], N, periodic_boundary
+          <uint64_t*>&out_labels64[0], N, 
+          periodic_boundary, binary_image
         )
     elif dtype in (np.uint16, np.int16):
       arr_memview16u = data.view(np.uint16)
@@ -490,19 +505,22 @@ def connected_components(
         connected_components3d[uint16_t, uint16_t](
           &arr_memview16u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint16_t*>&out_labels16[0], N, periodic_boundary
+          <uint16_t*>&out_labels16[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint16_t, uint32_t](
           &arr_memview16u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint32_t*>&out_labels32[0], N, periodic_boundary
+          <uint32_t*>&out_labels32[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint16_t, uint64_t](
           &arr_memview16u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint64_t*>&out_labels64[0], N, periodic_boundary
+          <uint64_t*>&out_labels64[0], N, 
+          periodic_boundary, binary_image
         )
     elif dtype in (np.uint8, np.int8, bool):
       arr_memview8u = data.view(np.uint8)
@@ -510,19 +528,22 @@ def connected_components(
         connected_components3d[uint8_t, uint16_t](
           &arr_memview8u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint16_t*>&out_labels16[0], N, periodic_boundary
+          <uint16_t*>&out_labels16[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint32:
         connected_components3d[uint8_t, uint32_t](
           &arr_memview8u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint32_t*>&out_labels32[0], N, periodic_boundary
+          <uint32_t*>&out_labels32[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint64:
         connected_components3d[uint8_t, uint64_t](
           &arr_memview8u[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint64_t*>&out_labels64[0], N, periodic_boundary
+          <uint64_t*>&out_labels64[0], N, 
+          periodic_boundary, binary_image
         )
     elif dtype == np.float32:
       arr_memviewf = data
@@ -530,19 +551,22 @@ def connected_components(
         connected_components3d[float, uint16_t](
           &arr_memviewf[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint16_t*>&out_labels16[0], N, periodic_boundary
+          <uint16_t*>&out_labels16[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint32:
         connected_components3d[float, uint32_t](
           &arr_memviewf[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint32_t*>&out_labels32[0], N, periodic_boundary
+          <uint32_t*>&out_labels32[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint64:
         connected_components3d[float, uint64_t](
           &arr_memviewf[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint64_t*>&out_labels64[0], N, periodic_boundary
+          <uint64_t*>&out_labels64[0], N, 
+          periodic_boundary, binary_image
         )
     elif dtype == np.float64:
       arr_memviewd = data
@@ -550,19 +574,22 @@ def connected_components(
         connected_components3d[double, uint16_t](
           &arr_memviewd[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint16_t*>&out_labels16[0], N, periodic_boundary
+          <uint16_t*>&out_labels16[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint32:
         connected_components3d[double, uint32_t](
           &arr_memviewd[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint32_t*>&out_labels32[0], N, periodic_boundary
+          <uint32_t*>&out_labels32[0], N, 
+          periodic_boundary, binary_image
         )
       elif out_dtype == np.uint64:
         connected_components3d[double, uint64_t](
           &arr_memviewd[0,0,0],
           sx, sy, sz, max_labels, connectivity, delta,
-          <uint64_t*>&out_labels64[0], N, periodic_boundary
+          <uint64_t*>&out_labels64[0], N, 
+          periodic_boundary, binary_image
         )
     else:
       raise TypeError(
