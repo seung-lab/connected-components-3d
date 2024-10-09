@@ -1,5 +1,6 @@
 include cc3d/cc3d.hpp
 include cc3d/cc3d_graphs.hpp
+include cc3d/cc3d_binary.hpp
 include cc3d/cc3d_continuous.hpp
 include LICENSE
 include COPYING.LESSER
