@@ -155,6 +155,7 @@ def connected_components_stack(
   connectivity:int = 26,
   return_N:bool = False,
   out_dtype:Optional[Any] = None,
+  binary_image:bool = False,
 ):
   """
   This is for performing connected component labeling
@@ -201,6 +202,7 @@ def connected_components_stack(
     cc_labels, N = connected_components(
       image, connectivity=connectivity,
       return_N=True, out_dtype=np.uint64,
+      binary_image=bool(binary_image),
     )
     cc_labels[cc_labels != 0] += offset
     offset += N
