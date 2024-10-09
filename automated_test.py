@@ -1534,32 +1534,37 @@ def test_connected_components_stack(connectivity):
 
 @pytest.mark.parametrize("dtype", INT_TYPES)
 @pytest.mark.parametrize("connectivity", [6, 18, 26])
-def test_binary_image_3d(dtype, connectivity):
+@pytest.mark.parametrize("periodic_boundary", [False, True])
+def test_binary_image_3d(dtype, connectivity, periodic_boundary):
   labels = np.random.randint(0, 10, size=(100,100,100), dtype=np.uint32)
   # cast to avoid triggering the special binary behavior
   binary_labels = (labels > 0).astype(np.uint16) 
 
-  known_out = cc3d.connected_components(binary_labels, out_dtype=np.uint32)
-  binary_out = cc3d.connected_components(labels, binary_image=True, out_dtype=np.uint32)
+  if periodic_boundary and connectivity > 6:
+    return
+
+  known_out = cc3d.connected_components(binary_labels, connectivity=connectivity, out_dtype=np.uint32, periodic_boundary=periodic_boundary)
+  binary_out = cc3d.connected_components(labels, binary_image=True, connectivity=connectivity, out_dtype=np.uint32, periodic_boundary=periodic_boundary)
 
   assert np.all(known_out == binary_out)
 
-  binary_out_false = cc3d.connected_components(labels, binary_image=False, out_dtype=np.uint32)
+  binary_out_false = cc3d.connected_components(labels, binary_image=False, connectivity=connectivity, out_dtype=np.uint32, periodic_boundary=periodic_boundary)
   assert not np.all(known_out == binary_out_false)
 
 @pytest.mark.parametrize("dtype", INT_TYPES)
 @pytest.mark.parametrize("connectivity", [4, 8])
-def test_binary_image_2d(dtype, connectivity):
+@pytest.mark.parametrize("periodic_boundary", [False, True])
+def test_binary_image_2d(dtype, connectivity, periodic_boundary):
   labels = np.random.randint(0, 10, size=(400,400), dtype=np.uint32)
   # cast to avoid triggering the special binary behavior
   binary_labels = (labels > 0).astype(np.uint16) 
 
-  known_out = cc3d.connected_components(binary_labels, out_dtype=np.uint32)
-  binary_out = cc3d.connected_components(labels, binary_image=True, out_dtype=np.uint32)
+  known_out = cc3d.connected_components(binary_labels, connectivity=connectivity, periodic_boundary=periodic_boundary, out_dtype=np.uint32)
+  binary_out = cc3d.connected_components(labels, binary_image=True, connectivity=connectivity, periodic_boundary=periodic_boundary, out_dtype=np.uint32)
 
   assert np.all(known_out == binary_out)
 
-  binary_out_false = cc3d.connected_components(labels, binary_image=False, out_dtype=np.uint32)
+  binary_out_false = cc3d.connected_components(labels, binary_image=False, connectivity=connectivity, periodic_boundary=periodic_boundary, out_dtype=np.uint32)
   assert not np.all(known_out == binary_out_false)
 
 
