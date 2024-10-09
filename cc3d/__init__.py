@@ -22,6 +22,7 @@ def dust(
   threshold:Union[int,float], 
   connectivity:int = 26,
   in_place:bool = False,
+  binary_image:bool = False,
 ) -> np.ndarray:
   """
   Remove from the input image connected components
@@ -43,7 +44,8 @@ def dust(
     img = np.copy(img)
 
   cc_labels, N = connected_components(
-    img, connectivity=connectivity, return_N=True
+    img, connectivity=connectivity, 
+    return_N=True, binary_image=bool(binary_image),
   )
   stats = statistics(cc_labels)
   mask_sizes = stats["voxel_counts"]
@@ -68,6 +70,7 @@ def largest_k(
   connectivity:int = 26,
   delta:Union[int,float] = 0,
   return_N:bool = False,
+  binary_image:bool = False,
 ) -> np.ndarray:
   """
   Returns the k largest connected components
@@ -83,6 +86,7 @@ def largest_k(
   cc_labels, N = connected_components(
     img, connectivity=connectivity, 
     return_N=True, delta=delta,
+    binary_image=bool(binary_image),
   )
   if N <= k:
     if return_N:
