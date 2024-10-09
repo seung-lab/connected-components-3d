@@ -69,6 +69,14 @@ labels_out = cc3d.connected_components(labels_in) # 26-connected
 connectivity = 6 # only 4,8 (2D) and 26, 18, and 6 (3D) are allowed
 labels_out = cc3d.connected_components(labels_in, connectivity=connectivity)
 
+# By default, cc3d works on multivalued labelings, but sometimes you want
+# to treat a grayscale image as a binary image directly. It is also possible
+# to process binary images more effectively. Binary image specific optimizations 
+# are not implemented yet though, but may be in the future.
+labels_out = cc3d.connected_components(labels_in, binary_image=True)
+# same as above, but less efficient
+labels_out = cc3d.connected_components(labels_in > 0) 
+
 # If you need the borders to wrap around (e.g. for simulations, world maps)
 # specify periodic_boundary=True, currently only supported for
 # 4 and 8 (2d) and 6 (3d) connectivities.
