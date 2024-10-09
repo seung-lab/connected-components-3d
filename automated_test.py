@@ -1531,3 +1531,36 @@ def test_connected_components_stack(connectivity):
 
   assert np.all(res[:] == ans[:,:,:11])
 
+
+@pytest.mark.parametrize("dtype", INT_TYPES)
+@pytest.mark.parametrize("connectivity", [6, 18, 26])
+def test_binary_image_3d(dtype, connectivity):
+  labels = np.random.randint(0, 10, size=(100,100,100), dtype=np.uint32)
+  # cast to avoid triggering the special binary behavior
+  binary_labels = (labels > 0).astype(np.uint16) 
+
+  known_out = cc3d.connected_components(binary_labels, out_dtype=np.uint32)
+  binary_out = cc3d.connected_components(labels, binary_image=True, out_dtype=np.uint32)
+
+  assert np.all(known_out == binary_out)
+
+  binary_out_false = cc3d.connected_components(labels, binary_image=False, out_dtype=np.uint32)
+  assert not np.all(known_out == binary_out_false)
+
+@pytest.mark.parametrize("dtype", INT_TYPES)
+@pytest.mark.parametrize("connectivity", [4, 8])
+def test_binary_image_2d(dtype, connectivity):
+  labels = np.random.randint(0, 10, size=(400,400), dtype=np.uint32)
+  # cast to avoid triggering the special binary behavior
+  binary_labels = (labels > 0).astype(np.uint16) 
+
+  known_out = cc3d.connected_components(binary_labels, out_dtype=np.uint32)
+  binary_out = cc3d.connected_components(labels, binary_image=True, out_dtype=np.uint32)
+
+  assert np.all(known_out == binary_out)
+
+  binary_out_false = cc3d.connected_components(labels, binary_image=False, out_dtype=np.uint32)
+  assert not np.all(known_out == binary_out_false)
+
+
+
