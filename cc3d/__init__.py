@@ -98,15 +98,20 @@ def largest_k(
   preserve.sort(key=lambda x: x[1])
   preserve = [ x[0] for x in preserve[-k:] ]
 
-  shape, dtype = cc_labels.shape, cc_labels.dtype
-  rns = fastcc3d.runs(cc_labels)
+  try:
+    import fastremap
+    cc_out = fastremap.mask_except(cc_labels, preserve, in_place=True)
+    fastremap.renumber(cc_out, in_place=True)
+  except ImportError:
+    shape, dtype = cc_labels.shape, cc_labels.dtype
+    rns = fastcc3d.runs(cc_labels)
 
-  order = "C" if cc_labels.flags.c_contiguous else "F"
-  del cc_labels
-  
-  cc_out = np.zeros(shape, dtype=dtype, order=order)
-  for i, label in enumerate(preserve):
-    fastcc3d.draw(i+1, rns[label], cc_out)
+    order = "C" if cc_labels.flags.c_contiguous else "F"
+    del cc_labels
+    
+    cc_out = np.zeros(shape, dtype=dtype, order=order)
+    for i, label in enumerate(preserve):
+      fastcc3d.draw(i+1, rns[label], cc_out)
   
   if return_N:
     return cc_out, len(preserve)
