@@ -802,6 +802,8 @@ def _statistics_helper2d(
   if no_slice_conversion:
     return output
 
+  cdef BBOX_T xs = 0, xe = 0, ys = 0, ye = 0
+
   slices = []
   for xs, xe, ys, ye in bbxes:
     if xs < voxels and ys < voxels:
@@ -890,6 +892,11 @@ def _statistics_helper3d(
 
   if no_slice_conversion:
     return output
+
+  cdef:
+    BBOX_T xs = 0, xe = 0
+    BBOX_T ys = 0, ye = 0
+    BBOX_T zs = 0, ze = 0
 
   slices = []
   for xs, xe, ys, ye, zs, ze in bbxes:
