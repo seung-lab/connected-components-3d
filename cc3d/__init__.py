@@ -98,6 +98,12 @@ def largest_k(
   preserve.sort(key=lambda x: x[1])
   preserve = [ x[0] for x in preserve[-k:] ]
 
+  if k == 1:
+    cc_out = (cc_labels == preserve[0])
+    if return_N:
+      return cc_out, 1
+    return cc_out
+  
   try:
     import fastremap
     cc_out = fastremap.mask_except(cc_labels, preserve, in_place=True)
