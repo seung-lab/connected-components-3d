@@ -497,7 +497,7 @@ def test_max_labels_nonsensical():
   assert np.all(real_labels == negative_labels)
 
 def test_compare_scipy_26():
-  import scipy.ndimage.measurements
+  import scipy.ndimage
 
   sx, sy, sz = 128, 128, 128
   labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
@@ -509,7 +509,7 @@ def test_compare_scipy_26():
   ]
 
   cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=26, return_N=True)
-  scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels, structure=structure)
+  scipy_labels, Nscipy = scipy.ndimage.label(labels, structure=structure)
 
   print(cc3d_labels)
   print(scipy_labels)
@@ -518,7 +518,7 @@ def test_compare_scipy_26():
   assert np.all(cc3d_labels == scipy_labels)
 
 def test_compare_scipy_18():
-  import scipy.ndimage.measurements
+  import scipy.ndimage
 
   sx, sy, sz = 256, 256, 256
   labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
@@ -530,7 +530,7 @@ def test_compare_scipy_18():
   ]
 
   cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=18, return_N=True)
-  scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels, structure=structure)
+  scipy_labels, Nscipy = scipy.ndimage.label(labels, structure=structure)
 
   print(cc3d_labels)
   print(scipy_labels)
@@ -539,13 +539,13 @@ def test_compare_scipy_18():
   assert np.all(cc3d_labels == scipy_labels)
 
 def test_compare_scipy_6():
-  import scipy.ndimage.measurements
+  import scipy.ndimage
 
   sx, sy, sz = 256, 256, 256
   labels = np.random.randint(0,2, (sx,sy,sz), dtype=bool)
 
   cc3d_labels, Ncc3d = cc3d.connected_components(labels, connectivity=6, return_N=True)
-  scipy_labels, Nscipy = scipy.ndimage.measurements.label(labels)
+  scipy_labels, Nscipy = scipy.ndimage.label(labels)
 
   print(cc3d_labels)
   print(scipy_labels)
