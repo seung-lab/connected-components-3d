@@ -93,7 +93,7 @@ def largest_k(
       return cc_labels, N
     return cc_labels
 
-  cts = statistics(cc_labels)["voxel_counts"]  
+  cts = statistics(cc_labels, no_slice_conversion=True)["voxel_counts"]  
   preserve = [ (i,ct) for i,ct in enumerate(cts) if i > 0 ]
   preserve.sort(key=lambda x: x[1])
   preserve = [ x[0] for x in preserve[-k:] ]
