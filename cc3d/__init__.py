@@ -47,7 +47,7 @@ def dust(
     img, connectivity=connectivity, 
     return_N=True, binary_image=bool(binary_image),
   )
-  stats = statistics(cc_labels)
+  stats = statistics(cc_labels, no_slice_conversion=True)
   mask_sizes = stats["voxel_counts"]
   del stats
 
