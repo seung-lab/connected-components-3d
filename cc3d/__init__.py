@@ -114,7 +114,7 @@ def largest_k(
   cts = statistics(cc_labels, no_slice_conversion=True)["voxel_counts"]  
   
   if k == 1:
-    cc_out = (cc_labels == np.argmax(cts))
+    cc_out = (cc_labels == (np.argmax(cts[1:]) + 1))
     if return_N:
       return cc_out, 1
     return cc_out
