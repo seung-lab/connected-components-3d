@@ -1205,7 +1205,18 @@ def test_largest_k(k):
   if retained_labels[0] == 0:
     retained_labels = retained_labels[1:]
 
-  assert np.all(lbls == retained_labels)
+  # allow for differences if they are of equal magnitude
+  diffs = np.array(list(set(lbls).difference(set(retained_labels))), dtype=int)
+  diffs2 = np.array(list(set(retained_labels).difference(set(lbls))), dtype=int)
+
+  diffs = cts[diffs]
+  diffs2 = cts[diffs2]
+
+  diffs.sort()
+  diffs2.sort()
+
+  assert np.all(diffs == diffs2)
+  assert len(lbls) == len(retained_labels)
 
 @pytest.mark.parametrize("connectivity", [4,8])
 def test_periodic_boundary_2d(connectivity):
