@@ -88,6 +88,10 @@ def largest_k(
   precomputed_ccl: for performance, avoid computing a CCL
     pass since the input is already a CCL output from this
     library.
+
+  NOTE: Performance may increase if you have the fastremap
+    library installed. This may also change the numbering
+    of the output.
   """
   assert k >= 0
 
