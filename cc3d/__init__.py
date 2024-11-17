@@ -119,9 +119,11 @@ def largest_k(
       return cc_out, 1
     return cc_out
 
-  preserve = [ (i,ct) for i,ct in enumerate(cts) if i > 0 ]
+  preserve = np.argpartition(cts[1:], len(cts) - k - 1)[-k:]
+  preserve += 1
+  preserve = [ (label,cts[label]) for label in preserve ]
   preserve.sort(key=lambda x: x[1])
-  preserve = [ x[0] for x in preserve[-k:] ]
+  preserve = [ int(x[0]) for x in preserve ]
 
   try:
     import fastremap
