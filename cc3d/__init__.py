@@ -24,6 +24,7 @@ def dust(
   in_place:bool = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
+  invert:bool = False,
 ) -> np.ndarray:
   """
   Remove from the input image connected components
@@ -38,6 +39,8 @@ def dust(
   precomputed_ccl: for performance, avoid computing a CCL
     pass since the input is already a CCL output from this
     library.
+  invert: switch the operation from less than threshold to
+    greater than or equal to threshold.
 
   Returns: dusted image
   """
@@ -60,17 +63,21 @@ def dust(
   mask_sizes = stats["voxel_counts"]
   del stats
 
-  to_mask = [ 
-    i for i in range(1, N+1) if mask_sizes[i] < threshold 
-  ]
+  if invert:
+    to_retain = [ 
+      i for i in range(1, N+1) if mask_sizes[i] < threshold 
+    ]
+  else:
+    to_retain = [ 
+      i for i in range(1, N+1) if mask_sizes[i] >= threshold 
+    ]
 
-  if len(to_mask) == 0:
+  if len(to_retain) == N:
     return img
 
-  mask = np.isin(cc_labels, to_mask)
+  mask = np.isin(cc_labels, to_retain, assume_unique=True)
   del cc_labels
-  np.logical_not(mask, out=mask)
-  np.multiply(img, mask, out=img)
+  img *= mask
   return img.view(orig_dtype)
 
 def largest_k(
