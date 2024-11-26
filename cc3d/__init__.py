@@ -63,21 +63,16 @@ def dust(
   mask_sizes = stats["voxel_counts"]
   del stats
 
-  if invert:
-    to_retain = [ 
-      i for i in range(1, N+1) if mask_sizes[i] < threshold 
-    ]
-  else:
-    to_retain = [ 
-      i for i in range(1, N+1) if mask_sizes[i] >= threshold 
-    ]
+  to_mask = [ 
+    i for i in range(1, N+1) if mask_sizes[i] < threshold 
+  ]
 
-  if len(to_retain) == N:
+  if len(to_mask) == 0:
     return img
 
-  mask = np.isin(cc_labels, to_retain, assume_unique=True)
+  mask = np.isin(cc_labels, to_mask, assume_unique=True, invert=False)
   del cc_labels
-  img *= mask
+  img[mask] = 0
   return img.view(orig_dtype)
 
 def largest_k(
