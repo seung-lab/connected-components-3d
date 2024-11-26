@@ -1159,6 +1159,17 @@ def test_dust_static(dtype, connectivity, order, in_place):
 
   assert np.all(ans == recovered)
 
+def test_dust_retain_all():
+  labels = np.zeros((100,100,1), dtype=np.uint8)
+  labels[:5,:5,:1] = 1
+  recovered = cc3d.dust(
+    labels, 
+    threshold=10, 
+    connectivity=26,
+    in_place=False
+  )
+  assert np.all(recovered == labels)
+
 @pytest.mark.parametrize("dtype", INT_TYPES)
 @pytest.mark.parametrize("connectivity", (6,18,26))
 def test_dust_random(dtype, connectivity):
