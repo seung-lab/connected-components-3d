@@ -23,6 +23,7 @@ def dust(
   connectivity:int = 26,
   in_place:bool = False,
   binary_image:bool = False,
+  precomputed_ccl:bool = False,
 ) -> np.ndarray:
   """
   Remove from the input image connected components
@@ -34,6 +35,9 @@ def dust(
   connectivity: cc3d connectivity to use
   in_place: whether to modify the input image or perform
     dust 
+  precomputed_ccl: for performance, avoid computing a CCL
+    pass since the input is already a CCL output from this
+    library.
 
   Returns: dusted image
   """
@@ -43,10 +47,15 @@ def dust(
   if not in_place:
     img = np.copy(img)
 
-  cc_labels, N = connected_components(
-    img, connectivity=connectivity, 
-    return_N=True, binary_image=bool(binary_image),
-  )
+  if precomputed_ccl:
+    cc_labels = np.copy(img, order="F")
+    N = np.max(cc_labels)
+  else:
+    cc_labels, N = connected_components(
+      img, connectivity=connectivity, 
+      return_N=True, binary_image=bool(binary_image),
+    )
+  
   stats = statistics(cc_labels, no_slice_conversion=True)
   mask_sizes = stats["voxel_counts"]
   del stats
