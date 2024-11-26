@@ -51,7 +51,7 @@ def dust(
     img = np.copy(img)
 
   if precomputed_ccl:
-    cc_labels = np.copy(img, order="F")
+    cc_labels = img
     N = np.max(cc_labels)
   else:
     cc_labels, N = connected_components(
