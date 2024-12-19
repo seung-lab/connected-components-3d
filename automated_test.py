@@ -1138,7 +1138,8 @@ def test_continuous_blocks(dtype, connectivity, order):
 @pytest.mark.parametrize("connectivity", (6,18,26))
 @pytest.mark.parametrize("order", ("C", "F"))
 @pytest.mark.parametrize("in_place", (False, True))
-def test_dust_static(dtype, connectivity, order, in_place):
+@pytest.mark.parametrize("invert", (False, True))
+def test_dust_static(dtype, connectivity, order, in_place, invert):
   labels = np.zeros((100,100,10), dtype=np.uint8, order=order)
   labels[:5,:5,:1] = 1
   labels[20:40,20:40,:] = 2
@@ -1146,16 +1147,29 @@ def test_dust_static(dtype, connectivity, order, in_place):
     labels, 
     threshold=26, 
     connectivity=connectivity,
-    in_place=in_place
+    in_place=in_place,
+    invert=invert,
   )
-  assert list(np.unique(recovered)) == [0,2]
-  if in_place:
-    assert list(np.unique(labels)) == [0,2]
+
+  if invert:
+    assert list(np.unique(recovered)) == [0,1]
+    if in_place:
+      assert list(np.unique(labels)) == [0,1]
+    else:
+      assert list(np.unique(labels)) == [0,1,2]
   else:
-    assert list(np.unique(labels)) == [0,1,2]
+    assert list(np.unique(recovered)) == [0,2]
+    if in_place:
+      assert list(np.unique(labels)) == [0,2]
+    else:
+      assert list(np.unique(labels)) == [0,1,2]
 
   ans = np.zeros((100,100,10), dtype=np.uint8, order=order)
-  ans[20:40,20:40,:] = 2
+
+  if invert:
+    ans[:5,:5,:1] = 1
+  else:
+    ans[20:40,20:40,:] = 2
 
   assert np.all(ans == recovered)
 

@@ -70,7 +70,7 @@ def dust(
   if len(to_mask) == 0:
     return img
 
-  mask = np.isin(cc_labels, to_mask, assume_unique=True, invert=False)
+  mask = np.isin(cc_labels, to_mask, assume_unique=True, invert=invert)
   del cc_labels
   img[mask] = 0
   return img.view(orig_dtype)
