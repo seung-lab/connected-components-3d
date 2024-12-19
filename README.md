@@ -162,6 +162,12 @@ labels_out = cc3d.dust(
   labels_in, threshold=100, 
   connectivity=26, in_place=False
 )
+# Removes objects with >= `threshold` voxels.
+labels_out = cc3d.dust(labels_in, threshold=100, invert=True)
+# Removes objects with < `threshold[0]` voxels and >= threshold[1] 
+labels_out = cc3d.dust(labels_in, threshold=[50,100])
+# Removes objects with >= `threshold[0]` voxels and < threshold[1] 
+labels_out = cc3d.dust(labels_in, threshold=[50,100], invert=True)
 
 # Get a labeling of the k largest objects in the image.
 # The output will be relabeled from 1 to N.
