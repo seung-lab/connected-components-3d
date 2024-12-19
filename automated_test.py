@@ -1184,6 +1184,33 @@ def test_dust_retain_all():
   )
   assert np.all(recovered == labels)
 
+@pytest.mark.parametrize("dtype", TEST_TYPES)
+@pytest.mark.parametrize("connectivity", (6,18,26))
+@pytest.mark.parametrize("order", ("C", "F"))
+@pytest.mark.parametrize("in_place", (False, True))
+@pytest.mark.parametrize("invert", (False, True))
+def test_dust_between_threshold(
+  dtype, connectivity, order, in_place, invert
+):
+  labels = np.zeros((100,100,10), dtype=np.uint8, order=order)
+  labels[:5,:5,:1] = 1
+  labels[20:40,20:40,:] = 2
+  labels[10:17,10:17,:] = 3
+  recovered = cc3d.dust(
+    labels, 
+    threshold=(25, 491), 
+    connectivity=connectivity,
+    in_place=in_place,
+    invert=invert,
+  )
+
+  res = [ int(x) for x in np.unique(recovered) ]
+
+  if invert:
+    assert res == [0,2]
+  else:
+    assert res == [0,1,3]
+
 @pytest.mark.parametrize("dtype", INT_TYPES)
 @pytest.mark.parametrize("connectivity", (6,18,26))
 def test_dust_random(dtype, connectivity):

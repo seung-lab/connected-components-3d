@@ -1,5 +1,5 @@
 from typing import (
-  Dict, Union, Tuple, Iterator, 
+  Dict, Union, Tuple, List, Iterator, 
   Sequence, Optional, Any, BinaryIO
 )
 
@@ -19,7 +19,7 @@ import numpy as np
 
 def dust(
   img:np.ndarray, 
-  threshold:Union[int,float], 
+  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
   connectivity:int = 26,
   in_place:bool = False,
   binary_image:bool = False,
@@ -32,15 +32,18 @@ def dust(
   can be read as a verb "to dust" the image.
 
   img: 2D or 3D image
-  threshold: discard components smaller than this in voxels
+  threshold: 
+    (int) discard components smaller than this in voxels
+    (tuple/list) keep components in range [lower, upper)
   connectivity: cc3d connectivity to use
   in_place: whether to modify the input image or perform
     dust 
   precomputed_ccl: for performance, avoid computing a CCL
     pass since the input is already a CCL output from this
     library.
-  invert: switch the operation from less than threshold to
-    greater than or equal to threshold.
+  invert: switch the threshold direction. For scalar input,
+    this means less than converts to greater than or equal to,
+    for ranged input, switch from between to outside of range.
 
   Returns: dusted image
   """
@@ -63,9 +66,14 @@ def dust(
   mask_sizes = stats["voxel_counts"]
   del stats
 
-  to_mask = [ 
-    i for i in range(1, N+1) if mask_sizes[i] < threshold 
-  ]
+  if isinstance(threshold, (tuple, list)):
+    to_mask = [ 
+      i for i in range(1, N+1) if not (threshold[0] <= mask_sizes[i] < threshold[1])
+    ]
+  else:
+    to_mask = [ 
+      i for i in range(1, N+1) if mask_sizes[i] < threshold 
+    ]
 
   if len(to_mask) == 0:
     return img
