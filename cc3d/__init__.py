@@ -34,7 +34,7 @@ def dust(
   img: 2D or 3D image
   threshold: 
     (int) discard components smaller than this in voxels
-    (tuple/list) keep components in range [lower, upper)
+    (tuple/list) discard components outside this range [lower, upper)
   connectivity: cc3d connectivity to use
   in_place: whether to modify the input image or perform
     dust 
