@@ -86,6 +86,9 @@ def dust(
       dust_N += 1
 
   if len(to_mask) == 0:
+    if invert:
+      img = np.zeros(img.shape, dtype=img.dtype, order="F")
+
     if return_N:
       return (img, dust_N)
     else:
