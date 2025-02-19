@@ -1189,6 +1189,25 @@ def test_dust_retain_all():
   assert np.all(recovered == labels)
   assert N == 1
 
+@pytest.mark.parametrize("invert", (False, True))
+def test_dust_mask_all(invert):
+  labels = np.ones([100,100,1])
+  recovered, N = cc3d.dust(
+    labels, 
+    threshold=10, 
+    connectivity=26,
+    in_place=False,
+    return_N=True,
+    invert=invert,
+  )
+
+  if invert:
+    assert np.all(recovered == 0)
+    assert N == 0
+  else:
+    assert np.all(recovered == 1)
+    assert N == 1
+
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("connectivity", (6,18,26))
 @pytest.mark.parametrize("order", ("C", "F"))
