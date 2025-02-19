@@ -78,8 +78,12 @@ def dust(
 
   if invert:
     dust_N = len(to_mask)
+    if dust_N and to_mask[0] == 0:
+      dust_N -= 1
   else:
     dust_N = N - len(to_mask)
+    if len(to_mask) and to_mask[0] == 0:
+      dust_N += 1
 
   if len(to_mask) == 0:
     if return_N:
