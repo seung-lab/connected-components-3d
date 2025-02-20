@@ -25,6 +25,7 @@ def dust(
   binary_image:bool = False,
   precomputed_ccl:bool = False,
   invert:bool = False,
+  return_N:bool = False,
 ) -> np.ndarray:
   """
   Remove from the input image connected components
@@ -75,13 +76,32 @@ def dust(
       i for i in range(1, N+1) if mask_sizes[i] < threshold 
     ]
 
+  if invert:
+    dust_N = len(to_mask)
+    if dust_N and to_mask[0] == 0:
+      dust_N -= 1
+  else:
+    dust_N = N - len(to_mask)
+    if len(to_mask) and to_mask[0] == 0:
+      dust_N += 1
+
   if len(to_mask) == 0:
-    return img
+    if invert:
+      img = np.zeros(img.shape, dtype=img.dtype, order="F")
+
+    if return_N:
+      return (img, dust_N)
+    else:
+      return img
 
   mask = np.isin(cc_labels, to_mask, assume_unique=True, invert=invert)
   del cc_labels
   img[mask] = 0
-  return img.view(orig_dtype)
+  img = img.view(orig_dtype)
+
+  if return_N:
+    return (img, dust_N)
+  return img
 
 def largest_k(
   img:np.ndarray,

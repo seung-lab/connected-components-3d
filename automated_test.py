@@ -1143,22 +1143,25 @@ def test_dust_static(dtype, connectivity, order, in_place, invert):
   labels = np.zeros((100,100,10), dtype=np.uint8, order=order)
   labels[:5,:5,:1] = 1
   labels[20:40,20:40,:] = 2
-  recovered = cc3d.dust(
+  recovered, N = cc3d.dust(
     labels, 
     threshold=26, 
     connectivity=connectivity,
     in_place=in_place,
     invert=invert,
+    return_N=True,
   )
 
   if invert:
     assert list(np.unique(recovered)) == [0,1]
+    assert N == 1
     if in_place:
       assert list(np.unique(labels)) == [0,1]
     else:
       assert list(np.unique(labels)) == [0,1,2]
   else:
     assert list(np.unique(recovered)) == [0,2]
+    assert N == 1
     if in_place:
       assert list(np.unique(labels)) == [0,2]
     else:
@@ -1176,13 +1179,34 @@ def test_dust_static(dtype, connectivity, order, in_place, invert):
 def test_dust_retain_all():
   labels = np.zeros((100,100,1), dtype=np.uint8)
   labels[:5,:5,:1] = 1
-  recovered = cc3d.dust(
+  recovered, N = cc3d.dust(
     labels, 
     threshold=10, 
     connectivity=26,
-    in_place=False
+    in_place=False,
+    return_N=True,
   )
   assert np.all(recovered == labels)
+  assert N == 1
+
+@pytest.mark.parametrize("invert", (False, True))
+def test_dust_mask_all(invert):
+  labels = np.ones([100,100,1])
+  recovered, N = cc3d.dust(
+    labels, 
+    threshold=10, 
+    connectivity=26,
+    in_place=False,
+    return_N=True,
+    invert=invert,
+  )
+
+  if invert:
+    assert np.all(recovered == 0)
+    assert N == 0
+  else:
+    assert np.all(recovered == 1)
+    assert N == 1
 
 @pytest.mark.parametrize("dtype", TEST_TYPES)
 @pytest.mark.parametrize("connectivity", (6,18,26))
@@ -1221,16 +1245,19 @@ def test_dust_random(dtype, connectivity):
   uniq, counts = np.unique(ccl, return_counts=True)
   filtered_orig = sum([ c for u,c in zip(uniq, counts) if c >= threshold and u > 0 ])
 
-  recovered = cc3d.dust(
+  recovered, N = cc3d.dust(
     labels, 
     threshold=threshold, 
     connectivity=connectivity,
+    return_N=True,
   )
 
   uniq, counts = np.unique(recovered, return_counts=True)
   filtered_recov = sum([ c for u,c in zip(uniq, counts) if c >= threshold and u > 0 ])
+  _, N_measured = cc3d.connected_components(recovered, connectivity=connectivity, return_N=True)
 
   assert filtered_recov == filtered_orig
+  assert N == N_measured
 
 @pytest.mark.parametrize("k", (0,1,2,3,4,5,6,100,1000))
 def test_largest_k(k):
