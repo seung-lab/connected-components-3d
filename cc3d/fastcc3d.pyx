@@ -673,7 +673,7 @@ def statistics(
   These are the voxel counts per label, the axis-aligned
   bounding box, and the centroid of each label.
   
-  LIMITATION: input must be >=0 and < num voxesl
+  LIMITATION: input must be >=0 and < num voxels
 
   no_slice_conversion: if True, return the bounding_boxes as 
     a numpy array. This can save memory and time.
