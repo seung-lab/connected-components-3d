@@ -940,8 +940,9 @@ def test_voxel_graph_3d():
   assert np.all(gt.T == graph)
 
 @pytest.mark.parametrize("order", ("C", "F"))
-def test_statistics_3d(order):
-  labels = np.zeros((123,128,125), dtype=np.uint8, order=order)
+@pytest.mark.parametrize("dtype", (np.uint8, np.int8))
+def test_statistics_3d(order, dtype):
+  labels = np.zeros((123,128,125), dtype=dtype, order=order)
   labels[10:20,10:20,10:20] = 1
   labels[40:50,40:50,40:51] = 2
 
@@ -980,8 +981,9 @@ def test_statistics_3d(order):
   assert np.all(stats["centroids"][0] == np.array([255.5,255.5,255.5]))
 
 @pytest.mark.parametrize("order", ("C", "F"))
-def test_statistics_2d(order):
-  labels = np.zeros((123,128), dtype=np.uint8, order=order)
+@pytest.mark.parametrize("dtype", (np.uint8, np.int8))
+def test_statistics_2d(order, dtype):
+  labels = np.zeros((123,128), dtype=dtype, order=order)
   labels[10:20,10:20] = 1
   labels[40:50,40:50] = 2
 
@@ -1021,8 +1023,9 @@ def test_statistics_2d(order):
 
 
 @pytest.mark.parametrize("order", ["C", "F"])
-def test_statistics_big(order):
-  labels = np.zeros((50,66000,1), dtype=np.uint8, order=order)
+@pytest.mark.parametrize("dtype", (np.uint8, np.int8))
+def test_statistics_big(order, dtype):
+  labels = np.zeros((50,66000,1), dtype=dtype, order=order)
   labels[10:20,10:20,:2] = 1
   labels[40:50,40:50,:2] = 2
 
