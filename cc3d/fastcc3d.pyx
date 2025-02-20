@@ -673,6 +673,8 @@ def statistics(
   These are the voxel counts per label, the axis-aligned
   bounding box, and the centroid of each label.
   
+  LIMITATION: input must be >=0 and < num voxesl
+
   no_slice_conversion: if True, return the bounding_boxes as 
     a numpy array. This can save memory and time.
 
@@ -712,11 +714,22 @@ def statistics(
     }
 
   cdef uint64_t N = np.max(out_labels)
+  cdef int64_t N_min = 0 
 
   if N > voxels:
     raise ValueError(
       f"Statistics can only be computed on volumes containing labels with values lower than the number of voxels. Max: {N}"
     )
+
+  out_dtype = np.dtype(out_labels.dtype)
+
+  if np.issubdtype(out_dtype, np.signedinteger):
+    N_min = np.min(out_labels)
+    if N_min < 0:
+      raise ValueError(
+        f"Statistics can only be computed on volumes containing labels with values >= 0. Min: {N_min}"
+      )
+    out_labels = out_labels.view(f'u{out_dtype.itemsize}')
 
   cdef cnp.ndarray[uint16_t] bounding_boxes16
   cdef cnp.ndarray[uint32_t] bounding_boxes32
