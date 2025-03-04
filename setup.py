@@ -41,8 +41,8 @@ setuptools.setup(
   version="3.23.0",
   setup_requires=['pbr', 'numpy', 'cython'],
   install_requires=['numpy'],
-  python_requires=">=3.8,<4.0",
-  extras_requires={
+  python_requires=">=3.9,<4.0",
+  extras_require={
     "stack": [ "crackle-codec", "fastremap" ],
   },
   ext_modules=[
@@ -75,7 +75,6 @@ setuptools.setup(
     "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
