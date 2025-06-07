@@ -1,19 +1,18 @@
 from collections.abc import Iterator
-from typing import BinaryIO, List, Literal, Tuple, TypedDict, Union
+from typing import Any, BinaryIO, List, Literal, Tuple, TypedDict, Union
 
-import numpy as np
-from numpy.typing import DTypeLike
+from numpy.typing import DTypeLike, NDArray
 
 class StatisticsDict(TypedDict):
-    voxel_counts: np.ndarray
-    bounding_boxes: Union[List[Tuple[slice, slice, slice]], np.ndarray]
-    centroids: np.ndarray
+    voxel_counts: NDArray[Any]
+    bounding_boxes: Union[List[Tuple[slice, slice, slice]], NDArray[Any]]
+    centroids: NDArray[Any]
 
 def color_connectivity_graph(
-    vcg: np.ndarray,
+    vcg: NDArray[Any],
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
     return_N: bool = False,
-) -> Union[np.ndarray, Tuple[np.ndarray, int]]:
+) -> Union[NDArray[Any], Tuple[NDArray[Any], int]]:
     """Color the connectivity graph of a voxel connectivity graph.
 
     Given a voxel connectivity graph following the same bit convention as
@@ -26,7 +25,7 @@ def color_connectivity_graph(
     ...
 
 def connected_components(
-    data: np.ndarray,
+    data: NDArray[Any],
     max_labels: int = -1,
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
     return_N: bool = False,
@@ -35,7 +34,7 @@ def connected_components(
     out_file: Union[str, BinaryIO, None] = None,
     periodic_boundary: bool = False,
     binary_image: bool = False,
-) -> Union[np.ndarray, Tuple[np.ndarray, int]]:
+) -> Union[NDArray[Any], Tuple[NDArray[Any], int]]:
     """Connected components applied to 3D images with handling for multiple labels.
 
     Args:
@@ -80,7 +79,7 @@ def connected_components(
     ...
 
 def contacts(
-    labels: np.ndarray,
+    labels: NDArray[Any],
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
     surface_area: bool = True,
     anisotropy: Tuple[int, int, int] = (1, 1, 1),
@@ -103,10 +102,10 @@ def contacts(
     ...
 
 def each(
-    labels: np.ndarray,
+    labels: NDArray[Any],
     binary: bool = False,
     in_place: bool = False,
-) -> Iterator[Tuple[int, np.ndarray]]:
+) -> Iterator[Tuple[int, NDArray[Any]]]:
     """Returns an iterator that extracts each label from a dense labeling.
 
     Args:
@@ -124,13 +123,13 @@ def each(
     ...
 
 def estimate_provisional_labels(
-    data: np.ndarray,
+    data: NDArray[Any],
 ) -> Tuple[int, int, int]:
     """Estimate the number of provisional labels required for connected components."""
     ...
 
 def region_graph(
-    labels: np.ndarray,
+    labels: NDArray[Any],
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
 ) -> set[Tuple[int, int]]:
     """Get the N-connected region adjacancy graph of a 3D image.
@@ -149,7 +148,7 @@ def region_graph(
     ...
 
 def statistics(
-    out_labels: np.ndarray,
+    out_labels: NDArray[Any],
     no_slice_conversion: bool = False,
 ) -> StatisticsDict:
     """Compute basic statistics on the regions in the image.
@@ -171,7 +170,7 @@ def statistics(
         N = np.max(out_labels)
         # Index into array is the CCL label.
         {
-            voxel_counts: np.ndarray[uint64_t], # (index is label) (N+1)
+            voxel_counts: NDArray[uint64_t], # (index is label) (N+1)
             # Structure is xmin, xmax, ymin, ymax, zmin, zmax by label
             # bounding_boxes: List[ tuple(slice, slice, slice), ... ]
             # Index into list is the connected component ID, the
@@ -179,16 +178,16 @@ def statistics(
             # region of interest from out_labels using slice
             # notation.
             # Structure is x,y,z
-            centroids: np.ndarray[float64], # (N+1,3)
+            centroids: NDArray[float64], # (N+1,3)
         }
         ```
     """
     ...
 
 def voxel_connectivity_graph(
-    data: np.ndarray,
+    data: NDArray[Any],
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
-) -> np.ndarray:
+) -> NDArray[Any]:
     """Extracts the voxel connectivity graph from a multi-label image.
 
     A voxel is considered connected if the adjacent voxel is the same
