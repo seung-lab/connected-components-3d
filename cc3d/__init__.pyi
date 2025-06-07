@@ -82,7 +82,11 @@ def contacts(
     labels: NDArray[Any],
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
     surface_area: bool = True,
-    anisotropy: Tuple[int, int, int] = (1, 1, 1),
+    anisotropy: Tuple[Union[int, float], Union[int, float], Union[int, float]] = (
+        1,
+        1,
+        1,
+    ),
 ) -> dict[Tuple[int, int], float]:
     """Get the N-connected region adjacancy graph of a 3D image and the contact area between two regions.
 
