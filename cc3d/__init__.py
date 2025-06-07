@@ -1,7 +1,4 @@
-from typing import (
-  Dict, Union, Tuple, List, Iterator, 
-  Sequence, Optional, Any, BinaryIO
-)
+from typing import Literal, Union, Tuple, List, Sequence, Optional, Any
 
 import fastcc3d
 from fastcc3d import (
@@ -20,13 +17,13 @@ import numpy as np
 def dust(
   img:np.ndarray, 
   threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
-  connectivity:int = 26,
+  connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
   invert:bool = False,
   return_N:bool = False,
-) -> np.ndarray:
+) -> Union[np.ndarray,Tuple[np.ndarray,int]]:
   """
   Remove from the input image connected components
   smaller than threshold ("dust"). The name of the function
@@ -106,12 +103,12 @@ def dust(
 def largest_k(
   img:np.ndarray,
   k:int,
-  connectivity:int = 26,
+  connectivity:Literal[4,6,8,18,26] = 26,
   delta:Union[int,float] = 0,
   return_N:bool = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> np.ndarray:
+) -> Union[np.ndarray,Tuple[np.ndarray, int]]:
   """
   Returns the k largest connected components
   in the image.
@@ -231,11 +228,11 @@ class DisjointSet:
 
 def connected_components_stack(
   stacked_images:Sequence[np.ndarray], 
-  connectivity:int = 26,
+  connectivity:Literal[6,26] = 26,
   return_N:bool = False,
   out_dtype:Optional[Any] = None,
   binary_image:bool = False,
-):
+) -> Union[np.ndarray,Tuple[np.ndarray,int]]:
   """
   This is for performing connected component labeling
   on an array larger than RAM.

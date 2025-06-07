@@ -1173,7 +1173,7 @@ def region_graph(
   Supports 26, 18, and 6 connectivities.
 
   labels: 3D numpy array of integer segmentation labels
-  connectivity: 6, 16, or 26 (default)
+  connectivity: 6, 18, or 26 (default)
 
   Returns: set of edges between labels
   """
@@ -1194,7 +1194,7 @@ def contacts(
   Supports 26, 18, and 6 connectivities.
 
   labels: 3D numpy array of integer segmentation labels
-  connectivity: 6, 16, or 26 (default)
+  connectivity: 6, 18, or 26 (default)
   surface_area: should the returned value be the contact
     surface area or a simple count of neighboring voxels?
     Surface area only counts face contact as edges and corners
