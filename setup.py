@@ -63,6 +63,7 @@ setuptools.setup(
       'COPYING.LESSER',
     ],
   },
+  data_files=[('', ['cc3d/fastcc3d.pyi'])],
   description="Connected components on discrete and continuous multilabel 3D and 2D images. Handles 26, 18, and 6 connected variants; periodic boundaries (4, 8, & 6).",
   long_description=read('README.md'),
   long_description_content_type="text/markdown",
