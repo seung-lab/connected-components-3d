@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Literal, Union, Tuple, List, Sequence, Any, overload, TYPE_CHECKING
 
-import fastcc3d
-from fastcc3d import (
+from . import fastcc3d
+from .fastcc3d import (
   connected_components,
   statistics,
   each,
@@ -496,3 +496,17 @@ def connected_components_stack(
     return arr, arr.num_labels()
   else:
     return arr
+
+__all__ = [
+  "color_connectivity_graph",
+  "connected_components",
+  "connected_components_stack",
+  "contacts",
+  "dust",
+  "each",
+  "estimate_provisional_labels",
+  "largest_k",
+  "region_graph",
+  "statistics",
+  "voxel_connectivity_graph",
+]

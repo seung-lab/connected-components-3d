@@ -47,23 +47,23 @@ setuptools.setup(
   },
   ext_modules=[
     setuptools.Extension(
-      'fastcc3d',
-      sources=[ 'cc3d/fastcc3d.pyx' ],
+      'cc3d.fastcc3d',
+      sources=[ 'src/cc3d/fastcc3d.pyx' ],
       language='c++',
-      include_dirs=[ 'cc3d', str(NumpyImport()) ],
+      include_dirs=[ 'src/cc3d', str(NumpyImport()) ],
       extra_compile_args=extra_compile_args,
     )
   ],
   author="William Silversmith",
   author_email="ws9@princeton.edu",
-  packages=setuptools.find_packages(),
+  packages=setuptools.find_packages(where='src'),
+  package_dir={'': 'src'},
   package_data={
-    'cc3d': [
+    'src/cc3d': [
       'COPYING',
       'COPYING.LESSER',
     ],
   },
-  data_files=[('', ['cc3d/fastcc3d.pyi'])],
   description="Connected components on discrete and continuous multilabel 3D and 2D images. Handles 26, 18, and 6 connected variants; periodic boundaries (4, 8, & 6).",
   long_description=read('README.md'),
   long_description_content_type="text/markdown",
