@@ -1,4 +1,6 @@
-from typing import Literal, Union, Tuple, List, Sequence, Optional, Any
+from __future__ import annotations
+
+from typing import Literal, Union, Tuple, List, Sequence, Any, overload, TYPE_CHECKING
 
 import fastcc3d
 from fastcc3d import (
@@ -13,9 +15,59 @@ from fastcc3d import (
 )
 
 import numpy as np
+from numpy.typing import DTypeLike, NDArray
 
+if TYPE_CHECKING:
+  from crackle import CrackleArray
+
+@overload
 def dust(
-  img:np.ndarray, 
+  img:NDArray[Any], 
+  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  connectivity:Literal[4,6,8,18,26] = 26,
+  in_place:bool = False,
+  binary_image:bool = False,
+  precomputed_ccl:bool = False,
+  invert:bool = False,
+  *,
+  return_N:Literal[False] = False,
+) -> NDArray[Any]: ...
+@overload
+def dust(
+  img:NDArray[Any], 
+  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  connectivity:Literal[4,6,8,18,26],
+  in_place:bool,
+  binary_image:bool,
+  precomputed_ccl:bool,
+  invert:bool,
+  return_N:Literal[False] = False,
+) -> NDArray[Any]: ...
+@overload
+def dust(
+  img:NDArray[Any], 
+  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  connectivity:Literal[4,6,8,18,26] = 26,
+  in_place:bool = False,
+  binary_image:bool = False,
+  precomputed_ccl:bool = False,
+  invert:bool = False,
+  *,
+  return_N:Literal[True],
+) -> Tuple[NDArray[Any],int]: ...
+@overload
+def dust(
+  img:NDArray[Any], 
+  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  connectivity:Literal[4,6,8,18,26],
+  in_place:bool,
+  binary_image:bool,
+  precomputed_ccl:bool,
+  invert:bool,
+  return_N:Literal[True],
+) -> Tuple[NDArray[Any],int]: ...
+def dust(
+  img:NDArray[Any], 
   threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
   connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
@@ -23,27 +75,28 @@ def dust(
   precomputed_ccl:bool = False,
   invert:bool = False,
   return_N:bool = False,
-) -> Union[np.ndarray,Tuple[np.ndarray,int]]:
-  """
-  Remove from the input image connected components
-  smaller than threshold ("dust"). The name of the function
-  can be read as a verb "to dust" the image.
+) -> Union[NDArray[Any],Tuple[NDArray[Any],int]]:
+  """Remove from the input image connected components smaller than threshold ("dust").
+  
+  The name of the function can be read as a verb "to dust" the image.
 
-  img: 2D or 3D image
-  threshold: 
-    (int) discard components smaller than this in voxels
-    (tuple/list) discard components outside this range [lower, upper)
-  connectivity: cc3d connectivity to use
-  in_place: whether to modify the input image or perform
-    dust 
-  precomputed_ccl: for performance, avoid computing a CCL
-    pass since the input is already a CCL output from this
-    library.
-  invert: switch the threshold direction. For scalar input,
-    this means less than converts to greater than or equal to,
-    for ranged input, switch from between to outside of range.
+  Args:
+    img: A 2D or 3D image.
+    threshold: 
+      (int) discard components smaller than this in voxels
+      (tuple/list) discard components outside this range [lower, upper)
+    connectivity: A cc3d connectivity to use.
+    in_place: Whether to modify the input image or perform
+      dust .
+    precomputed_ccl: For performance, avoid computing a CCL
+      pass since the input is already a CCL output from this
+      library.
+    invert: Switch the threshold direction. For scalar input,
+      this means less than converts to greater than or equal to,
+      for ranged input, switch from between to outside of range.
 
-  Returns: dusted image
+  Returns:
+    The dusted image.
   """
   orig_dtype = img.dtype
   img = _view_as_unsigned(img)
@@ -100,34 +153,75 @@ def dust(
     return (img, dust_N)
   return img
 
+@overload
 def largest_k(
-  img:np.ndarray,
+  img:NDArray[Any],
+  k:int,
+  connectivity:Literal[4,6,8,18,26] = 26,
+  delta:Union[int,float] = 0,
+  *,
+  return_N:Literal[False] = False,
+  binary_image:bool = False,
+  precomputed_ccl:bool = False,
+) -> NDArray[Union[np.bool_,np.uint16]]: ...
+@overload
+def largest_k(
+  img:NDArray[Any],
+  k:int,
+  connectivity:Literal[4,6,8,18,26],
+  delta:Union[int,float],
+  return_N:Literal[False] = False,
+  binary_image:bool = False,
+  precomputed_ccl:bool = False,
+) -> NDArray[Union[np.bool_,np.uint16]]: ...
+@overload
+def largest_k(
+  img:NDArray[Any],
+  k:int,
+  connectivity:Literal[4,6,8,18,26] = 26,
+  delta:Union[int,float] = 0,
+  *,
+  return_N:Literal[True],
+  binary_image:bool = False,
+  precomputed_ccl:bool = False,
+) -> Tuple[NDArray[Union[np.bool_,np.uint16]], int]: ...
+@overload
+def largest_k(
+  img:NDArray[Any],
+  k:int,
+  connectivity:Literal[4,6,8,18,26],
+  delta:Union[int,float],
+  return_N:Literal[True],
+  binary_image:bool = False,
+  precomputed_ccl:bool = False,
+) -> Tuple[NDArray[Union[np.bool_,np.uint16]], int]: ...
+def largest_k(
+  img:NDArray[Any],
   k:int,
   connectivity:Literal[4,6,8,18,26] = 26,
   delta:Union[int,float] = 0,
   return_N:bool = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> Union[np.ndarray,Tuple[np.ndarray, int]]:
-  """
-  Returns the k largest connected components
-  in the image.
-
-  k: number of components to return (>= 0)
-  connectivity: 
-    (2d) 4 [edges], 8 [edges+corners] 
-    (3d) 6 [faces], 18 [faces+edges], or 26 [faces+edges+corners]
-  delta: if using a continuous image, the allowed difference
-    in adjacent voxel values
-  return_N: return value is (image, N)
-  binary_image: treat the input image as a binary image
-  precomputed_ccl: for performance, avoid computing a CCL
-    pass since the input is already a CCL output from this
-    library.
+) -> Union[NDArray[Union[np.bool_,np.uint16]],Tuple[NDArray[Union[np.bool_,np.uint16]], int]]:
+  """Returns the k largest connected components in the image.
 
   NOTE: Performance may increase if you have the fastremap
     library installed. This may also change the numbering
     of the output.
+
+  Args:
+    k: The number of components to return (>= 0).
+    connectivity: 
+      (2d) 4 [edges], 8 [edges+corners] 
+      (3d) 6 [faces], 18 [faces+edges], or 26 [faces+edges+corners]
+    delta: If using a continuous image, the allowed difference
+      in adjacent voxel values.
+    return_N: Change return value to (image, N).
+    binary_image: Treat the input image as a binary image.
+    precomputed_ccl: For performance, avoid computing a CCL
+      pass since the input is already a CCL output from this
+      library.
   """
   assert k >= 0
 
@@ -184,7 +278,7 @@ def largest_k(
     return cc_out, len(preserve)
   return cc_out
 
-def _view_as_unsigned(img:np.ndarray) -> np.ndarray:
+def _view_as_unsigned(img:NDArray[Any]) -> NDArray[np.unsignedinteger]:
   if np.issubdtype(img.dtype, np.unsignedinteger) or img.dtype == bool:
     return img
   elif img.dtype == np.int8:
@@ -226,16 +320,48 @@ class DisjointSet:
     else:
       self.data[i] = j
 
+@overload
 def connected_components_stack(
-  stacked_images:Sequence[np.ndarray], 
+  stacked_images:Sequence[NDArray[Any]], 
+  connectivity:Literal[6,26] = 26,
+  *,
+  return_N:Literal[False] = False,
+  out_dtype:DTypeLike = None,
+  binary_image:bool = False,
+) -> CrackleArray: ...
+@overload
+def connected_components_stack(
+  stacked_images:Sequence[NDArray[Any]], 
+  connectivity:Literal[6,26] = 26,
+  return_N:Literal[False] = False,
+  out_dtype:DTypeLike = None,
+  binary_image:bool = False,
+) -> CrackleArray: ...
+@overload
+def connected_components_stack(
+  stacked_images:Sequence[NDArray[Any]], 
+  connectivity:Literal[6,26] = 26,
+  *,
+  return_N:Literal[True],
+  out_dtype:DTypeLike = None,
+  binary_image:bool = False,
+) -> Tuple[CrackleArray,int]: ...
+@overload
+def connected_components_stack(
+  stacked_images:Sequence[NDArray[Any]], 
+  connectivity:Literal[6,26],
+  return_N:Literal[True],
+  out_dtype:DTypeLike = None,
+  binary_image:bool = False,
+) -> Tuple[CrackleArray,int]: ...
+def connected_components_stack(
+  stacked_images:Sequence[NDArray[Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:bool = False,
-  out_dtype:Optional[Any] = None,
+  out_dtype:DTypeLike = None,
   binary_image:bool = False,
-) -> Union[np.ndarray,Tuple[np.ndarray,int]]:
-  """
-  This is for performing connected component labeling
-  on an array larger than RAM.
+) -> Union[CrackleArray,Tuple[CrackleArray,int]]:
+  """This is for performing connected component labeling on an array larger than RAM.
 
   stacked_images is a sequence of 3D images that are of equal
   width and height (x,y) and arbitrary depth (z). For example,
@@ -257,6 +383,19 @@ def connected_components_stack(
   or fully decompressing the array using arr.decompress()
   to obtain a numpy array (but presumably this will blow
   out your RAM since the image is so big).
+
+  Args:
+    stacked_images: A sequence of images to process.
+    connectivity: 
+      (2d) 6 [faces], 26 [faces+edges+corners]
+    return_N: Change return value to (CrackleArray, N).
+    out_dtype: The output dtype.
+    binary_image: Treat the input images as binary images.
+
+  Returns:
+    A CrackleArray containing the connected components
+    of the input images and optionally the number of
+    connected components in the image.
   """
   try:
     import crackle
@@ -357,6 +496,3 @@ def connected_components_stack(
     return arr, arr.num_labels()
   else:
     return arr
-
-
-
