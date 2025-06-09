@@ -2,6 +2,7 @@ from collections.abc import Iterator
 from typing import (
     Any,
     BinaryIO,
+    Dict,
     List,
     Literal,
     Tuple,
@@ -183,7 +184,7 @@ def contacts(
         1,
         1,
     ),
-) -> dict[Tuple[int, int], Union[int, float]]:
+) -> Dict[Tuple[int, int], Union[int, float]]:
     """Get the N-connected region adjacancy graph of a 3D image and the contact area between two regions.
 
     Args:
