@@ -48,18 +48,17 @@ setuptools.setup(
   ext_modules=[
     setuptools.Extension(
       'cc3d.fastcc3d',
-      sources=[ 'src/cc3d/fastcc3d.pyx' ],
+      sources=[ 'cc3d/fastcc3d.pyx' ],
       language='c++',
-      include_dirs=[ 'src/cc3d', str(NumpyImport()) ],
+      include_dirs=[ 'cc3d', str(NumpyImport()) ],
       extra_compile_args=extra_compile_args,
     )
   ],
   author="William Silversmith",
   author_email="ws9@princeton.edu",
-  packages=setuptools.find_packages(where='src'),
-  package_dir={'': 'src'},
+  packages=setuptools.find_packages(),
   package_data={
-    'src/cc3d': [
+    'cc3d': [
       'COPYING',
       'COPYING.LESSER',
     ],
