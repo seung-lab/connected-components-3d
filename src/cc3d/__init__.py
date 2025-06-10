@@ -404,8 +404,6 @@ def connected_components_stack(
     raise
 
   full_binary = None
-  bottom_cc_img = None
-  bottom_cc_labels = None
 
   if connectivity not in (6,26):
     raise ValueError(f"Connectivity must be 6 or 26. Got: {connectivity}")
