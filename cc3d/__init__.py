@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Literal, Union, Tuple, List, Sequence, Any, overload, TYPE_CHECKING
+from collections.abc import Sequence
+from typing import Literal, Union, Any, overload, TYPE_CHECKING
 
 from . import fastcc3d
 from .fastcc3d import (
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
 @overload
 def dust(
   img:NDArray[Any], 
-  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
   binary_image:bool = False,
@@ -35,7 +36,7 @@ def dust(
 @overload
 def dust(
   img:NDArray[Any], 
-  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26],
   in_place:bool,
   binary_image:bool,
@@ -46,7 +47,7 @@ def dust(
 @overload
 def dust(
   img:NDArray[Any], 
-  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
   binary_image:bool = False,
@@ -54,28 +55,28 @@ def dust(
   invert:bool = False,
   *,
   return_N:Literal[True],
-) -> Tuple[NDArray[Any],int]: ...
+) -> tuple[NDArray[Any],int]: ...
 @overload
 def dust(
   img:NDArray[Any], 
-  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26],
   in_place:bool,
   binary_image:bool,
   precomputed_ccl:bool,
   invert:bool,
   return_N:Literal[True],
-) -> Tuple[NDArray[Any],int]: ...
+) -> tuple[NDArray[Any],int]: ...
 def dust(
   img:NDArray[Any], 
-  threshold:Union[int,float,Tuple[int,int],Tuple[float,float],List[int],List[float]], 
+  threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
   invert:bool = False,
   return_N:bool = False,
-) -> Union[NDArray[Any],Tuple[NDArray[Any],int]]:
+) -> Union[NDArray[Any],tuple[NDArray[Any],int]]:
   """Remove from the input image connected components smaller than threshold ("dust").
   
   The name of the function can be read as a verb "to dust" the image.
@@ -184,7 +185,7 @@ def largest_k(
   return_N:Literal[True],
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> Tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
+) -> tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
 @overload
 def largest_k(
   img:NDArray[Any],
@@ -194,7 +195,7 @@ def largest_k(
   return_N:Literal[True],
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> Tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
+) -> tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
 def largest_k(
   img:NDArray[Any],
   k:int,
@@ -203,7 +204,7 @@ def largest_k(
   return_N:bool = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> Union[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]],Tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]]:
+) -> Union[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]],tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]]:
   """Returns the k largest connected components in the image.
 
   NOTE: Performance may increase if you have the fastremap
@@ -344,7 +345,7 @@ def connected_components_stack(
   return_N:Literal[True],
   out_dtype:DTypeLike = None,
   binary_image:bool = False,
-) -> Tuple[CrackleArray,int]: ...
+) -> tuple[CrackleArray,int]: ...
 @overload
 def connected_components_stack(
   stacked_images:Sequence[NDArray[Any]], 
@@ -352,14 +353,14 @@ def connected_components_stack(
   return_N:Literal[True],
   out_dtype:DTypeLike = None,
   binary_image:bool = False,
-) -> Tuple[CrackleArray,int]: ...
+) -> tuple[CrackleArray,int]: ...
 def connected_components_stack(
   stacked_images:Sequence[NDArray[Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:bool = False,
   out_dtype:DTypeLike = None,
   binary_image:bool = False,
-) -> Union[CrackleArray,Tuple[CrackleArray,int]]:
+) -> Union[CrackleArray,tuple[CrackleArray,int]]:
   """This is for performing connected component labeling on an array larger than RAM.
 
   stacked_images is a sequence of 3D images that are of equal
