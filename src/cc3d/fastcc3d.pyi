@@ -13,7 +13,7 @@ from typing import (
 )
 
 import numpy as np
-from numpy.typing import DTypeLike, NDArray
+from numpy.typing import DTypeLike, NDArray, ArrayLike
 
 class StatisticsDict(TypedDict):
     voxel_counts: NDArray[np.uint32]
@@ -55,7 +55,7 @@ def color_connectivity_graph(
     connectivity: Literal[4, 6, 8, 18, 26],
     return_N: Literal[True],
 ) -> Tuple[NDArray[VcgT], int]: ...
-def color_connectivity_graph(
+def color_connectivity_graph(  # type: ignore[misc]
     vcg: NDArray[VcgT],
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
     return_N: bool = False,
@@ -121,7 +121,7 @@ def connected_components(
     periodic_boundary: bool = False,
     binary_image: bool = False,
 ) -> Tuple[NDArray[np.uint32], int]: ...
-def connected_components(
+def connected_components(  # type: ignore[misc]
     data: NDArray[Any],
     max_labels: int = -1,
     connectivity: Literal[4, 6, 8, 18, 26] = 26,
@@ -258,7 +258,7 @@ def statistics(
     out_labels: NDArray[Any],
     no_slice_conversion: Literal[True],
 ) -> StatisticsSlicesDict: ...
-def statistics(
+def statistics(  # type: ignore[misc]
     out_labels: NDArray[Any],
     no_slice_conversion: bool = False,
 ) -> Union[StatisticsDict, StatisticsSlicesDict]:
@@ -355,4 +355,19 @@ def voxel_connectivity_graph(
     Returns:
         A uint8 or uint32 numpy array the same size as the input.
     """
+    ...
+
+def runs(labels: NDArray[np.unsignedinteger]) -> dict[int, list[Tuple[int, int]]]:
+    """Returns a dictionary describing where each label is located.
+
+    Use this data in conjunction with render and erase.
+    """
+    ...
+
+def draw(
+    label: ArrayLike,
+    runs: list[Tuple[int, int]],
+    image: NDArray[UnsignedIntegerT],
+) -> NDArray[UnsignedIntegerT]:
+    """Draws label onto the provided image according to runs."""
     ...

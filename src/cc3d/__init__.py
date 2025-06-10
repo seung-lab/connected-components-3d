@@ -18,7 +18,7 @@ import numpy as np
 from numpy.typing import DTypeLike, NDArray
 
 if TYPE_CHECKING:
-  from crackle import CrackleArray
+  from crackle import CrackleArray  # type: ignore[import-untyped]
 
 @overload
 def dust(
@@ -225,7 +225,7 @@ def largest_k(
   """
   assert k >= 0
 
-  order = "C" if img.flags.c_contiguous else "F"
+  order: Literal["C", "F"] = "C" if img.flags.c_contiguous else "F"
 
   if k == 0:
     return np.zeros(img.shape, dtype=np.uint16, order=order)
@@ -252,30 +252,29 @@ def largest_k(
     if return_N:
       return cc_out, 1
     return cc_out
-
+  
   preserve = np.argpartition(cts[1:], len(cts) - k - 1)[-k:]
   preserve += 1
-  preserve = [ (label,cts[label]) for label in preserve ]
-  preserve.sort(key=lambda x: x[1])
-  preserve = [ int(x[0]) for x in preserve ]
+  preserve_sorted = sorted(preserve, key=lambda label: cts[label])
+  preserve_list = list(map(int, preserve_sorted))
 
   try:
-    import fastremap
-    cc_out = fastremap.mask_except(cc_labels, preserve, in_place=True)
+    import fastremap  # type: ignore[import-not-found]
+    cc_out = fastremap.mask_except(cc_labels, preserve_list, in_place=True)
     fastremap.renumber(cc_out, in_place=True)
   except ImportError:
     shape, dtype = cc_labels.shape, cc_labels.dtype
     rns = fastcc3d.runs(cc_labels)
 
-    order = "C" if cc_labels.flags.c_contiguous else "F"
+    cc_order: Literal["C", "F"] = "C" if cc_labels.flags.c_contiguous else "F"
     del cc_labels
     
-    cc_out = np.zeros(shape, dtype=dtype, order=order)
-    for i, label in enumerate(preserve):
+    cc_out = np.zeros(shape, dtype=dtype, order=cc_order)
+    for i, label in enumerate(preserve_list):
       fastcc3d.draw(i+1, rns[label], cc_out)
   
   if return_N:
-    return cc_out, len(preserve)
+    return cc_out, len(preserve_list)
   return cc_out
 
 def _view_as_unsigned(img:NDArray[Any]) -> NDArray[np.unsignedinteger]:
