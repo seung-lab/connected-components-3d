@@ -163,7 +163,7 @@ def largest_k(
   return_N:Literal[False] = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> NDArray[Union[np.bool_,np.uint16]]: ...
+) -> NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]]: ...
 @overload
 def largest_k(
   img:NDArray[Any],
@@ -173,7 +173,7 @@ def largest_k(
   return_N:Literal[False] = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> NDArray[Union[np.bool_,np.uint16]]: ...
+) -> NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]]: ...
 @overload
 def largest_k(
   img:NDArray[Any],
@@ -184,7 +184,7 @@ def largest_k(
   return_N:Literal[True],
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> Tuple[NDArray[Union[np.bool_,np.uint16]], int]: ...
+) -> Tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
 @overload
 def largest_k(
   img:NDArray[Any],
@@ -194,7 +194,7 @@ def largest_k(
   return_N:Literal[True],
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> Tuple[NDArray[Union[np.bool_,np.uint16]], int]: ...
+) -> Tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
 def largest_k(
   img:NDArray[Any],
   k:int,
@@ -203,7 +203,7 @@ def largest_k(
   return_N:bool = False,
   binary_image:bool = False,
   precomputed_ccl:bool = False,
-) -> Union[NDArray[Union[np.bool_,np.uint16]],Tuple[NDArray[Union[np.bool_,np.uint16]], int]]:
+) -> Union[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]],Tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]]:
   """Returns the k largest connected components in the image.
 
   NOTE: Performance may increase if you have the fastremap
