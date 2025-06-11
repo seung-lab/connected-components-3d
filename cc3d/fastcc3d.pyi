@@ -72,7 +72,7 @@ def connected_components(
     out_file: Union[str, BinaryIO, None] = None,
     periodic_boundary: bool = False,
     binary_image: bool = False,
-) -> NDArray[np.uint32]: ...
+) -> NDArray[Union[np.uint16, np.uint32, np.uint64]]: ...
 @overload
 def connected_components(
     data: NDArray[Any],
@@ -84,7 +84,7 @@ def connected_components(
     out_file: Union[str, BinaryIO, None] = None,
     periodic_boundary: bool = False,
     binary_image: bool = False,
-) -> NDArray[np.uint32]: ...
+) -> NDArray[Union[np.uint16, np.uint32, np.uint64]]: ...
 @overload
 def connected_components(
     data: NDArray[Any],
@@ -97,7 +97,7 @@ def connected_components(
     out_file: Union[str, BinaryIO, None] = None,
     periodic_boundary: bool = False,
     binary_image: bool = False,
-) -> tuple[NDArray[np.uint32], int]: ...
+) -> tuple[NDArray[Union[np.uint16, np.uint32, np.uint64]], int]: ...
 @overload
 def connected_components(
     data: NDArray[Any],
@@ -109,7 +109,7 @@ def connected_components(
     out_file: Union[str, BinaryIO, None] = None,
     periodic_boundary: bool = False,
     binary_image: bool = False,
-) -> tuple[NDArray[np.uint32], int]: ...
+) -> tuple[NDArray[Union[np.uint16, np.uint32, np.uint64]], int]: ...
 def connected_components(  # type: ignore[misc]
     data: NDArray[Any],
     max_labels: int = -1,
@@ -120,7 +120,10 @@ def connected_components(  # type: ignore[misc]
     out_file: Union[str, BinaryIO, None] = None,
     periodic_boundary: bool = False,
     binary_image: bool = False,
-) -> Union[NDArray[np.uint32], tuple[NDArray[np.uint32], int]]:
+) -> Union[
+    NDArray[Union[np.uint16, np.uint32, np.uint64]],
+    tuple[NDArray[Union[np.uint16, np.uint32, np.uint64]], int],
+]:
     """Connected components applied to 3D images with handling for multiple labels.
 
     Args:
