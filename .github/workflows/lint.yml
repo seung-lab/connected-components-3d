@@ -3,9 +3,6 @@ name: Lint
 on:
   push:
     branches: [master]
-    paths:
-      - "*.py"
-      - "*.pyi"
   pull_request:
     branches: [master]
 
@@ -25,9 +22,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt -r requirements_dev.txt
 
+      - name: Add mypy annotator
+        uses: pr-annotators/mypy-pr-annotator@v1.0.0
+
       - name: Run mypy
-        uses: sasanquaneuf/mypy-github-action@releases/v1.3
-        with:
-          checkName: "mypy" # NOTE: this needs to be the same as the job name
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mypy cc3d
