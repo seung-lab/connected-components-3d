@@ -27,3 +27,9 @@ jobs:
 
       - name: Run mypy
         run: mypy cc3d
+
+      - name: Compile
+        run: python setup.py develop
+
+      - name: Run stub tests
+        run: python -m mypy.stubtest cc3d --allowlist mypy.allowlist
