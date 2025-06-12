@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Literal, Union, Any, overload, TYPE_CHECKING
+import collections.abc
+import typing
+from typing import Literal, Union, overload, TYPE_CHECKING
 
 from . import fastcc3d
 from .fastcc3d import (
+  DimensionError,
   connected_components,
   statistics,
   each,
@@ -23,7 +25,7 @@ if TYPE_CHECKING:
 
 @overload
 def dust(
-  img:NDArray[Any], 
+  img:NDArray[typing.Any], 
   threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
@@ -32,10 +34,10 @@ def dust(
   invert:bool = False,
   *,
   return_N:Literal[False] = False,
-) -> NDArray[Any]: ...
+) -> NDArray[typing.Any]: ...
 @overload
 def dust(
-  img:NDArray[Any], 
+  img:NDArray[typing.Any], 
   threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26],
   in_place:bool,
@@ -43,10 +45,10 @@ def dust(
   precomputed_ccl:bool,
   invert:bool,
   return_N:Literal[False] = False,
-) -> NDArray[Any]: ...
+) -> NDArray[typing.Any]: ...
 @overload
 def dust(
-  img:NDArray[Any], 
+  img:NDArray[typing.Any], 
   threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
@@ -55,10 +57,10 @@ def dust(
   invert:bool = False,
   *,
   return_N:Literal[True],
-) -> tuple[NDArray[Any],int]: ...
+) -> tuple[NDArray[typing.Any],int]: ...
 @overload
 def dust(
-  img:NDArray[Any], 
+  img:NDArray[typing.Any], 
   threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26],
   in_place:bool,
@@ -66,9 +68,9 @@ def dust(
   precomputed_ccl:bool,
   invert:bool,
   return_N:Literal[True],
-) -> tuple[NDArray[Any],int]: ...
+) -> tuple[NDArray[typing.Any],int]: ...
 def dust(
-  img:NDArray[Any], 
+  img:NDArray[typing.Any], 
   threshold:Union[int,float,tuple[int,int],tuple[float,float],list[int],list[float]], 
   connectivity:Literal[4,6,8,18,26] = 26,
   in_place:bool = False,
@@ -76,7 +78,7 @@ def dust(
   precomputed_ccl:bool = False,
   invert:bool = False,
   return_N:bool = False,
-) -> Union[NDArray[Any],tuple[NDArray[Any],int]]:
+) -> Union[NDArray[typing.Any],tuple[NDArray[typing.Any],int]]:
   """Remove from the input image connected components smaller than threshold ("dust").
   
   The name of the function can be read as a verb "to dust" the image.
@@ -156,7 +158,7 @@ def dust(
 
 @overload
 def largest_k(
-  img:NDArray[Any],
+  img:NDArray[typing.Any],
   k:int,
   connectivity:Literal[4,6,8,18,26] = 26,
   delta:Union[int,float] = 0,
@@ -167,7 +169,7 @@ def largest_k(
 ) -> NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]]: ...
 @overload
 def largest_k(
-  img:NDArray[Any],
+  img:NDArray[typing.Any],
   k:int,
   connectivity:Literal[4,6,8,18,26],
   delta:Union[int,float],
@@ -177,7 +179,7 @@ def largest_k(
 ) -> NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]]: ...
 @overload
 def largest_k(
-  img:NDArray[Any],
+  img:NDArray[typing.Any],
   k:int,
   connectivity:Literal[4,6,8,18,26] = 26,
   delta:Union[int,float] = 0,
@@ -188,7 +190,7 @@ def largest_k(
 ) -> tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
 @overload
 def largest_k(
-  img:NDArray[Any],
+  img:NDArray[typing.Any],
   k:int,
   connectivity:Literal[4,6,8,18,26],
   delta:Union[int,float],
@@ -197,7 +199,7 @@ def largest_k(
   precomputed_ccl:bool = False,
 ) -> tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]: ...
 def largest_k(
-  img:NDArray[Any],
+  img:NDArray[typing.Any],
   k:int,
   connectivity:Literal[4,6,8,18,26] = 26,
   delta:Union[int,float] = 0,
@@ -278,7 +280,7 @@ def largest_k(
     return cc_out, len(preserve_list)
   return cc_out
 
-def _view_as_unsigned(img:NDArray[Any]) -> NDArray[np.unsignedinteger]:
+def _view_as_unsigned(img:NDArray[typing.Any]) -> NDArray[np.unsignedinteger]:
   if np.issubdtype(img.dtype, np.unsignedinteger) or img.dtype == bool:
     return img
   elif img.dtype == np.int8:
@@ -322,7 +324,7 @@ class DisjointSet:
 
 @overload
 def connected_components_stack(
-  stacked_images:Sequence[NDArray[Any]], 
+  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   *,
   return_N:Literal[False] = False,
@@ -331,7 +333,7 @@ def connected_components_stack(
 ) -> CrackleArray: ...
 @overload
 def connected_components_stack(
-  stacked_images:Sequence[NDArray[Any]], 
+  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:Literal[False] = False,
   out_dtype:DTypeLike = None,
@@ -339,7 +341,7 @@ def connected_components_stack(
 ) -> CrackleArray: ...
 @overload
 def connected_components_stack(
-  stacked_images:Sequence[NDArray[Any]], 
+  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   *,
   return_N:Literal[True],
@@ -348,14 +350,14 @@ def connected_components_stack(
 ) -> tuple[CrackleArray,int]: ...
 @overload
 def connected_components_stack(
-  stacked_images:Sequence[NDArray[Any]], 
+  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
   connectivity:Literal[6,26],
   return_N:Literal[True],
   out_dtype:DTypeLike = None,
   binary_image:bool = False,
 ) -> tuple[CrackleArray,int]: ...
 def connected_components_stack(
-  stacked_images:Sequence[NDArray[Any]], 
+  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:bool = False,
   out_dtype:DTypeLike = None,
@@ -496,6 +498,7 @@ def connected_components_stack(
     return arr
 
 __all__ = [
+  "DimensionError",
   "color_connectivity_graph",
   "connected_components",
   "connected_components_stack",

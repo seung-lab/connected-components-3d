@@ -1,22 +1,21 @@
 from collections.abc import Iterator
-from typing import Any, BinaryIO, Literal, TypedDict, TypeVar, Union, overload
+from typing import Any, BinaryIO, Literal, Union, overload
 
 import numpy as np
 from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-class StatisticsDict(TypedDict):
-    voxel_counts: NDArray[np.uint32]
-    bounding_boxes: NDArray[np.uint16]
-    centroids: NDArray[np.float64]
+from cc3d.types import (
+    IntegerT,
+    StatisticsDict,
+    StatisticsSlicesDict,
+    UnsignedIntegerT,
+    VcgT,
+)
 
-class StatisticsSlicesDict(TypedDict):
-    voxel_counts: NDArray[np.uint32]
-    bounding_boxes: list[tuple[slice, slice, slice]]
-    centroids: NDArray[np.float64]
+class DimensionError(Exception):
+    """The array has the wrong number of dimensions."""
 
-VcgT = TypeVar("VcgT", np.uint8, np.uint32)
-IntegerT = TypeVar("IntegerT", bound=np.integer)
-UnsignedIntegerT = TypeVar("UnsignedIntegerT", bound=np.unsignedinteger)
+    ...
 
 @overload
 def color_connectivity_graph(
@@ -356,12 +355,10 @@ def runs(labels: NDArray[np.unsignedinteger]) -> dict[int, list[tuple[int, int]]
     """
     ...
 
-T = TypeVar("T", bound=NDArray[np.unsignedinteger])
-
 def draw(
     label: ArrayLike,
     runs: list[tuple[int, int]],
-    image: T,
-) -> T:
+    image: NDArray[UnsignedIntegerT],
+) -> NDArray[UnsignedIntegerT]:
     """Draws label onto the provided image according to runs."""
     ...

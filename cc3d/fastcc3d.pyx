@@ -125,7 +125,7 @@ class DimensionError(Exception):
 
 # from https://github.com/seung-lab/fastremap/blob/master/fastremap.pyx
 @cython.binding(True)
-def reshape(
+def _reshape(
   arr:np.ndarray, 
   shape:Sequence[int], 
   order:Optional[chr]=None
@@ -191,7 +191,7 @@ def estimate_provisional_labels(data:np.ndarray) -> Tuple[int,int,int]:
     else:
       sx = data.shape[-1]
 
-    linear_data = reshape(data, (data.size,))
+    linear_data = _reshape(data, (data.size,))
 
     if dtype in (np.uint64, np.int64):
       arr_memview64u = linear_data.view(np.uint64)
@@ -1247,7 +1247,7 @@ def runs(labels:np.ndarray):
   Returns a dictionary describing where each label is located.
   Use this data in conjunction with render and erase.
   """
-  return _runs(reshape(labels, (labels.size,)))
+  return _runs(_reshape(labels, (labels.size,)))
 
 def _runs(
     cnp.ndarray[UINT, ndim=1, cast=True] labels
@@ -1272,7 +1272,7 @@ def draw(
   Draws label onto the provided image according to 
   runs.
   """
-  return _draw(label, runs, reshape(image, (image.size,)))
+  return _draw(label, runs, _reshape(image, (image.size,)))
 
 def _draw( 
   label, 
@@ -1295,7 +1295,7 @@ def _draw(
   return image
 
 @cython.embedsignature(True)
-def erase( 
+def _erase( 
   vector[cpp_pair[size_t, size_t]] runs, 
   image:np.ndarray
 ) -> np.ndarray:
@@ -1352,7 +1352,7 @@ def each(
         img.setflags(write=0)
         yield (key, img)
         img.setflags(write=1)
-        erase(rns, img)
+        _erase(rns, img)
 
   if in_place:
     return InPlaceImageIterator()
