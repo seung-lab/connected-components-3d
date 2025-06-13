@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import collections.abc
 import typing
 from typing import Literal, Union, overload, TYPE_CHECKING
 
@@ -324,7 +323,7 @@ class DisjointSet:
 
 @overload
 def connected_components_stack(
-  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
+  stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   *,
   return_N:Literal[False] = False,
@@ -333,7 +332,7 @@ def connected_components_stack(
 ) -> CrackleArray: ...
 @overload
 def connected_components_stack(
-  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
+  stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:Literal[False] = False,
   out_dtype:DTypeLike = None,
@@ -341,7 +340,7 @@ def connected_components_stack(
 ) -> CrackleArray: ...
 @overload
 def connected_components_stack(
-  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
+  stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   *,
   return_N:Literal[True],
@@ -350,14 +349,14 @@ def connected_components_stack(
 ) -> tuple[CrackleArray,int]: ...
 @overload
 def connected_components_stack(
-  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
+  stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26],
   return_N:Literal[True],
   out_dtype:DTypeLike = None,
   binary_image:bool = False,
 ) -> tuple[CrackleArray,int]: ...
 def connected_components_stack(
-  stacked_images:collections.abc.Sequence[NDArray[typing.Any]], 
+  stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:bool = False,
   out_dtype:DTypeLike = None,
