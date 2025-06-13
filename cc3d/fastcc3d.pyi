@@ -14,7 +14,6 @@ from cc3d.types import (
 
 class DimensionError(Exception):
     """The array has the wrong number of dimensions."""
-
     ...
 
 @overload
