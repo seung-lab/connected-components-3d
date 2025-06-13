@@ -47,7 +47,7 @@ setuptools.setup(
   },
   ext_modules=[
     setuptools.Extension(
-      'fastcc3d',
+      'cc3d.fastcc3d',
       sources=[ 'cc3d/fastcc3d.pyx' ],
       language='c++',
       include_dirs=[ 'cc3d', str(NumpyImport()) ],

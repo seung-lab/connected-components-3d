@@ -1,0 +1,35 @@
+name: Lint
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          architecture: x64
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements_dev.txt
+
+      - name: Add mypy annotator
+        uses: pr-annotators/mypy-pr-annotator@v1.0.0
+
+      - name: Run mypy
+        run: mypy cc3d
+
+      - name: Compile
+        run: python setup.py develop
+
+      - name: Run stub tests
+        run: python -m mypy.stubtest cc3d --allowlist mypy.allowlist

@@ -2,3 +2,4 @@ scipy
 pytest
 crackle-codec
 cython
+mypy
