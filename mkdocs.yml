@@ -1,0 +1,25 @@
+site_name: cc3d
+repo_name: seung-lab/connected-components-3d
+repo_url: https://github.com/seung-lab/connected-components-3d
+theme:
+  name: material
+  logo: logo.png
+  favicon: logo.png
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.action.view
+    - content.action.edit
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_overloads: false
+            separate_signature: true
+            show_signature_annotations: true
+            line_length: 80
+            show_if_no_docstring: false
