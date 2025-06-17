@@ -1,8 +1,3 @@
----
-hide:
-  - navigation
----
-
 # Benchmarks
 
 Except where noted, these benchmarks were run on a 2.8 GHz Dual-Core Intel Core i7 with 1600 MHz DDR3 RAM. For binary images, we compared the performance of cc3d to the commonly used `scipy.ndimage.measurements.label` which supports 26-connected binary images. cc3d was designed to efficiently handle multilabel datasets.

@@ -4,8 +4,8 @@ repo_url: https://github.com/seung-lab/connected-components-3d
 docs_dir: .
 theme:
   name: material
-  logo: images/logo.png
-  favicon: images/logo.png
+  logo: docs/images/logo.png
+  favicon: docs/images/logo.png
   features:
     - navigation.tabs
     - navigation.top
@@ -26,6 +26,11 @@ plugins:
             show_signature_annotations: true
             line_length: 80
 
+nav:
+  - Home: README.md
+  - API: docs/api.md
+  - Benchmarks: benchmarks/README.md
+
 markdown_extensions:
   - attr_list
   - pymdownx.magiclink
@@ -36,3 +41,6 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+
+extra_css:
+  - docs/docs.css
