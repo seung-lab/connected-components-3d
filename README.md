@@ -1,15 +1,20 @@
+---
+hide:
+  - navigation
+---
+
 [![PyPI version](https://badge.fury.io/py/connected-components-3d.svg)](https://badge.fury.io/py/connected-components-3d) [![DOI](https://zenodo.org/badge/146368855.svg)](https://zenodo.org/badge/latestdoi/146368855)
 
 cc3d: Connected Components on Multilabel 3D Images
 =======================
 
 <p style="font-style: italics;" align="center">
-<img height=348 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/ccl_figure.png" alt="Binary and multilabel connected components. (a) A binary image (foreground white,  background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image" /><br>
+<img height=348 src="images/ccl_figure.png" alt="Binary and multilabel connected components. (a) A binary image (foreground white,  background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image" /><br>
 <b>Fig. 1. Binary and Multilabel Connected Components Labeling (CCL)</b> 2D images are shown for simplicity. Black is the background color (zero). (a) A binary image (foreground white, background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image.
 </p>
 
 <p style="font-style: italics;" align="center">
-<img height=348 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/continuous_ccl_figure.png" alt="Continuous value connected components (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones" /><br>
+<img height=348 src="images/continuous_ccl_figure.png" alt="Continuous value connected components (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones" /><br>
 <b>Fig. 2. Continuous Value Connected Components Labeling (CCL)</b> (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones
 </p>
 
@@ -19,7 +24,7 @@ I wrote this package because I was working on densely labeled 3D biomedical imag
 
 In general, binary images are much more common (usually resulting from image thresholding), but multi-label images crop up in instance segmentation and semantic labeling as a classifier may label touching clusters of adjacent pixels differently. If a gap between different labels is guaranteed, then the problem degenerates into the binary version.
 
-Check out [benchmarks](https://github.com/seung-lab/connected-components-3d/tree/master/benchmarks) to see a comparison with SciPy on a few different tasks.  
+Check out [benchmarks](benchmarks/README.md) to see a comparison with SciPy on a few different tasks.  
 
 ## Python `pip` Installaction
 

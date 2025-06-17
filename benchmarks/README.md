@@ -1,26 +1,31 @@
+---
+hide:
+  - navigation
+---
+
 # Benchmarks
 
 Except where noted, these benchmarks were run on a 2.8 GHz Dual-Core Intel Core i7 with 1600 MHz DDR3 RAM. For binary images, we compared the performance of cc3d to the commonly used `scipy.ndimage.measurements.label` which supports 26-connected binary images. cc3d was designed to efficiently handle multilabel datasets.
 
 ## Connectomics Data
 
-Except where noted, we compared the time and memory performance of both libraries on [`connectomics.npy`](https://github.com/seung-lab/connected-components-3d/raw/master/benchmarks/connectomics.npy.gz), a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
+Except where noted, we compared the time and memory performance of both libraries on [`connectomics.npy`](connectomics.npy.ckl.gz), a 512x512x512 voxel cutout of a dense segmentation of a connectomics dataset at a resolution of 32x32x40 nm<sup>3</sup> containing 2523 labels and 3619 connected components. 
 
-The volume is derived from an early experimental segmentation of pinky40, a predecessor to the now public pinky100_v185 automatic segmentation of mouse brain now available at https://microns-explorer.org/phase1. You need to gzip decompress to recover the uncompressed file: `gunzip connectomics.npy.gz`
+The volume is derived from an early experimental segmentation of pinky40, a predecessor to the now public pinky100_v185 automatic segmentation of mouse brain now available at https://microns-explorer.org/phase1. You need to gzip decompress to recover the uncompressed file: `gunzip connectomics.npy.ckl.gz`
 
 ## Image Data
 
-`Misc_pollen.npy` is the microscopy image from https://en.wikipedia.org/wiki/Scanning_electron_microscope#/media/File:Misc_pollen.jpg which is a public domain photo taken by the Dartmouth College Electron Microscope Facility in 2004.
+[`Misc_pollen.npy`](Misc_pollen.npy.gz) is the microscopy image from https://en.wikipedia.org/wiki/Scanning_electron_microscope#/media/File:Misc_pollen.jpg which is a public domain photo taken by the Dartmouth College Electron Microscope Facility in 2004.
 
 # Multi-Label Comparison
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_multilabel_optimized_extraction.png" alt="Fig. 1: Optimized extraction of components using cc3d 3.1.0 on a 512x512x512 densely labeled connectomics segmentation." /><br>
+<img height=384 src="cc3d_multilabel_optimized_extraction.png" alt="Fig. 1: Optimized extraction of components using cc3d 3.1.0 on a 512x512x512 densely labeled connectomics segmentation." /><br>
 Fig. 1: Optimized extraction of components using cc3d 3.1.0 on a 512x512x512 densely labeled connectomics segmentation.
 </p>
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scikit_image_multilabel.png" alt="Fig. 2: Extraction of components on a 512x512x512 densely labeled connectomics segmentation. (black) scikit-image 0.19.2 and (blue) cc3d 3.10.0." /><br>
+<img height=384 src="cc3d_vs_scikit_image_multilabel.png" alt="Fig. 2: Extraction of components on a 512x512x512 densely labeled connectomics segmentation. (black) scikit-image 0.19.2 and (blue) cc3d 3.10.0." /><br>
 Fig. 2: Extraction of components on a 512x512x512 densely labeled connectomics segmentation. (black) scikit-image 0.19.2 and (blue) cc3d 3.10.0
 </p>
 
@@ -46,7 +51,7 @@ This is the fastest method we have for running CCL and then extracting each labe
 The memory usage is higher here compared with the figure below due to the size of the location index.
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_multilabel.png" alt="Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.3.0 (blue) 100% of cc3d 1.2.2" /><br>
+<img height=384 src="cc3d_vs_scipy_multilabel.png" alt="Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.3.0 (blue) 100% of cc3d 1.2.2" /><br>
 Fig. 2: Extracting components using SciPy vs cc3d on a 512x512x512 densely labeled connectomics segmentation. (black) 20% of SciPy 1.3.0 (blue) 100% of cc3d 1.2.2
 </p>
 
@@ -86,7 +91,7 @@ In this test, `cc3d_test` was run to completion in 225 seconds after loading the
 # 10x Head to Head: Connectomics Data
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://github.com/seung-lab/connected-components-3d/blob/master/benchmarks/cc3d_vs_scipy_single_label_10x.png" alt="Fig. 3: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (blue) SciPy 1.6.0 (black) cc3d 3.1.0" /><br>
+<img height=384 src="cc3d_vs_scipy_single_label_10x.png" alt="Fig. 3: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (blue) SciPy 1.6.0 (black) cc3d 3.1.0" /><br>
 Fig. 3: SciPy vs cc3d run ten times on a 512x512x512 connectomics segmentation masked to only contain one label. (blue) SciPy 1.6.0 (black) cc3d 3.1.0
 </p> 
 
@@ -141,7 +146,7 @@ for label in labels:
 ## 26-connected
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_26.png" alt="Fig. 4: SciPy vs cc3d run ten times on a 384x384x384 random binary image using 26-connectivity. (black) SciPy 1.6.0 (blue) cc3d 3.1.0" /><br>
+<img height=384 src="cc3d_vs_scipy_random_binary_images_26.png" alt="Fig. 4: SciPy vs cc3d run ten times on a 384x384x384 random binary image using 26-connectivity. (black) SciPy 1.6.0 (blue) cc3d 3.1.0" /><br>
 Fig. 4: SciPy vs cc3d run ten times on a 384x384x384 random binary image. (black) SciPy 1.6.0 (blue) cc3d 3.1.0
 </p>   
 
@@ -155,7 +160,7 @@ On random binary images, SciPy marginally wins on memory with a peak memory cosu
 ## 6-connected
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_vs_scipy_random_binary_images_6.png" alt="Fig. 4: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
+<img height=384 src="cc3d_vs_scipy_random_binary_images_6.png" alt="Fig. 4: SciPy vs cc3d run ten times on ten 384x384x384 random binary images using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0" /><br>
 Fig. 4: SciPy vs cc3d run ten times on a 384x384x384 random binary image using 6-connectivity. (black) SciPy 1.5.2 (blue) cc3d 1.13.0
 </p>
 
@@ -169,7 +174,7 @@ SciPy uses about 390 MB, which is oddly increasing, while cc3d uses 405 MB. SciP
 # 10x Head to Head: Black Cube
 
 <p style="font-style: italics;" align="center">
-<img height=384 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (blue) SciPy 1.6.0 (black) cc3d 3.1.0" /><br>
+<img height=384 src="cc3d_sparse_black.png" alt="Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (blue) SciPy 1.6.0 (black) cc3d 3.1.0" /><br>
 Fig. 4: Different configurations run against a uint64 512x512x512 black cube using 26-connectivity. (blue) SciPy 1.6.0 (black) cc3d 3.1.0
 </p>   
 
@@ -190,22 +195,22 @@ We can see how this bears out. In black, SciPy runs at a brisk and reasonable cl
 cc3d has been steadily improving over time. To celebrate the release of 2.0.0, we show plots of peak memory usage and megavoxels per second vs version. Better scores in these charts trend down and right, indicating lower peak memory pressure and faster execution. In May 2022, I discovered that scikit-image also is multi-label capable and so added comparisons to these charts.
 
 <p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_connectomics_over_time.png" alt="Fig. 6: 26-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
+<img height=512 src="cc3d_26-way_connectomics_over_time.png" alt="Fig. 6: 26-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
 Fig. 6: 26-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
 </p>   
 
 <p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_random_binary_image.png" alt="Fig. 7: 26-way cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset." /><br>
+<img height=512 src="cc3d_26-way_random_binary_image.png" alt="Fig. 7: 26-way cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset." /><br>
 Fig. 7: 26-way cc3d and scipy peak memory usage and speed in selected releases against a 512x512x512 random binary dataset.
 </p>   
 
 <p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_26-way_natural_binary_image.png" alt="Fig. 8: 26-way cc3d peak memory usage and speed against a natural binary image from a 512x512x512 connectomics dataset." /><br>
+<img height=512 src="cc3d_26-way_natural_binary_image.png" alt="Fig. 8: 26-way cc3d peak memory usage and speed against a natural binary image from a 512x512x512 connectomics dataset." /><br>
 Fig. 8: 26-way cc3d peak memory usage and speed against a natural binary image from a 512x512x512 connectomics dataset.
 </p>   
 
 <p style="font-style: italics;" align="center">
-<img height=512 src="https://raw.githubusercontent.com/seung-lab/connected-components-3d/master/benchmarks/cc3d_6-way_connectomics_over_time.png" alt="Fig. 9: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
+<img height=512 src="cc3d_6-way_connectomics_over_time.png" alt="Fig. 9: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset." /><br>
 Fig. 9: 6-way cc3d peak memory usage and speed in selected releases against a 512x512x512 connectomics dataset.
 </p>
 
