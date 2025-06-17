@@ -1,5 +1,5 @@
 site_name: cc3d
-repo_name: seung-lab/connected-components-3d
+repo_name: connected-components-3d
 repo_url: https://github.com/seung-lab/connected-components-3d
 theme:
   name: material
@@ -10,6 +10,7 @@ theme:
     - navigation.top
     - content.action.view
     - content.action.edit
+    - content.code.copy
 
 plugins:
   - search
@@ -22,4 +23,12 @@ plugins:
             separate_signature: true
             show_signature_annotations: true
             line_length: 80
-            show_if_no_docstring: false
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
