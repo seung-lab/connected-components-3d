@@ -33,6 +33,6 @@ jobs:
           restore-keys: |
             mkdocs-material-
 
-      - run: pip install mkdocs-material
+      - run: pip install -r requirements_dev.txt
 
       - run: mkdocs gh-deploy --force
