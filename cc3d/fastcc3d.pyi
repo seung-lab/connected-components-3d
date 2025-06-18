@@ -136,8 +136,8 @@ def connected_components(  # type: ignore[misc]
             8 (+corners).
         return_N (bool): If True, also return the number of connected components
             as the second argument of a return tuple.
-        delta (same as data): \\>= 0. Connect together values whose
-            difference in value is <= delta. Useful for rough
+        delta (same as data): Must be greater than or equal 0. Connect together
+            values whose difference in value is <= delta. Useful for rough
             segmentations of continuously valued images.
         out_dtype: If specified, must be one of np.uint16, np.uint32, np.uint64.
             If not specified, it will be automatically determined. Most of the time,

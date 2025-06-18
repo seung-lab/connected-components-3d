@@ -1,0 +1,6 @@
+mkdocs
+mkdocs-material
+mkdocs-same-dir
+mkdocstrings
+mkdocstrings-python
+ruff
