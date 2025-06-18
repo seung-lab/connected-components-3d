@@ -88,8 +88,7 @@ def dust(
       (int) discard components smaller than this in voxels
       (tuple/list) discard components outside this range [lower, upper)
     connectivity: A cc3d connectivity to use.
-    in_place: Whether to modify the input image or perform
-      dust .
+    in_place: Whether to modify the input image or perform dust.
     precomputed_ccl: For performance, avoid computing a CCL
       pass since the input is already a CCL output from this
       library.
@@ -208,22 +207,22 @@ def largest_k(
 ) -> Union[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]],tuple[NDArray[Union[np.bool_,np.uint16,np.uint32,np.uint64]], int]]:
   """Returns the k largest connected components in the image.
 
-  NOTE: Performance may increase if you have the fastremap
+  NOTE:
+    Performance may increase if you have the `fastremap`
     library installed. This may also change the numbering
     of the output.
 
   Args:
     k: The number of components to return (>= 0).
     connectivity: 
-      (2d) 4 [edges], 8 [edges+corners] 
-      (3d) 6 [faces], 18 [faces+edges], or 26 [faces+edges+corners]
+      (2d) 4 [edges], 8 [edges + corners] 
+      (3d) 6 [faces], 18 [faces + edges], or 26 [faces + edges + corners]
     delta: If using a continuous image, the allowed difference
       in adjacent voxel values.
     return_N: Change return value to (image, N).
     binary_image: Treat the input image as a binary image.
-    precomputed_ccl: For performance, avoid computing a CCL
-      pass since the input is already a CCL output from this
-      library.
+    precomputed_ccl: For performance, avoid computing a CCL pass since the input
+      is already a CCL output from this library.
   """
   assert k >= 0
 
@@ -365,10 +364,10 @@ def connected_components_stack(
   """This is for performing connected component labeling on an array larger than RAM.
 
   stacked_images is a sequence of 3D images that are of equal
-  width and height (x,y) and arbitrary depth (z). For example,
+  width and height (x, y) and arbitrary depth (z). For example,
   you might define a generator that produces a tenth of your
   data at a time. The data must be sequenced in z order from
-  z = 0 to z = depth - 1.
+  `z = 0` to `z = depth - 1`.
 
   Each 3D image will have CCL run on it and then compressed
   into crackle format (https://github.com/seung-lab/crackle)
@@ -380,15 +379,14 @@ def connected_components_stack(
 
   The final output will be a CrackleArray. You
   can access parts of the image using standard array
-  operations, write the array data to disk using arr.binary
-  or fully decompressing the array using arr.decompress()
+  operations, write the array data to disk using `arr.binary`
+  or fully decompressing the array using `arr.decompress()`
   to obtain a numpy array (but presumably this will blow
   out your RAM since the image is so big).
 
   Args:
     stacked_images: A sequence of images to process.
-    connectivity: 
-      (2d) 6 [faces], 26 [faces+edges+corners]
+    connectivity: (2d) 6 [faces], 26 [faces + edges + corners]
     return_N: Change return value to (CrackleArray, N).
     out_dtype: The output dtype.
     binary_image: Treat the input images as binary images.

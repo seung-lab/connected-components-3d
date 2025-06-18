@@ -14,6 +14,7 @@ from cc3d.types import (
 
 class DimensionError(Exception):
     """The array has the wrong number of dimensions."""
+
     ...
 
 @overload
@@ -50,7 +51,7 @@ def color_connectivity_graph(  # type: ignore[misc]
     """Color the connectivity graph of a voxel connectivity graph.
 
     Given a voxel connectivity graph following the same bit convention as
-    cc3d.voxel_connectivity_graph (see docstring), assuming an undirected
+    `cc3d.voxel_connectivity_graph` (see docstring), assuming an undirected
     graph (the format supports directed graphs, but this is not implemented
     for the sake of efficiency), this function will return a uint32 image
     that contains connected components labeled according to the boundaries
@@ -135,8 +136,8 @@ def connected_components(  # type: ignore[misc]
             8 (+corners).
         return_N (bool): If True, also return the number of connected components
             as the second argument of a return tuple.
-        delta (same as data): >= 0. Connect together values whose
-            difference in value is <= delta. Useful for rough
+        delta (same as data): Must be greater than or equal 0. Connect together
+            values whose difference in value is <= delta. Useful for rough
             segmentations of continuously valued images.
         out_dtype: If specified, must be one of np.uint16, np.uint32, np.uint64.
             If not specified, it will be automatically determined. Most of the time,
@@ -152,16 +153,13 @@ def connected_components(  # type: ignore[misc]
             image (e.g. bool dtype, delta == max int or max float etc.).
 
     Returns:
-        Either (OUT, N), if return_N else, OUT.
-
-        Where OUT = 1D, 2D or 3D numpy array remapped to reflect
-            the connected components sequentially numbered from 1 to N.
-
-            The data type will be automatically determined as uint16, uint32,
-            or uint64 depending on the estimate of the number of provisional
-            labels required.
-
-        And N = number of connected components
+        Returns either a tuple `(out, N)` if return_N is True, or just `out`
+            otherwise, where `out` is a 1D, 2D, or 3D NumPy array representing
+            the input remapped to reflect connected components sequentially
+            numbered from 1 to `N`. The data type of `out` is automatically
+            selected as `uint16`, `uint32`, or `uint64` based on the estimated
+            number of provisional labels required. `N` denotes the total number
+            of connected components identified.
     """
     ...
 
@@ -188,7 +186,7 @@ def contacts(
             surface area.
 
     Returns:
-        A dictionary resembling { (label_1, label_2): float, ... }.
+        A dictionary resembling `{ (label_1, label_2): float, ... }`.
     """
     ...
 
@@ -205,8 +203,8 @@ def each(
         in_place: Much faster but the resulting image will be read-only.
 
     Examples:
-    >>> for label, img in cc3d.each(labels, binary=False, in_place=False):
-            process(img)
+        >>> for label, img in cc3d.each(labels, binary=False, in_place=False):
+                process(img)
 
     Returns:
         An iterator.
@@ -257,7 +255,8 @@ def statistics(  # type: ignore[misc]
     These are the voxel counts per label, the axis-aligned
     bounding box, and the centroid of each label.
 
-    LIMITATION: input must be >=0 and < num voxels
+    LIMITATION:
+        Input must be >=0 and < num voxels.
 
     Args:
         out_labels: A numpy array of labels.
@@ -267,21 +266,20 @@ def statistics(  # type: ignore[misc]
     Returns:
         A dictionary with the following structure.
 
-        ```
-        N = np.max(out_labels)
-        # Index into array is the CCL label.
-        {
-            voxel_counts: NDArray[np.uint32], # (index is label) (N+1)
-            # Structure is xmin, xmax, ymin, ymax, zmin, zmax by label
-            bounding_boxes: NDArray[np.uint16] | list[tuple(slice, slice, slice)],
-            # Index into list is the connected component ID, the
-            # tuple of slices can be directly used to extract the
-            # region of interest from out_labels using slice
-            # notation.
-            # Structure is x,y,z
-            centroids: NDArray[np.float64], # (N+1,3)
-        }
-        ```
+            ```
+            N = np.max(out_labels)
+            # Index into array is the CCL label.
+            {
+                voxel_counts: NDArray[np.uint32], # (index is label) (N+1)
+                # Structure is xmin, xmax, ymin, ymax, zmin, zmax by label
+                bounding_boxes: NDArray[np.uint16] | list[tuple(slice, slice, slice)],
+                # Index into list is the connected component ID, the tuple of
+                # slices can be directly used to extract the region of interest
+                # from out_labels using slice notation.
+                # Structure is x,y,z
+                centroids: NDArray[np.float64], # (N+1,3)
+            }
+            ```
     """
     ...
 

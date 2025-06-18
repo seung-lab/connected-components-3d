@@ -1,0 +1,64 @@
+site_name: cc3d
+repo_name: connected-components-3d
+repo_url: https://github.com/seung-lab/connected-components-3d
+docs_dir: .
+theme:
+  name: material
+  logo: docs/images/logo.png
+  favicon: docs/images/logo.png
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.action.view
+    - content.action.edit
+    - content.code.copy
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+plugins:
+  - search
+  - same-dir
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_overloads: false
+            separate_signature: true
+            show_signature_annotations: true
+            line_length: 80
+
+nav:
+  - Home: README.md
+  - API: docs/api.md
+  - Benchmarks: benchmarks/README.md
+
+markdown_extensions:
+  - attr_list
+  - pymdownx.magiclink
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+extra_css:
+  - docs/docs.css
