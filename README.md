@@ -50,7 +50,7 @@ python setup.py develop
 
 ## Python Use
 
-For detailed documentation, see [the API docs](docs/api.md).
+For detailed documentation, see [the API docs](https://seunglab.org/connected-components-3d/).
 
 The following functions are available with examples below:
 
