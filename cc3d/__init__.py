@@ -326,7 +326,6 @@ def connected_components_stack(
   connectivity:Literal[6,26] = 26,
   *,
   return_N:Literal[False] = False,
-  out_dtype:DTypeLike = None,
   binary_image:bool = False,
 ) -> CrackleArray: ...
 @overload
@@ -334,7 +333,6 @@ def connected_components_stack(
   stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:Literal[False] = False,
-  out_dtype:DTypeLike = None,
   binary_image:bool = False,
 ) -> CrackleArray: ...
 @overload
@@ -343,7 +341,6 @@ def connected_components_stack(
   connectivity:Literal[6,26] = 26,
   *,
   return_N:Literal[True],
-  out_dtype:DTypeLike = None,
   binary_image:bool = False,
 ) -> tuple[CrackleArray,int]: ...
 @overload
@@ -351,14 +348,12 @@ def connected_components_stack(
   stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26],
   return_N:Literal[True],
-  out_dtype:DTypeLike = None,
   binary_image:bool = False,
 ) -> tuple[CrackleArray,int]: ...
 def connected_components_stack(
   stacked_images:typing.Iterable[NDArray[typing.Any]], 
   connectivity:Literal[6,26] = 26,
   return_N:bool = False,
-  out_dtype:DTypeLike = None,
   binary_image:bool = False,
 ) -> Union[CrackleArray,tuple[CrackleArray,int]]:
   """This is for performing connected component labeling on an array larger than RAM.
@@ -388,7 +383,6 @@ def connected_components_stack(
     stacked_images: A sequence of images to process.
     connectivity: (2d) 6 [faces], 26 [faces + edges + corners]
     return_N: Change return value to (CrackleArray, N).
-    out_dtype: The output dtype.
     binary_image: Treat the input images as binary images.
 
   Returns:
