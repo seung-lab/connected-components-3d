@@ -95,7 +95,7 @@ bool is_26_connected(
     }
     else {
       if (z < 0) {
-        return (candidate & 0b00010000) && (center & 0b00000100);
+        return (candidate & 0b00100000) && (center & 0b00000100);
       }
       else if (z == 0) {
         return (candidate & 0b00100010) && (center & 0b01000100);
