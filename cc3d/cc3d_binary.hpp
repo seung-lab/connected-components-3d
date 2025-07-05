@@ -413,6 +413,10 @@ OUT* connected_components3d_26_binary(
         else if (y > 0 && minor[loc + K] && is_26_connected(cur, minor[loc+K], 0, -1, 0)) {
           out_labels[loc] = out_labels[loc + K];
 
+          if (x > 0 && minor[loc + M] && is_26_connected(cur, minor[loc+M], -1, 0, 0)) {
+            equivalences.unify(out_labels[loc], out_labels[loc + M]);
+          }
+
           if (y < msy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + H]);
           }
