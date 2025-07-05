@@ -287,7 +287,7 @@ OUT* relabel_2x2x2(
 
   const int64_t msx = (sx + 1) >> 1;
   const int64_t msy = (sy + 1) >> 1;
-  const int64_t msz = (sz + 1) >> 1;
+  // const int64_t msz = (sz + 1) >> 1;
   const int64_t voxels = sx * sy * sz;
 
 
@@ -299,6 +299,47 @@ OUT* relabel_2x2x2(
         oloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
         out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
       }
+    }
+  }
+
+  return out_labels;
+}
+
+template <typename T, typename OUT = uint32_t>
+OUT* relabel_2x2(
+  T* in_labels, OUT* out_labels, 
+  const int64_t sx, const int64_t sy,
+  const int64_t num_labels, DisjointSet<OUT> &equivalences,
+  size_t &N
+) {
+  OUT label;
+  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
+  OUT next_label = 1;
+
+  for (int64_t i = 1; i <= num_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
+      renumber[label] = next_label;
+      renumber[i] = next_label;
+      next_label++;
+    }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  N = next_label - 1;
+
+  const int64_t msx = (sx + 1) >> 1;
+  // const int64_t msy = (sy + 1) >> 1;
+  const int64_t voxels = sx * sy;
+
+  uint64_t loc = voxels - 1;
+  uint64_t oloc = 0;
+  for (int64_t y = sy - 1; y >= 0; y--) {
+    for (int64_t x = sx - 1; x >= 0; x--, loc--) {
+      oloc = (x >> 1) + msx * (y >> 1);
+      out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
     }
   }
 
@@ -1056,6 +1097,158 @@ OUT* connected_components2d_4_binary(
   return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
 }
 
+template <typename T, typename OUT = uint32_t>
+OUT* connected_components2d_8_binary_2x2(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy,
+    size_t max_labels, 
+    OUT *out_labels = NULL, size_t &N = _dummy_N
+  ) {
+
+  const int64_t voxels = sx * sy;
+
+  if (out_labels == NULL) {
+    out_labels = new OUT[voxels]();
+  }
+
+  if (max_labels == 0) {
+    return out_labels;
+  }
+
+  max_labels++; // corrects Cython estimation
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels) + 1), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
+  
+  DisjointSet<OUT> equivalences(max_labels);
+
+  // const std::unique_ptr<uint32_t[]> runs(
+  //   compute_foreground_index(in_labels, sx, sy, /*sz=*/1)
+  // );
+  uint8_t* minor = create_2x2_minor_image(in_labels, sx, sy);
+
+  const int64_t msx = (sx + 1) >> 1;
+  const int64_t msy = (sy + 1) >> 1;
+
+  /*
+    Layout of mask. We start from e.
+      | p |
+    a | b | c
+    d | e |
+  */
+
+  const int64_t A = -1 - msx;
+  const int64_t B = -msx;
+  const int64_t C = +1 - msx;
+  const int64_t D = -1;
+
+  const int64_t P = -2 * msx;
+
+  int64_t loc = 0;
+  int64_t row = 0;
+  OUT next_label = 0;
+
+  // Raster Scan 1: Set temporary labels and 
+  // record equivalences in a disjoint set.
+  for (int64_t y = 0; y < msy; y++, row++) {
+    // const int64_t xstart = runs[row << 1];
+    // const int64_t xend = runs[(row << 1) + 1];
+
+    for (int64_t x = 0; x < msx; x++) {
+      loc = x + msx * y;
+
+      const uint8_t cur = minor[loc];
+
+      if (cur == 0) {
+        continue;
+      }
+
+      if (y > 0 && minor[loc + B] && is_8_connected(cur, minor[loc+B], 0, -1)) {
+        out_labels[loc] = out_labels[loc + B];
+
+        if ((cur & 0b0011) == 0b0011 || (minor[loc+B] & 0b1100) == 0b1100) {
+          continue;
+        }
+
+        if (x > 0 && y > 0 && (minor[loc+B] & 0b0100) == 0) {
+          if (is_8_connected(cur, minor[loc+A], -1, -1)) {
+            equivalences.unify(out_labels[loc], out_labels[loc + A]);
+          }
+          if ((minor[loc+D] & 0b0011) == 0 && is_8_connected(cur, minor[loc+D], -1, 0)) {
+            equivalences.unify(out_labels[loc], out_labels[loc + D]);
+          }
+        }
+        
+        if (
+          x < msx - 1 && y > 0 
+          && (minor[loc+B] & 0b1000) == 0 
+          && is_8_connected(cur, minor[loc+C], 1, -1)
+        ) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+      }
+      else if (x > 0 && y > 0 && minor[loc + A] && is_8_connected(cur, minor[loc+A], -1, -1)) {
+        out_labels[loc] = out_labels[loc + A];
+        if (x < msx - 1 && y > 0 && minor[loc + C] && is_8_connected(cur, minor[loc+C], 1, -1)) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+        if ((minor[loc+D] & 0b1011) == 0b1000 && is_8_connected(cur, minor[loc+D], -1, 0)) {
+          equivalences.unify(out_labels[loc], out_labels[loc + D]);
+        }
+      }
+      else if (x > 0 && minor[loc + D] && is_8_connected(cur, minor[loc+D], -1, 0)) {
+        out_labels[loc] = out_labels[loc + D];
+        if (x < msx - 1 && y > 0 && minor[loc + C] && is_8_connected(cur, minor[loc+C], 1, -1)) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+      }
+      else if (x < msx - 1 && y > 0 && minor[loc + C] && is_8_connected(cur, minor[loc+C], 1, -1)) {
+        out_labels[loc] = out_labels[loc + C];
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);      
+      }
+    }
+  }
+
+  // if (periodic_boundary) {
+  //   for (int64_t x = 0; x < sx; x++) {
+  //     if (in_labels[x] == 0) {
+  //       continue;
+  //     }
+
+  //     if (x > 0 && in_labels[x] && in_labels[x - 1 + sx * (sy - 1)]) {
+  //       equivalences.unify(out_labels[x], out_labels[x - 1 + sx * (sy - 1)]);
+  //     }
+  //     if (in_labels[x] && in_labels[x + sx * (sy - 1)]) {
+  //       equivalences.unify(out_labels[x], out_labels[x + sx * (sy - 1)]);
+  //     }
+  //     if (x < sx - 1 && in_labels[x] && in_labels[x + 1 + sx * (sy - 1)]) {
+  //       equivalences.unify(out_labels[x], out_labels[x + 1 + sx * (sy - 1)]);
+  //     }
+  //   }
+
+  //   if (in_labels[0] && in_labels[voxels - 1]) {
+  //     equivalences.unify(out_labels[0], out_labels[voxels - 1]);
+  //   }
+  //   if (in_labels[sx - 1] && in_labels[sx * (sy - 1)]) {
+  //     equivalences.unify(out_labels[sx - 1], out_labels[sx * (sy - 1)]);
+  //   }
+
+  //   for (int64_t y = 0; y < sy; y++) {
+  //     loc = sx * y;
+  //     if (in_labels[loc] && in_labels[loc + (sx - 1)]) {
+  //       equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
+  //     }
+  //   }
+  // }
+
+  delete[] minor;
+
+  return relabel_2x2(in_labels, out_labels, sx, sy, next_label, equivalences, N);
+}
+
 // K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". 
 // Lawrence Berkely National Laboratory. LBNL-29102, 2005.
 // This is the stripped down version of that decision tree algorithm.
@@ -1217,9 +1410,10 @@ OUT* connected_components3d_binary(
     if (sz != 1) {
       throw std::runtime_error("sz must be 1 for 2D connectivities.");
     }
-    return connected_components2d_8_binary<T,OUT>(
+
+    return connected_components2d_8_binary_2x2<T,OUT>(
       in_labels, sx, sy,
-      max_labels, out_labels, N, periodic_boundary
+      max_labels, out_labels, N //periodic_boundary
     );
   }
   else if (connectivity == 4) {
