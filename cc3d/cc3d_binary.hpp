@@ -177,6 +177,65 @@ bool is_26_connected(
   }
 }
 
+// This is the second raster pass of the two pass algorithm family.
+// The input array (output_labels) has been assigned provisional 
+// labels and this resolves them into their final labels. We
+// modify this pass to also ensure that the output labels are
+// numbered from 1 sequentially.
+
+// This special version for the 2x2x2 block based decision tree
+// exploits the fact that the downsampled version of the out labels
+// is written to the front of the array and then writes backwards
+// erasing them as it goes.
+
+// The fact that the first pass does not touch every voxel in out_labels
+// unlike the multi-label version means we can't early exit on 
+// a few special conditions like before.
+template <typename T, typename OUT = uint32_t>
+OUT* relabel_2x2x2(
+  T* in_labels, OUT* out_labels, 
+  const int64_t sx, const int64_t sy, const int64_t sz,
+  const int64_t num_labels, DisjointSet<OUT> &equivalences,
+  size_t &N
+) {
+  OUT label;
+  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
+  OUT next_label = 1;
+
+  for (int64_t i = 1; i <= num_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
+      renumber[label] = next_label;
+      renumber[i] = next_label;
+      next_label++;
+    }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  N = next_label - 1;
+
+  const int64_t msx = (sx + 1) >> 1;
+  const int64_t msy = (sy + 1) >> 1;
+  const int64_t msz = (sz + 1) >> 1;
+  const int64_t voxels = sx * sy * sz;
+
+
+  uint64_t loc = voxels - 1;
+  uint64_t oloc = 0;
+  for (int64_t z = sz - 1; z >= 0; z--) {
+    for (int64_t y = sy - 1; y >= 0; y--) {
+      for (int64_t x = sx - 1; x >= 0; x--, loc--) {
+        oloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
+        out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
+      }
+    }
+  }
+
+  return out_labels;
+}
+
 // This is the original Wu et al decision tree but without
 // any copy operations, only union find. We can decompose the problem
 // into the z - 1 problem unified with the original 2D algorithm.
@@ -522,41 +581,9 @@ OUT* connected_components3d_26_binary(
     }
   }
   
-  int64_t num_labels = next_label;
-
-  OUT label;
-  OUT* renumber = new OUT[num_labels + 1]();
-  next_label = 1;
-
-  for (int64_t i = 1; i <= num_labels; i++) {
-    label = equivalences.root(i);
-    if (renumber[label] == 0) {
-      renumber[label] = next_label;
-      renumber[i] = next_label;
-      next_label++;
-    }
-    else {
-      renumber[i] = renumber[label];
-    }
-  }
-
-  // Raster Scan 2: Write final labels based on equivalences
-  loc = voxels - 1;
-  uint64_t oloc = 0;
-  for (int64_t z = sz - 1; z >= 0; z--) {
-    for (int64_t y = sy - 1; y >= 0; y--) {
-      for (int64_t x = sx - 1; x >= 0; x--, loc--) {
-        oloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
-        out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
-      }
-    }
-  }
-
-  delete[] renumber;
   delete[] minor;
 
-  return out_labels;
-  // return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
+  return relabel_2x2x2<T,OUT>(in_labels, out_labels, sx, sy, sz, next_label, equivalences, N);
 }
 
 template <typename T, typename OUT = uint32_t>
