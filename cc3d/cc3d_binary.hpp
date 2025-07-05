@@ -243,7 +243,7 @@ inline void unify2d_rt_2x2x2(
     DisjointSet<OUT> &equivalences  
   ) {
 
-  if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1+msx], 1, -1, 0)) {
+  if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]);
   }
 }
