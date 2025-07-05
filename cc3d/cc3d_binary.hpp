@@ -73,13 +73,13 @@ bool is_26_connected(
   if (x < 0) {
     if (y < 0) {
       if (z < 0) {
-        return (candidate & 0b10000000) && (center & 0b00000001);
+        return (candidate & 0b00000100) && (center & 0b00010000);
       }
       else if (z == 0) {
-        return (candidate & 0b10001000) && (center & 0b00010001);
+        return (candidate & 0b00010100) && (center & 0b00010001);
       }
       else {
-        return (candidate & 0b00001000) && (center & 0b00010000);
+        return (candidate & 0b00010000) && (center & 0b00000001);
       }
     }
     else if (y == 0) {
@@ -98,7 +98,7 @@ bool is_26_connected(
         return (candidate & 0b00100000) && (center & 0b00000100);
       }
       else if (z == 0) {
-        return (candidate & 0b00100010) && (center & 0b01000100);
+        return (candidate & 0b00100010) && (center & 0b01000010);
       }
       else {
         return (candidate & 0b00000010) && (center & 0b01000000);
@@ -108,24 +108,24 @@ bool is_26_connected(
   else if (x == 0) {
     if (y < 0) {
       if (z < 0) {
-        return (candidate & 0b00110000) && (center & 0b00001100);
+        return (candidate & 0b11000000) && (center & 0b00000011);
       }
       else if (z == 0) {
-        return (candidate & 0b00110011) && (center & 0b11001100);
+        return (candidate & 0b11001100) && (center & 0b00110011);
       }
       else {
-        return (candidate & 0b00000011) && (center & 0b11000000);
+        return (candidate & 0b00001100) && (center & 0b00110000);
       }
     }
     else if (y == 0) {
       if (z < 0) {
-        return (candidate & 0b00001111) && (center & 0b11110000);
+        return (candidate & 0b11110000) && (center & 0b00001111);
       }
       else if (z == 0) {
         return true;
       }
       else {
-        return (candidate & 0b11110000) && (center & 0b00001111);
+        return (candidate & 0b00001111) && (center & 0b11110000);
       }
     }
     else {
@@ -146,10 +146,10 @@ bool is_26_connected(
         return (candidate & 0b01000000) && (center & 0b00000010);
       }
       else if (z == 0) {
-        return (candidate & 0b01000100) && (center & 0b00010010);
+        return (candidate & 0b01000100) && (center & 0b00100010);
       }
       else {
-        return (candidate & 0b00000100) && (center & 0b00010000);
+        return (candidate & 0b00000100) && (center & 0b00100000);
       }
     }
     else if (y == 0) {
