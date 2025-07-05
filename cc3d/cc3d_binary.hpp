@@ -28,6 +28,243 @@
 
 namespace cc3d {
 
+template <typename T>
+uint8_t* create_2x2x2_minor_image(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy, const int64_t sz
+) {
+
+  const int64_t sxy = sx * sy;
+
+  const int64_t msx = (sx + 1) >> 1;
+  const int64_t msy = (sy + 1) >> 1;
+  const int64_t msz = (sz + 1) >> 1;
+
+  const int64_t minor_voxels = msx * msy * msz;
+
+  uint8_t* minor = new uint8_t[minor_voxels]();
+
+  int64_t i = 0;
+  for (int64_t z = 0; z < sz; z += 2) {
+    for (int64_t y = 0; y < sy; y += 2) {
+      for (int64_t x = 0; x < sx; x += 2, i++) {
+        int64_t loc = x + sx * y + sxy * z;
+        minor[i] = (
+          (in_labels[loc] > 0)
+          | (((x < sx - 1) && (in_labels[loc+1] > 0)) << 1)
+          | (((y < sy - 1) && (in_labels[loc+sx] > 0)) << 2)
+          | (((x < sx - 1 && y < sy - 1) && (in_labels[loc+sx+1] > 0)) << 3)
+          | (((z < sz - 1) && (in_labels[loc+sxy] > 0)) << 4)
+          | (((x < sx - 1 && z < sz - 1) && (in_labels[loc+sxy+1] > 0)) << 5)
+          | (((y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx] > 0)) << 6)
+          | (((x < sx - 1 && y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx+1] > 0)) << 7)
+        );
+      }
+    }
+  }
+
+  return minor;
+}
+
+bool is_26_connected(
+  const uint8_t candidate, const uint8_t center,
+  const uint64_t x, const uint64_t y, const uint64_t z
+) {
+  if (x < 0) {
+    if (y < 0) {
+      if (z < 0) {
+        return (candidate & 0b10000000) && (center & 0b00000001);
+      }
+      else if (z == 0) {
+        return (candidate & 0b10001000) && (center & 0b00010001);
+      }
+      else {
+        return (candidate & 0b00001000) && (center & 0b00010000);
+      }
+    }
+    else if (y == 0) {
+      if (z < 0) {
+        return (candidate & 0b10100000) && (center & 0b00000101);
+      }
+      else if (z == 0) {
+        return (candidate & 0b10101010) && (center & 0b01010101);
+      }
+      else {
+        return (candidate & 0b00001010) && (center & 0b01010000);
+      }
+    }
+    else {
+      if (z < 0) {
+        return (candidate & 0b00010000) && (center & 0b00000100);
+      }
+      else if (z == 0) {
+        return (candidate & 0b00100010) && (center & 0b01000100);
+      }
+      else {
+        return (candidate & 0b00000010) && (center & 0b01000000);
+      }
+    }
+  }
+  else if (x == 0) {
+    if (y < 0) {
+      if (z < 0) {
+        return (candidate & 0b11000000) && (center & 0b00000011);
+      }
+      else if (z == 0) {
+        return (candidate & 0b11001100) && (center & 0b00110011);
+      }
+      else {
+        return (candidate & 0b00001100) && (center & 0b00110000);
+      }
+    }
+    else if (y == 0) {
+      if (z < 0) {
+        return (candidate & 0b11110000) && (center & 0b00001111);
+      }
+      else if (z == 0) {
+        return true;
+      }
+      else {
+        return (candidate & 0b00001111) && (center & 0b11110000);
+      }
+    }
+    else {
+      if (z < 0) {
+        return (candidate & 0b00110000) && (center & 0b00001100);
+      }
+      else if (z == 0) {
+        return (candidate & 0b00110011) && (center & 0b11001100);
+      }
+      else {
+        return (candidate & 0b00000011) && (center & 0b11000000);
+      }
+    }
+  }
+  else {
+    if (y < 0) {
+      if (z < 0) {
+        return (candidate & 0b01000000) && (center & 0b00000010);
+      }
+      else if (z == 0) {
+        return (candidate & 0b01000100) && (center & 0b00010010);
+      }
+      else {
+        return (candidate & 0b00000100) && (center & 0b00010000);
+      }
+    }
+    else if (y == 0) {
+      if (z < 0) {
+        return (candidate & 0b01010000) && (center & 0b00001010);
+      }
+      else if (z == 0) {
+        return (candidate & 0b01010101) && (center & 0b10101010);
+      }
+      else {
+        return (candidate & 0b00000101) && (center & 0b10100000);
+      }
+    }
+    else {
+      if (z < 0) {
+        return (candidate & 0b00010000) && (center & 0b00001000);
+      }
+      else if (z == 0) {
+        return (candidate & 0b00010001) && (center & 0b10001000);
+      }
+      else {
+        return (candidate & 0b00000001) && (center & 0b10000000);
+      }
+    }
+  }
+}
+
+// This is the original Wu et al decision tree but without
+// any copy operations, only union find. We can decompose the problem
+// into the z - 1 problem unified with the original 2D algorithm.
+// If literally none of the Z - 1 are filled, we can use a faster version
+// of this that uses copies.
+template <typename OUT = uint32_t>
+inline void unify2d_2x2x2(
+    const int64_t loc, const uint8_t cur,
+    const int64_t x, const int64_t y, 
+    const int64_t msx, const int64_t msy, 
+    const uint8_t* minor, const OUT* out_labels,
+    DisjointSet<OUT> &equivalences  
+  ) {
+
+  if (y > 0 && cur == minor[loc - msx] && is_26_connected(cur, minor[loc-msx], 0, -1, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc - msx]);
+  }
+  else if (x > 0 && cur == minor[loc - 1] && is_26_connected(cur, minor[loc-1], -1, 0, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+
+    if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc + 1 - msx], 1, -1, 0)) {
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
+    }
+  }
+  else if (x > 0 && y > 0 && cur == minor[loc - 1 - msx] && is_26_connected(cur, minor[loc-1-msx], -1, -1, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]); 
+
+    if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
+    }
+  }
+  else if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]);
+  }
+}
+
+template <typename OUT = uint32_t>
+inline void unify2d_ac_2x2x2(
+    const int64_t loc, const uint8_t cur,
+    const int64_t x, const int64_t y, 
+    const int64_t msx, const int64_t msy, 
+    const uint8_t* minor, const OUT* out_labels,
+    DisjointSet<OUT> &equivalences  
+  ) {
+
+  if (x > 0 && y > 0 && cur == minor[loc - 1 - msx] && is_26_connected(cur, minor[loc-1-msx], -1, -1, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]); 
+
+    if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && !(y > 1 && cur == minor[loc - msx - msx]) && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+      equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
+    }
+  }
+  else if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]);
+  }
+}
+
+template <typename OUT = uint32_t>
+inline void unify2d_rt_2x2x2(
+    const int64_t loc, const uint8_t cur,
+    const int64_t x, const int64_t y, 
+    const int64_t msx, const int64_t msy, 
+    const uint8_t* minor, const OUT* out_labels,
+    DisjointSet<OUT> &equivalences  
+  ) {
+
+  if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1+msx], 1, -1, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]);
+  }
+}
+
+template <typename OUT = uint32_t>
+inline void unify2d_lt_2x2x2(
+    const int64_t loc, const uint8_t cur,
+    const int64_t x, const int64_t y, 
+    const int64_t msx, const int64_t msy, 
+    const uint8_t* minor, const OUT* out_labels,
+    DisjointSet<OUT> &equivalences  
+  ) {
+
+  if (x > 0 && cur == minor[loc - 1] && is_26_connected(cur, minor[loc - 1], -1, 0, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1]);
+  }
+  else if (x > 0 && y > 0 && cur == minor[loc - 1 - msx] && is_26_connected(cur, minor[loc - 1 - msx], -1, -1, 0)) {
+    equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]);
+  }
+}
+
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components3d_26_binary(
     T* in_labels, 
@@ -52,10 +289,17 @@ OUT* connected_components3d_26_binary(
   
   DisjointSet<OUT> equivalences(max_labels);
 
-  const std::unique_ptr<uint32_t[]> runs(
-    compute_foreground_index(in_labels, sx, sy, sz)
-  );
-     
+  // const std::unique_ptr<uint32_t[]> runs(
+  //   compute_foreground_index(in_labels, sx, sy, sz)
+  // );
+
+  const int64_t msx = (sx + 1) >> 1;
+  const int64_t msy = (sy + 1) >> 1;
+  const int64_t msz = (sz + 1) >> 1;
+  const int64_t msxy = msx * msy;
+
+  uint8_t* minor = create_2x2x2_minor_image(in_labels, sx, sy, sz);
+  
   /*
     Layout of forward pass mask (which faces backwards). 
     N is the current location.
@@ -68,20 +312,20 @@ OUT* connected_components3d_26_binary(
   */
 
   // Z - 1
-  const int64_t A = -1 - sx - sxy;
-  const int64_t B = -sx - sxy;
-  const int64_t C = +1 - sx - sxy;
-  const int64_t D = -1 - sxy;
-  const int64_t E = -sxy;
-  const int64_t F = +1 - sxy;
-  const int64_t G = -1 + sx - sxy;
-  const int64_t H = +sx - sxy;
-  const int64_t I = +1 + sx - sxy;
+  const int64_t A = -1 - msx - msxy;
+  const int64_t B = -msx - msxy;
+  const int64_t C = +1 - msx - msxy;
+  const int64_t D = -1 - msxy;
+  const int64_t E = -msxy;
+  const int64_t F = +1 - msxy;
+  const int64_t G = -1 + msx - msxy;
+  const int64_t H = +sx - msxy;
+  const int64_t I = +1 + msx - msxy;
 
   // Current Z
-  const int64_t J = -1 - sx;
-  const int64_t K = -sx;
-  const int64_t L = +1 - sx; 
+  const int64_t J = -1 - msx;
+  const int64_t K = -msx;
+  const int64_t L = +1 - msx; 
   const int64_t M = -1;
   // N = 0;
 
@@ -90,183 +334,183 @@ OUT* connected_components3d_26_binary(
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
-  int64_t row = 0;
-  for (int64_t z = 0; z < sz; z++) {
-    for (int64_t y = 0; y < sy; y++, row++) {
-      const int64_t xstart = runs[row << 1];
-      const int64_t xend = runs[(row << 1) + 1];
+  // int64_t row = 0;
+  for (int64_t z = 0; z < msz; z++) {
+    for (int64_t y = 0; y < msy; y++) { //, row++) {
+      // const int64_t xstart = runs[row << 1];
+      // const int64_t xend = runs[(row << 1) + 1];
 
-      for (int64_t x = xstart; x < xend; x++) {
-        loc = x + sx * y + sxy * z;
-        const T cur = in_labels[loc];
+      for (int64_t x = 0; x < msx; x++) {
+        loc = x + msx * y + msxy * z;
+        const uint8_t cur = minor[loc];
 
         if (cur == 0) {
           continue;
         }
 
-        if (z > 0 && in_labels[loc + E]) {
+        if (z > 0 && minor[loc + E] && is_26_connected(cur, minor[loc+E], 0, 0, -1)) {
           out_labels[loc] = out_labels[loc + E];
         }
-        else if (y > 0 && in_labels[loc + K]) {
+        else if (y > 0 && minor[loc + K] && is_26_connected(cur, minor[loc+K], 0, -1, 0)) {
           out_labels[loc] = out_labels[loc + K];
 
-          if (y < sy - 1 && z > 0 && in_labels[loc + H]) {
+          if (y < sy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + H]);
           }
-          else if (x > 0 && y < sy - 1 && z > 0 && in_labels[loc + G]) {
+          else if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, 1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
             
-            if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+            if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
               equivalences.unify(out_labels[loc], out_labels[loc + I]);
             }
           }
-          else if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+          else if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (z > 0 && y > 0 && in_labels[loc + B]) {
+        else if (z > 0 && y > 0 && minor[loc + B] && is_26_connected(cur, minor[loc+B], 0, -1, -1)) {
           out_labels[loc] = out_labels[loc + B];
 
-          if (y < sy - 1 && z > 0 && in_labels[loc + H]) {
+          if (y < sy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + H]);
           }
-          else if (x > 0 && y < sy - 1 && z > 0 && in_labels[loc + G]) {
+          else if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, 1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
             
-            if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+            if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
               equivalences.unify(out_labels[loc], out_labels[loc + I]);
             }
           }
-          else if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+          else if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (x > 0 && in_labels[loc + M]) {
+        else if (x > 0 && minor[loc + M] && is_26_connected(cur, minor[loc+M], -1, 0, 0)) {
           out_labels[loc] = out_labels[loc + M];
 
-          if (x < sx - 1 && z > 0 && in_labels[loc + F]) {
+          if (x < sx - 1 && z > 0 && minor[loc + F] && is_26_connected(cur, minor[loc+F], 1, 0, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + F]);
           }
-          else if (x < sx - 1 && y > 0 && in_labels[loc + L]) {
+          else if (x < sx - 1 && y > 0 && minor[loc + L] && is_26_connected(cur, minor[loc+L], 1, -1, 0)) {
             equivalences.unify(out_labels[loc], out_labels[loc + L]);
 
-            if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+            if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
               equivalences.unify(out_labels[loc], out_labels[loc + I]);
             }
           }
-          else if (x < sx - 1 && y > 0 && z > 0 && in_labels[loc + C]) {
+          else if (x < sx - 1 && y > 0 && z > 0 && minor[loc + C] && is_26_connected(cur, minor[loc+C], 1, -1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + C]);
 
-            if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+            if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
               equivalences.unify(out_labels[loc], out_labels[loc + I]);
             }
           }
-          else if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+          else if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (x > 0 && z > 0 && in_labels[loc + D]) {
+        else if (x > 0 && z > 0 && minor[loc + D] && is_26_connected(cur, minor[loc+D], -1, 0, -1)) {
           out_labels[loc] = out_labels[loc + D];
 
-          if (x < sx - 1 && z > 0 && in_labels[loc + F]) {
+          if (x < sx - 1 && z > 0 && minor[loc + F] && is_26_connected(cur, minor[loc+F], 1, 0, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + F]);
           }
-          else if (x < sx - 1 && y > 0 && in_labels[loc + L]) {
+          else if (x < sx - 1 && y > 0 && minor[loc + L] && is_26_connected(cur, minor[loc+L], 1, -1, 0)) {
             equivalences.unify(out_labels[loc], out_labels[loc + L]);
 
-            if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+            if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
               equivalences.unify(out_labels[loc], out_labels[loc + I]);
             }
           }
-          else if (x < sx - 1 && y > 0 && z > 0 && in_labels[loc + C]) {
+          else if (x < sx - 1 && y > 0 && z > 0 && minor[loc + C] && is_26_connected(cur, minor[loc+C], 1, -1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + C]);
 
-            if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+            if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
               equivalences.unify(out_labels[loc], out_labels[loc + I]);
             }
           }
-          else if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+          else if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (y < sy - 1 && z > 0 && in_labels[loc + H]) {
+        else if (y < sy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
           out_labels[loc] = out_labels[loc + H];
-          unify2d_ac<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+          unify2d_ac_2x2x2(loc, cur, x, y, msx, msy, minor, out_labels, equivalences);
 
-          if (x > 0 && y > 0 && z > 0 && in_labels[loc + A]) {
+          if (x > 0 && y > 0 && z > 0 && minor[loc + A] && is_26_connected(cur, minor[loc+A], -1, -1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + A]);
           }
-          if (x < sx - 1 && y > 0 && z > 0 && in_labels[loc + C]) {
+          if (x < sx - 1 && y > 0 && z > 0 && minor[loc + C] && is_26_connected(cur, minor[loc+C], 1, -1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + C]);
           }
         }
-        else if (x < sx - 1 && z > 0 && in_labels[loc + F]) {
+        else if (x < sx - 1 && z > 0 && minor[loc + F] && is_26_connected(cur, minor[loc+F], 1, 0, -1)) {
           out_labels[loc] = out_labels[loc + F];
-          unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+          unify2d_lt_2x2x2(loc, cur, x, y, msx, msy, minor, out_labels, equivalences);
 
-          if (x > 0 && y > 0 && z > 0 && in_labels[loc + A]) {
+          if (x > 0 && y > 0 && z > 0 && minor[loc + A] && is_26_connected(cur, minor[loc+A], -1, -1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + A]);
           }
-          if (x > 0 && y < sy - 1 && z > 0 && in_labels[loc + G]) {
+          if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
           }
         }
-        else if (x > 0 && y > 0 && z > 0 && in_labels[loc + A]) {
+        else if (x > 0 && y > 0 && z > 0 && minor[loc + A] && is_26_connected(cur, minor[loc+A], -1, -1, -1)) {
           out_labels[loc] = out_labels[loc + A];
-          unify2d_rt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+          unify2d_rt_2x2x2(loc, cur, x, y, msx, msy, minor, out_labels, equivalences);
 
-          if (x < sx - 1 && y > 0 && z > 0 && in_labels[loc + C]) {
+          if (x < sx - 1 && y > 0 && z > 0 && minor[loc + C] && is_26_connected(cur, minor[loc+C], 1, -1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + C]);
           }
-          if (x > 0 && y < sy - 1 && z > 0 && in_labels[loc + G]) {
+          if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
           }      
-          if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+          if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (x < sx - 1 && y > 0 && z > 0 && in_labels[loc + C]) {
+        else if (x < sx - 1 && y > 0 && z > 0 && minor[loc + C] && is_26_connected(cur, minor[loc+C], 1, -1, -1)) {
           out_labels[loc] = out_labels[loc + C];
-          unify2d_lt<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+          unify2d_lt_2x2x2(loc, cur, x, y, msx, msy, minor, out_labels, equivalences);
 
-          if (x > 0 && y < sy - 1 && z > 0 && in_labels[loc + G]) {
+          if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
           }
-          if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+          if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (x > 0 && y < sy - 1 && z > 0 && in_labels[loc + G]) {
+        else if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
           out_labels[loc] = out_labels[loc + G];
-          unify2d_ac<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+          unify2d_ac_2x2x2(loc, cur, x, y, msx, msy, minor, out_labels, equivalences);
 
-          if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+          if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + I]);
           }
         }
-        else if (x < sx - 1 && y < sy - 1 && z > 0 && in_labels[loc + I]) {
+        else if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
           out_labels[loc] = out_labels[loc + I];
-          unify2d_ac<T>(loc, cur, x, y, sx, sy, in_labels, out_labels, equivalences);
+          unify2d_ac_2x2x2(loc, cur, x, y, msx, msy, minor, out_labels, equivalences);
         }
         // It's the original 2D problem now
-        else if (y > 0 && in_labels[loc + K]) {
+        else if (y > 0 && minor[loc + K] && is_26_connected(cur, minor[loc+K], 0, -1, 0)) {
           out_labels[loc] = out_labels[loc + K];
         }
-        else if (x > 0 && in_labels[loc + M]) {
+        else if (x > 0 && minor[loc + M] && is_26_connected(cur, minor[loc+M], -1, 0, 0)) {
           out_labels[loc] = out_labels[loc + M];
 
-          if (x < sx - 1 && y > 0 && in_labels[loc + L]) {
+          if (x < sx - 1 && y > 0 && minor[loc + L] && is_26_connected(cur, minor[loc+L], 1, -1, 0)) {
             equivalences.unify(out_labels[loc], out_labels[loc + L]); 
           }
         }
-        else if (x > 0 && y > 0 && in_labels[loc + J]) {
+        else if (x > 0 && y > 0 && minor[loc + J] && is_26_connected(cur, minor[loc+J], 1, 1, 0)) {
           out_labels[loc] = out_labels[loc + J];
 
-          if (x < sx - 1 && y > 0 && in_labels[loc + L]) {
+          if (x < sx - 1 && y > 0 && minor[loc + L] && is_26_connected(cur, minor[loc+L], 1, -1, 0)) {
             equivalences.unify(out_labels[loc], out_labels[loc + L]); 
           }
         }
-        else if (x < sx - 1 && y > 0 && in_labels[loc + L]) {
+        else if (x < sx - 1 && y > 0 && minor[loc + L] && is_26_connected(cur, minor[loc+L], 1, -1, 0)) {
           out_labels[loc] = out_labels[loc + L];
         }
         else {
@@ -278,7 +522,41 @@ OUT* connected_components3d_26_binary(
     }
   }
   
-  return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
+  int64_t num_labels = next_label;
+
+  OUT label;
+  OUT* renumber = new OUT[num_labels + 1]();
+  next_label = 1;
+
+  for (int64_t i = 1; i <= num_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
+      renumber[label] = next_label;
+      renumber[i] = next_label;
+      next_label++;
+    }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  // Raster Scan 2: Write final labels based on equivalences
+  loc = voxels - 1;
+  uint64_t oloc = 0;
+  for (int64_t z = sz - 1; z >= 0; z--) {
+    for (int64_t y = sy - 1; y >= 0; y--) {
+      for (int64_t x = sx - 1; x >= 0; x--, loc--) {
+        oloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
+        out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
+      }
+    }
+  }
+
+  delete[] renumber;
+  delete[] minor;
+
+  return out_labels;
+  // return relabel<OUT>(out_labels, sx, sy, sz, next_label, equivalences, N, runs.get());
 }
 
 template <typename T, typename OUT = uint32_t>
