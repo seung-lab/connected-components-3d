@@ -378,7 +378,7 @@ OUT* connected_components3d_26_binary(
   const int64_t E = -msxy;
   const int64_t F = +1 - msxy;
   const int64_t G = -1 + msx - msxy;
-  const int64_t H = +sx - msxy;
+  const int64_t H = +msx - msxy;
   const int64_t I = +1 + msx - msxy;
 
   // Current Z
