@@ -357,7 +357,7 @@ OUT* connected_components3d_26_binary(
           if (y < sy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + H]);
           }
-          else if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, 1)) {
+          else if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
             
             if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
@@ -374,7 +374,7 @@ OUT* connected_components3d_26_binary(
           if (y < sy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + H]);
           }
-          else if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, 1)) {
+          else if (x > 0 && y < sy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
             equivalences.unify(out_labels[loc], out_labels[loc + G]);
             
             if (x < sx - 1 && y < sy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
