@@ -68,7 +68,7 @@ uint8_t* create_2x2x2_minor_image(
 
 bool is_26_connected(
   const uint8_t candidate, const uint8_t center,
-  const uint64_t x, const uint64_t y, const uint64_t z
+  const int x, const int y, const int z
 ) {
   if (x < 0) {
     if (y < 0) {
