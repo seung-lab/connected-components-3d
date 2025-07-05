@@ -66,6 +66,75 @@ uint8_t* create_2x2x2_minor_image(
   return minor;
 }
 
+template <typename T>
+uint8_t* create_2x2_minor_image(
+    T* in_labels, 
+    const int64_t sx, const int64_t sy
+) {
+
+  const int64_t msx = (sx + 1) >> 1;
+  const int64_t msy = (sy + 1) >> 1;
+
+  const int64_t minor_voxels = msx * msy;
+
+  uint8_t* minor = new uint8_t[minor_voxels]();
+
+  int64_t i = 0;
+    for (int64_t y = 0; y < sy; y += 2) {
+      for (int64_t x = 0; x < sx; x += 2, i++) {
+        int64_t loc = x + sx * y;
+        minor[i] = (
+          (in_labels[loc] > 0)
+          | (((x < sx - 1) && (in_labels[loc+1] > 0)) << 1)
+          | (((y < sy - 1) && (in_labels[loc+sx] > 0)) << 2)
+          | (((x < sx - 1 && y < sy - 1) && (in_labels[loc+sx+1] > 0)) << 3)
+        );
+      }
+  }
+
+  return minor;
+}
+
+bool is_8_connected(
+  const uint8_t center, const uint8_t candidate, 
+  const int x, const int y
+) {
+
+  if (x < 0) {
+    if (y < 0) {
+      return (candidate & 0b1000) && (center & 0b0001);
+    }
+    else if (y == 0) {
+      return (candidate & 0b1010) && (center & 0b0101);
+    }
+    else {
+      return (candidate & 0b0010) && (center & 0b0100);
+    }
+  }
+  else if (x == 0) {
+    if (y < 0) {
+      return (candidate & 0b1100) && (center & 0b0011);
+    }
+    else if (y == 0) {
+      return true;
+    }
+    else {
+      return (candidate & 0b0011) && (center & 0b01100);
+    }
+  }
+  else {
+    if (y < 0) {
+      return (candidate & 0b0100) && (center & 0b0010);
+    }
+    else if (y == 0) {
+      return (candidate & 0b0101) && (center & 0b1010);
+    }
+    else {
+      return (candidate & 0b0001) && (center & 0b1000);
+    }
+  }
+}
+
 bool is_26_connected(
   const uint8_t center, const uint8_t candidate, 
   const int x, const int y, const int z
