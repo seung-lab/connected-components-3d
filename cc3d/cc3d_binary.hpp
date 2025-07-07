@@ -25,6 +25,7 @@
 #define CC3D_BINARY_HPP 
 
 #include "cc3d.hpp"
+#include "builtins.hpp"
 
 namespace cc3d {
 
@@ -66,7 +67,9 @@ uint8_t* create_2x2x2_minor_image(
   return minor;
 }
 
+
 template <typename T>
+__attribute__((noinline))
 uint8_t* create_2x2_minor_image(
     T* in_labels, 
     const int64_t sx, const int64_t sy
@@ -305,7 +308,9 @@ OUT* relabel_2x2x2(
   return out_labels;
 }
 
+
 template <typename T, typename OUT = uint32_t>
+__attribute__((noinline))
 OUT* relabel_2x2(
   T* in_labels, OUT* out_labels, 
   const int64_t sx, const int64_t sy,
@@ -501,6 +506,11 @@ OUT* connected_components3d_26_binary(
   OUT next_label = 0;
   int64_t loc = 0;
 
+  printf("HERE\n");
+
+  #define MSET(letter, bitmask) ((minor[loc+(letter)] & bitmask) == bitmask)
+  #define UNIFY(letter) equivalences.unify(out_labels[loc], out_labels[loc + (letter)]);
+
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
   // int64_t row = 0;
@@ -519,6 +529,97 @@ OUT* connected_components3d_26_binary(
 
         if (z > 0 && minor[loc + E] && is_26_connected(cur, minor[loc+E], 0, 0, -1)) {
           out_labels[loc] = out_labels[loc + E];
+
+          const int ct = popcount(minor[loc+E] & 0b11110000);
+
+          if (ct == 4) {
+            continue;
+          }
+          else if (ct == 3) {
+            if (minor[loc+E] & 0b11100000) {
+              if (x > 0 && y > 0 && minor[loc + A] && is_26_connected(cur, minor[loc + A], -1, -1, -1)) {
+                equivalences.unify(out_labels[loc], out_labels[loc + A]);
+              }
+            }
+            else if (minor[loc+E] & 0b11010000) {
+              if (x < msx - 1 && y > 0 && z > 0 && minor[loc + C] && is_26_connected(cur, minor[loc+C], 1, -1, -1)) {
+                equivalences.unify(out_labels[loc], out_labels[loc + C]);
+              }
+            }
+            else if (minor[loc+E] & 0b10110000) {
+              if (x > 0 && y < msy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
+                equivalences.unify(out_labels[loc], out_labels[loc + G]);
+              }
+            }
+            else {
+              if (x < msx - 1 && y < msy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
+                equivalences.unify(out_labels[loc], out_labels[loc + I]);
+              }
+            }
+          }
+          else if (ct == 2) {
+              if (minor[loc+E] & 0b00110000) { // up, GHI
+                if (y < msy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
+                  UNIFY(H)
+
+                  if (MSET(H, 0b00110000)) { 
+                    continue;
+                  }
+                  else if (x > 0 && MSET(H, 0b00100000)) {
+                    UNIFY(G)
+                  }
+                  else if (x < msx - 1 && MSET(H, 0b00010000)) {
+                    UNIFY(I)
+                  }
+                }
+              }
+              else if (minor[loc+E] & 0b01010000) { // left, LCFI
+                if (x < msx - 1 && z > 0 && minor[loc + F] && is_26_connected(cur, minor[loc+F], 1, 0, -1)) {
+                  UNIFY(F)
+
+                  if (MSET(F, 0b01010000)) {
+                    continue;
+                  }
+                  else if (y < msy - 1 && MSET(F, 0b00010000)) {
+                    UNIFY(I)
+                  }
+                  else if (y > 0 && MSET(F, 0b01000000)) {
+                    UNIFY(C)
+                  }
+                }
+                else {
+                  if (x < msx - 1 && y < msy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
+                    UNIFY(I)
+                  }
+                }
+              }
+              else if (minor[loc+E] & 0b10010000) { // diagonal \
+                
+              }
+              else if (minor[loc+E] & 0b01100000) { // diagonal /
+                
+              }
+              else if (minor[loc+E] & 0b10100000) { // right
+                
+              }
+              else { // down
+
+              }
+          }
+          else {
+            if (minor[loc+E] & 0b10000000) {
+
+            }
+            else if (minor[loc+E] & 0b01000000) {
+
+            }
+            else if (minor[loc+E] & 0b00100000) {
+
+            }
+            else {
+
+            }
+          }
         }
         else if (y > 0 && minor[loc + K] && is_26_connected(cur, minor[loc+K], 0, -1, 0)) {
           out_labels[loc] = out_labels[loc + K];
