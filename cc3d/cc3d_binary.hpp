@@ -369,24 +369,24 @@ inline void unify2d_2x2x2(
     DisjointSet<OUT> &equivalences  
   ) {
 
-  if (y > 0 && cur == minor[loc - msx] && is_26_connected(cur, minor[loc-msx], 0, -1, 0)) {
+  if (y > 0 && minor[loc - msx] && is_26_connected(cur, minor[loc-msx], 0, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc - msx]);
   }
-  else if (x > 0 && cur == minor[loc - 1] && is_26_connected(cur, minor[loc-1], -1, 0, 0)) {
+  else if (x > 0 && minor[loc - 1] && is_26_connected(cur, minor[loc-1], -1, 0, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
 
-    if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc + 1 - msx], 1, -1, 0)) {
+    if (x < msx - 1 && y > 0 && minor[loc + 1 - msx] && is_26_connected(cur, minor[loc + 1 - msx], 1, -1, 0)) {
       equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
     }
   }
-  else if (x > 0 && y > 0 && cur == minor[loc - 1 - msx] && is_26_connected(cur, minor[loc-1-msx], -1, -1, 0)) {
+  else if (x > 0 && y > 0 && minor[loc - 1 - msx] && is_26_connected(cur, minor[loc-1-msx], -1, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]); 
 
-    if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+    if (x < msx - 1 && y > 0 && minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
       equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
     }
   }
-  else if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+  else if (x < msx - 1 && y > 0 && minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]);
   }
 }
@@ -400,14 +400,14 @@ inline void unify2d_ac_2x2x2(
     DisjointSet<OUT> &equivalences  
   ) {
 
-  if (x > 0 && y > 0 && cur == minor[loc - 1 - msx] && is_26_connected(cur, minor[loc-1-msx], -1, -1, 0)) {
+  if (x > 0 && y > 0 && minor[loc - 1 - msx] && is_26_connected(cur, minor[loc-1-msx], -1, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]); 
 
-    if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && !(y > 1 && cur == minor[loc - msx - msx]) && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+    if (x < msx - 1 && y > 0 && minor[loc + 1 - msx] && !(y > 1 && minor[loc - msx - msx]) && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
       equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
     }
   }
-  else if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+  else if (x < msx - 1 && y > 0 && minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]);
   }
 }
@@ -421,7 +421,7 @@ inline void unify2d_rt_2x2x2(
     DisjointSet<OUT> &equivalences  
   ) {
 
-  if (x < msx - 1 && y > 0 && cur == minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
+  if (x < msx - 1 && y > 0 && minor[loc + 1 - msx] && is_26_connected(cur, minor[loc+1-msx], 1, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]);
   }
 }
@@ -435,10 +435,10 @@ inline void unify2d_lt_2x2x2(
     DisjointSet<OUT> &equivalences  
   ) {
 
-  if (x > 0 && cur == minor[loc - 1] && is_26_connected(cur, minor[loc - 1], -1, 0, 0)) {
+  if (x > 0 && minor[loc - 1] && is_26_connected(cur, minor[loc - 1], -1, 0, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc - 1]);
   }
-  else if (x > 0 && y > 0 && cur == minor[loc - 1 - msx] && is_26_connected(cur, minor[loc - 1 - msx], -1, -1, 0)) {
+  else if (x > 0 && y > 0 && minor[loc - 1 - msx] && is_26_connected(cur, minor[loc - 1 - msx], -1, -1, 0)) {
     equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]);
   }
 }
