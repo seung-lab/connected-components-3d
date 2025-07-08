@@ -1,4 +1,4 @@
-#include "cc3d.hpp"
+#include "cc3d/cc3d.hpp"
 #include <chrono>
 #include <iostream>
 
@@ -68,7 +68,7 @@ int main () {
 	size_t sz = 512;
 	size_t voxels = sx * sy * sz;
 
-	uint32_t* subvol = black();
+	uint32_t* subvol = randomvol();
 
   typedef std::chrono::high_resolution_clock Time;
   typedef std::chrono::milliseconds ms;
@@ -82,7 +82,7 @@ int main () {
   auto t1 = Time::now();
   fsec fs = t1 - t0;
   ms d = std::chrono::duration_cast<ms>(fs);
-  std::cout << d.count() / N << "ms\n";
+  std::cout << N << " runs, avg. " << d.count() / N << "ms\n";
 
 	return 0;
 }
