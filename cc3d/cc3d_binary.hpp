@@ -866,8 +866,19 @@ OUT* connected_components3d_binary(
     const bool periodic_boundary = false
   ) {
   const size_t voxels = sx * sy * sz;
-  size_t max_labels = std::min(estimate_provisional_label_count(in_labels, sx, voxels), voxels);
-  return connected_components3d<T, OUT>(
+  size_t max_labels = voxels;
+
+  if (connectivity == 26) {
+    max_labels = (voxels >> 3) + 1;
+  } 
+  else if (connectivity == 8 || connectivity == 18) {
+    max_labels = (voxels >> 2) + 1;
+  }
+  else {
+    max_labels = (voxels >> 1) + 1;
+  }
+
+  return connected_components3d_binary<T, OUT>(
     in_labels, sx, sy, sz, 
     max_labels, connectivity, 
     NULL, N, periodic_boundary
