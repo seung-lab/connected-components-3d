@@ -46,7 +46,7 @@ uint8_t* create_2x2x2_minor_image(
 
   const int64_t minor_voxels = msx * msy * msz;
 
-  uint8_t* minor = new uint8_t[minor_voxels]();
+  uint8_t* minor = new uint8_t[minor_voxels];
 
   const unsigned int num_threads = std::thread::hardware_concurrency();
 
@@ -91,7 +91,7 @@ uint8_t* create_2x2_minor_image(
 
   const int64_t minor_voxels = msx * msy;
 
-  uint8_t* minor = new uint8_t[minor_voxels]();
+  uint8_t* minor = new uint8_t[minor_voxels];
 
   int64_t i = 0;
     for (int64_t y = 0; y < sy; y += 2) {
