@@ -1,4 +1,4 @@
-#include "cc3d.hpp"
+#include "cc3d/cc3d_binary.hpp"
 #include <chrono>
 #include <iostream>
 
@@ -68,7 +68,7 @@ int main () {
 	size_t sz = 512;
 	size_t voxels = sx * sy * sz;
 
-	uint32_t* subvol = black();
+	uint32_t* subvol = randomvol();
 
   typedef std::chrono::high_resolution_clock Time;
   typedef std::chrono::milliseconds ms;
@@ -76,7 +76,7 @@ int main () {
   auto t0 = Time::now();
   int N = 1;
   for (int i = 0; i < N; i++) {
-		cc3d::connected_components3d<uint32_t, uint32_t>(subvol, sx,sy,sz, 26);
+		cc3d::connected_components3d_binary<uint32_t, uint32_t>(subvol, sx,sy,sz, 26);
 	}
 
   auto t1 = Time::now();
