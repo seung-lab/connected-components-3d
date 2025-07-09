@@ -307,7 +307,10 @@ OUT* relabel_2x2x2(
 
   ThreadPool pool(std::thread::hardware_concurrency());
 
-  uint64_t max_z = msx * msy * msz / (sx * sy) / 4;
+  uint64_t max_z = std::max(
+    static_cast<uint64_t>(msx * msy * msz / (sx * sy) / 8), 
+    static_cast<uint64_t>(1)
+  );
 
   printf("max_z %d\n", max_z);
 
