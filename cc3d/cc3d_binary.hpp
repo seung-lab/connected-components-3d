@@ -605,9 +605,26 @@ OUT* connected_components3d_26_binary(
           continue;
         }
 
-        compute_neighborhood_binary(neighborhood, x, y, z, sx, sy, sz, 26);
+        if (z > 0 && is_26_connected(cur, minor[loc - msxy], 0, 0, -1) && (minor[loc-msxy] & 0b11110000)) {
+          out_labels[loc] = out_labels[loc - msxy];
+
+          if (x > 0 && is_26_connected(cur, minor[loc - 1], x-1, y, z)) {
+            equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+          }
+          if (x > 0 && y > 0 && is_26_connected(cur, minor[loc - 1 - msx], x-1, y-1, z)) {
+            equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]); 
+          }
+          if (y > 0 && is_26_connected(cur, minor[loc - msx], x, y-1, z)) {
+            equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+          }
+          if (x < msx - 1 && y > 0 && is_26_connected(cur, minor[loc + 1 - msx], x+1, y-1, z)) {
+            equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
+          }
+          continue;
+        }
 
         bool any = false;
+        compute_neighborhood_binary(neighborhood, x, y, z, msx, msy, msz, 26);
 
         for (int64_t i = 0; i < 13; i++) {
           int64_t neighbor = neighborhood[i];
@@ -615,8 +632,6 @@ OUT* connected_components3d_26_binary(
           if (neighbor == 0 || minor[loc + neighbor] == 0) {
             continue;
           }
-
-          // printf("label: %d\n", next_label);
 
           if (is_26_connected(cur, minor[loc + neighbor], x + xoff[i], y + yoff[i], z + zoff[i])) {
             if (any) {
