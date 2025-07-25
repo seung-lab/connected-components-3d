@@ -156,13 +156,13 @@ bool is_26_connected(
   if (x < 0) {
     if (y < 0) {
       if (z < 0) {
-        return (candidate & 0b00000100) && (center & 0b00010000);
+        return (candidate & 0b10000000) && (center & 0b00000001);
       }
       else if (z == 0) {
-        return (candidate & 0b00010100) && (center & 0b00010001);
+        return (candidate & 0b10001000) && (center & 0b00010001);
       }
       else {
-        return (candidate & 0b00010000) && (center & 0b00000001);
+        return (candidate & 0b00001000) && (center & 0b00010000);
       }
     }
     else if (y == 0) {
