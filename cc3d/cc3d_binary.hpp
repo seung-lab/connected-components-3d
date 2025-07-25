@@ -608,14 +608,17 @@ OUT* connected_components3d_26_binary(
         if (z > 0 && is_26_connected(cur, minor[loc - msxy], 0, 0, -1) && (minor[loc-msxy] & 0b11110000)) {
           out_labels[loc] = out_labels[loc - msxy];
 
+          if (y > 0 && is_26_connected(cur, minor[loc - msx], x, y-1, z)) {
+            equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+            if (minor[loc-msx] & 0b0001100) {
+              continue;
+            }
+          }
           if (x > 0 && is_26_connected(cur, minor[loc - 1], x-1, y, z)) {
             equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
           }
           if (x > 0 && y > 0 && is_26_connected(cur, minor[loc - 1 - msx], x-1, y-1, z)) {
             equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]); 
-          }
-          if (y > 0 && is_26_connected(cur, minor[loc - msx], x, y-1, z)) {
-            equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
           }
           if (x < msx - 1 && y > 0 && is_26_connected(cur, minor[loc + 1 - msx], x+1, y-1, z)) {
             equivalences.unify(out_labels[loc], out_labels[loc + 1 - msx]); 
