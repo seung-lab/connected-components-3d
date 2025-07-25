@@ -33,6 +33,33 @@
 namespace cc3d {
 
 template <typename T>
+uint8_t compute_cube(
+  const T* binimg,
+  const uint64_t sx, const uint64_t sy, const uint64_t sz,
+  const uint64_t x, const uint64_t y, const uint64_t z
+) {
+  const uint64_t sxy = sx * sy;
+  const uint64_t loc = x + sx * (y + sy * z);
+
+  const uint64_t x_valid = (x < sx - 1);
+  const uint64_t y_valid = (y < sy - 1);
+  const uint64_t z_valid = (z < sz - 1);
+
+  return static_cast<uint8_t>(
+    (binimg[loc] > 0)
+    | ((x_valid && (binimg[loc+1] > 0)) << 1)
+    | ((y_valid && (binimg[loc+sx] > 0)) << 2)
+    | (((x_valid && y_valid) && (binimg[loc+sx+1] > 0)) << 3)
+    | ((z_valid && (binimg[loc+sxy] > 0)) << 4)
+    | (((x_valid && z_valid) && (binimg[loc+sxy+1] > 0)) << 5)
+    | (((y_valid && z_valid) && (binimg[loc+sxy+sx] > 0)) << 6)
+    | (((x_valid && y_valid && z_valid) && (binimg[loc+sxy+sx+1] > 0)) << 7)
+  );
+}
+
+
+
+template <typename T>
 uint8_t* create_2x2x2_minor_image(
     T* in_labels, 
     const int64_t sx, const int64_t sy, const int64_t sz
@@ -58,16 +85,7 @@ uint8_t* create_2x2x2_minor_image(
         for (int64_t x = 0; x < sx; x += 2) {
           int64_t loc = x + sx * y + sxy * z;
           int64_t mloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
-          minor[mloc] = (
-            (in_labels[loc] > 0)
-            | (((x < sx - 1) && (in_labels[loc+1] > 0)) << 1)
-            | (((y < sy - 1) && (in_labels[loc+sx] > 0)) << 2)
-            | (((x < sx - 1 && y < sy - 1) && (in_labels[loc+sx+1] > 0)) << 3)
-            | (((z < sz - 1) && (in_labels[loc+sxy] > 0)) << 4)
-            | (((x < sx - 1 && z < sz - 1) && (in_labels[loc+sxy+1] > 0)) << 5)
-            | (((y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx] > 0)) << 6)
-            | (((x < sx - 1 && y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx+1] > 0)) << 7)
-          );
+          minor[mloc] = compute_cube(in_labels, sx, sy, sz, x, y, z);
         }
       }
     });
