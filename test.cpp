@@ -39,10 +39,7 @@ uint32_t* read_subvol() {
   return input;
 }
 
-uint32_t* randomvol() {
-	size_t sx = 512;
-	size_t sy = 512;
-	size_t sz = 512;
+uint32_t* randomvol(size_t sx, size_t sy, size_t sz) {
 	size_t voxels = sx * sy * sz;
 
 	uint32_t *big = new uint32_t[sx*sy*sz]();
@@ -63,18 +60,18 @@ uint32_t* black() {
 
 int main () {
 
-	size_t sx = 512;
-	size_t sy = 512;
-	size_t sz = 512;
+	size_t sx = 1000;
+	size_t sy = 1000;
+	size_t sz = 1000;
 	size_t voxels = sx * sy * sz;
 
-	uint32_t* subvol = randomvol();
+	uint32_t* subvol = randomvol(sx, sy, sz);
 
   typedef std::chrono::high_resolution_clock Time;
   typedef std::chrono::milliseconds ms;
   typedef std::chrono::duration<float> fsec;
   auto t0 = Time::now();
-  int N = 1;
+  int N = 2;
   for (int i = 0; i < N; i++) {
 		cc3d::connected_components3d_binary<uint32_t, uint32_t>(subvol, sx,sy,sz, 26);
 	}
