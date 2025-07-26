@@ -278,6 +278,11 @@ bool is_26_connected(
   }
 }
 
+inline bool has_8_connectivity(uint8_t cube) {
+  uint8_t flat = ((cube >> 4) | cube) & 0b1111;
+  return ((flat & 0b1001) == 0b1001) || ((flat & 0b0110) == 0b0110);
+}
+
 // This is the second raster pass of the two pass algorithm family.
 // The input array (output_labels) has been assigned provisional 
 // labels and this resolves them into their final labels. We
@@ -605,17 +610,20 @@ OUT* connected_components3d_26_binary(
           continue;
         }
 
-        if (z > 0 && is_26_connected(cur, minor[loc - msxy], 0, 0, -1) && (((minor[loc-msxy] >> 4) | (minor[loc-msxy])) & 0b1111)  == 0b1111) {
+        if (z > 0 && is_26_connected(cur, minor[loc - msxy], 0, 0, -1) && has_8_connectivity(minor[loc - msxy])) {
           out_labels[loc] = out_labels[loc - msxy];
 
           if (y > 0 && is_26_connected(cur, minor[loc - msx], x, y-1, z)) {
             equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
-            if (minor[loc-msx] & 0b0001100) {
+            if (has_8_connectivity(minor[loc-msx])) {
               continue;
             }
           }
           if (x > 0 && is_26_connected(cur, minor[loc - 1], x-1, y, z)) {
-            equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+            equivalences.unify(out_labels[loc], out_labels[loc - 1]);
+            if (has_8_connectivity(minor[loc-1])) {
+              continue;
+            }
           }
           if (x > 0 && y > 0 && is_26_connected(cur, minor[loc - 1 - msx], x-1, y-1, z)) {
             equivalences.unify(out_labels[loc], out_labels[loc - 1 - msx]); 
