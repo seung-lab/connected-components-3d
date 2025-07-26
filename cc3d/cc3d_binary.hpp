@@ -614,7 +614,7 @@ OUT* connected_components3d_26_binary(
           out_labels[loc] = out_labels[loc - msxy];
 
           if (y > 0 && is_26_connected(cur, minor[loc - msx], x, y-1, z)) {
-            equivalences.unify(out_labels[loc], out_labels[loc - 1]); 
+            equivalences.unify(out_labels[loc], out_labels[loc - msx]); 
             if (has_8_connectivity(minor[loc-msx])) {
               continue;
             }
