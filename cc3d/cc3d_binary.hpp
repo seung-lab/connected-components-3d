@@ -174,105 +174,105 @@ bool is_26_connected(
   if (x < 0) {
     if (y < 0) {
       if (z < 0) {
-        return (candidate & 0b10000000) && (center & 0b00000001);
+        return ((candidate & 0b10000000) > 0) & ((center & 0b00000001) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b10001000) && (center & 0b00010001);
+        return ((candidate & 0b10001000) > 0) & ((center & 0b00010001) > 0);
       }
       else {
-        return (candidate & 0b00001000) && (center & 0b00010000);
+        return ((candidate & 0b00001000) > 0) & ((center & 0b00010000) > 0);
       }
     }
     else if (y == 0) {
       if (z < 0) {
-        return (candidate & 0b10100000) && (center & 0b00000101);
+        return ((candidate & 0b10100000) > 0) & ((center & 0b00000101) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b10101010) && (center & 0b01010101);
+        return ((candidate & 0b10101010) > 0) & ((center & 0b01010101) > 0);
       }
       else {
-        return (candidate & 0b00001010) && (center & 0b01010000);
+        return ((candidate & 0b00001010) > 0) & ((center & 0b01010000) > 0);
       }
     }
     else {
       if (z < 0) {
-        return (candidate & 0b00100000) && (center & 0b00000100);
+        return ((candidate & 0b00100000) > 0) & ((center & 0b00000100) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b00100010) && (center & 0b01000010);
+        return ((candidate & 0b00100010) > 0) & ((center & 0b01000010) > 0);
       }
       else {
-        return (candidate & 0b00000010) && (center & 0b01000000);
+        return ((candidate & 0b00000010) > 0) & ((center & 0b01000000) > 0);
       }
     }
   }
   else if (x == 0) {
     if (y < 0) {
       if (z < 0) {
-        return (candidate & 0b11000000) && (center & 0b00000011);
+        return ((candidate & 0b11000000) > 0) & ((center & 0b00000011) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b11001100) && (center & 0b00110011);
+        return ((candidate & 0b11001100) > 0) & ((center & 0b00110011) > 0);
       }
       else {
-        return (candidate & 0b00001100) && (center & 0b00110000);
+        return ((candidate & 0b00001100) > 0) & ((center & 0b00110000) > 0);
       }
     }
     else if (y == 0) {
       if (z < 0) {
-        return (candidate & 0b11110000) && (center & 0b00001111);
+        return ((candidate & 0b11110000) > 0) & ((center & 0b00001111) > 0);
       }
       else if (z == 0) {
         return true;
       }
       else {
-        return (candidate & 0b00001111) && (center & 0b11110000);
+        return ((candidate & 0b00001111) > 0) & ((center & 0b11110000) > 0);
       }
     }
     else {
       if (z < 0) {
-        return (candidate & 0b00110000) && (center & 0b00001100);
+        return ((candidate & 0b00110000) > 0) & ((center & 0b00001100) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b00110011) && (center & 0b11001100);
+        return ((candidate & 0b00110011) > 0) & ((center & 0b11001100) > 0);
       }
       else {
-        return (candidate & 0b00000011) && (center & 0b11000000);
+        return ((candidate & 0b00000011) > 0) & ((center & 0b11000000) > 0);
       }
     }
   }
   else {
     if (y < 0) {
       if (z < 0) {
-        return (candidate & 0b01000000) && (center & 0b00000010);
+        return ((candidate & 0b01000000) > 0) & ((center & 0b00000010) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b01000100) && (center & 0b00100010);
+        return ((candidate & 0b01000100) > 0) & ((center & 0b00100010) > 0);
       }
       else {
-        return (candidate & 0b00000100) && (center & 0b00100000);
+        return ((candidate & 0b00000100) > 0) & ((center & 0b00100000) > 0);
       }
     }
     else if (y == 0) {
       if (z < 0) {
-        return (candidate & 0b01010000) && (center & 0b00001010);
+        return ((candidate & 0b01010000) > 0) & ((center & 0b00001010) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b01010101) && (center & 0b10101010);
+        return ((candidate & 0b01010101) > 0) & ((center & 0b10101010) > 0);
       }
       else {
-        return (candidate & 0b00000101) && (center & 0b10100000);
+        return ((candidate & 0b00000101) > 0) & ((center & 0b10100000) > 0);
       }
     }
     else {
       if (z < 0) {
-        return (candidate & 0b00010000) && (center & 0b00001000);
+        return ((candidate & 0b00010000) > 0) & ((center & 0b00001000) > 0);
       }
       else if (z == 0) {
-        return (candidate & 0b00010001) && (center & 0b10001000);
+        return ((candidate & 0b00010001) > 0) & ((center & 0b10001000) > 0);
       }
       else {
-        return (candidate & 0b00000001) && (center & 0b10000000);
+        return ((candidate & 0b00000001) > 0) & ((center & 0b10000000) > 0);
       }
     }
   }
