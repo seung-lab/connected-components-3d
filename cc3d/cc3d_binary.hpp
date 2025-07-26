@@ -605,7 +605,7 @@ OUT* connected_components3d_26_binary(
           continue;
         }
 
-        if (z > 0 && is_26_connected(cur, minor[loc - msxy], 0, 0, -1) && (minor[loc-msxy] & 0b11110000)) {
+        if (z > 0 && is_26_connected(cur, minor[loc - msxy], 0, 0, -1) && (((minor[loc-msxy] >> 4) | (minor[loc-msxy])) & 0b1111)  == 0b1111) {
           out_labels[loc] = out_labels[loc - msxy];
 
           if (y > 0 && is_26_connected(cur, minor[loc - msx], x, y-1, z)) {
