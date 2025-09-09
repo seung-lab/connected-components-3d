@@ -321,10 +321,8 @@ uint32_t* compute_foreground_index(
   const int64_t voxels = sx * sy * sz;
   uint32_t* runs = new uint32_t[2*sy*sz]();
 
-  size_t count = 0; // number of transitions between labels
   int64_t row = 0;
   for (int64_t loc = 0; loc < voxels; loc += sx, row++) {
-    count += (in_labels[loc] != 0);
     size_t index = (row << 1);
     for (int64_t x = 0; x < sx; x++) {
       if (in_labels[loc + x]) {
