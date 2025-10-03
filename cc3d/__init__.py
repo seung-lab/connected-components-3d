@@ -483,8 +483,12 @@ def connected_components_stack(
   full_binary, mapping = crackle.renumber(full_binary, start=start)
   arr = crackle.CrackleArray(full_binary).refit()
 
+  N = arr.num_labels()
+  if start == 0:
+    N -= 1
+
   if return_N:
-    return arr, arr.num_labels()
+    return arr, N
   else:
     return arr
 
