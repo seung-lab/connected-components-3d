@@ -849,8 +849,11 @@ def test_contacts_2d():
   labels[9,9] = 8
   labels[8,8] = 9
 
+  labels[6,8] = 10
+  labels[5,9] = 11
+
   # not connected to anything else
-  labels[1,:] = 10
+  labels[1,:] = 12
 
   res = cc3d.contacts(labels, connectivity=4)
   assert set(res.keys()) == set([ 
@@ -859,7 +862,7 @@ def test_contacts_2d():
 
   res = cc3d.contacts(labels, connectivity=8)
   assert set(res.keys()) == set([ 
-    (2,3), (4,5), (6,7), (8,9),
+    (2,3), (4,5), (6,7), (8,9), (10,11),
   ])
 
 def test_voxel_graph_2d():
