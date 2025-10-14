@@ -321,6 +321,9 @@ extract_region_graph_2d(
 		wy, wx, // edges
 		0, 0 // corners
 	};
+	if (!surface_area) {
+		std::fill(areas, areas+4, 1.0);
+	}
 
 	T cur = 0;
 	T label = 0;

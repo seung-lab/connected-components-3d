@@ -736,6 +736,9 @@ def test_contacts_surface_area():
   res = cc3d.contacts(data, connectivity=8, surface_area=True, anisotropy=(1.5, 2.3))
   assert np.isclose(res[(1,2)], (1.5 * 2 + 2.3 * 2))
 
+  res = cc3d.contacts(data, connectivity=4, surface_area=True, anisotropy=(1.5, 2.3))
+  assert np.isclose(res[(1,2)], (1.5 * 2 + 2.3 * 2))
+
 
 def test_contacts_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
