@@ -280,27 +280,21 @@ inline void compute_neighborhood(
 }
 
 inline void compute_neighborhood(
-	int *neighborhood, 
-	const int x, const int y,
-	const uint64_t sx, const uint64_t sy,
-	const int connectivity = 8
+	int64_t *neighborhood, 
+	const int64_t x, const int64_t y,
+	const int64_t sx, const int64_t sy,
+	const int64_t connectivity = 8
 ) {
 
-	const int plus_x = (x < (static_cast<int>(sx) - 1)); // +x
-	const int minus_x = -1 * (x > 0); // -x
-	const int plus_y = static_cast<int>(sx) * (y < static_cast<int>(sy) - 1); // +y
-	const int minus_y = -static_cast<int>(sx) * (y > 0); // -y
+	const int64_t plus_x = (x < (static_cast<int64_t>(sx) - 1)); // +x
+	const int64_t minus_x = -1 * (x > 0); // -x
+	const int64_t plus_y = static_cast<int64_t>(sx) * (y < static_cast<int64_t>(sy) - 1); // +y
+	const int64_t minus_y = -static_cast<int64_t>(sx) * (y > 0); // -y
 
 	neighborhood[0] = minus_x;
 	neighborhood[1] = minus_y;
 	neighborhood[2] = (connectivity > 4) * (minus_x + minus_y);
 	neighborhood[3] = (connectivity > 4) * (plus_x + minus_y);
-
-
-	neighborhood[4] = plus_x;
-	neighborhood[5] = plus_y;
-	neighborhood[6] = (connectivity > 4) * (minus_x + plus_y);
-	neighborhood[7] = (connectivity > 4) * (plus_x + plus_y);
 }
 
 struct pair_hash {
@@ -323,7 +317,7 @@ extract_region_graph_2d(
 		throw std::runtime_error("Only 4 and 8 connectivities are supported.");
 	}
 
-	int neighborhood[8];
+	int64_t neighborhood[4];
 	float areas[4] = {
 		sy, sx, // edges
 		0, 0 // corners
