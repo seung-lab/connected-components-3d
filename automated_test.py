@@ -731,6 +731,15 @@ def test_contacts_surface_area():
   res = cc3d.contacts(labels_out, connectivity=6, surface_area=True)
   assert res[(1,2)] == 6
 
+  data = np.ones((3,3), dtype=np.uint32)
+  data[1,1] = 2
+  res = cc3d.contacts(data, connectivity=8, surface_area=True, anisotropy=(1.5, 2.3))
+  assert np.isclose(res[(1,2)], (1.5 * 2 + 2.3 * 2))
+
+  res = cc3d.contacts(data, connectivity=4, surface_area=True, anisotropy=(1.5, 2.3))
+  assert np.isclose(res[(1,2)], (1.5 * 2 + 2.3 * 2))
+
+
 def test_contacts_26():
   labels = np.zeros( (10, 10, 10), dtype=np.uint32 )
 
@@ -846,12 +855,23 @@ def test_contacts_2d():
   labels[7,2] = 6
   labels[8,2] = 7
 
+  labels[9,9] = 8
+  labels[8,8] = 9
+
+  labels[6,8] = 10
+  labels[5,9] = 11
+
   # not connected to anything else
-  labels[1,:] = 10
+  labels[1,:] = 12
+
+  res = cc3d.contacts(labels, connectivity=4)
+  assert set(res.keys()) == set([ 
+    (2,3), (4,5), (6,7)
+  ])
 
   res = cc3d.contacts(labels, connectivity=8)
   assert set(res.keys()) == set([ 
-    (2,3), (4,5), (6,7)
+    (2,3), (4,5), (6,7), (8,9), (10,11),
   ])
 
 def test_voxel_graph_2d():
