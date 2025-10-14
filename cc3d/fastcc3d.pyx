@@ -1215,13 +1215,8 @@ def _contacts(
   surface_area=True,
   anisotropy=(1,1,1), 
 ):
-  if connectivity == 8 and labels.shape[2] == 1:
-    connectivity = 26
-  if connectivity == 4 and labels.shape[2] == 1:
-    connectivity = 6
-
-  if connectivity not in (6, 18, 26):
-    raise ValueError("Only 6, 18, and 26 connectivities are supported. Got: " + str(connectivity))
+  if connectivity not in (4, 8, 6, 18, 26):
+    raise ValueError(f"Only (2d) 4, 8, (3d) 6, 18, and 26 connectivities are supported. Got: {connectivity}")
 
   labels = np.asfortranarray(labels)
 
