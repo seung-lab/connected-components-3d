@@ -1185,7 +1185,7 @@ def contacts(
   labels:np.ndarray, 
   int connectivity=26, 
   surface_area:bool = True, 
-  anisotropy:Tuple[int,int,int] = (1,1,1)
+  anisotropy:Union[Tuple[float,float,float], Tuple[float,float]] = (1,1,1)
 ) -> Dict[Tuple[int,int], float]:
   """
   Get the N-connected region adjacancy graph of a 3D image
@@ -1206,6 +1206,9 @@ def contacts(
   """
   while len(labels.shape) < 3:
     labels = labels[..., np.newaxis ]
+
+  while len(anisotropy) < 3:
+    anisotropy = tuple(anisotropy) + (1,)
 
   return _contacts(labels, connectivity, surface_area, anisotropy)
 
