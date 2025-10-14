@@ -319,7 +319,7 @@ extract_region_graph_2d(
 
 	int64_t neighborhood[4];
 	float areas[4] = {
-		sy, sx, // edges
+		wy, wx, // edges
 		0, 0 // corners
 	};
 
