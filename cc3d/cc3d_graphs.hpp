@@ -279,6 +279,30 @@ inline void compute_neighborhood(
 	neighborhood[12] = (connectivity > 18) * (plus_x + plus_y + minus_z) * (plus_y && minus_z);
 }
 
+inline void compute_neighborhood(
+	int *neighborhood, 
+	const int x, const int y,
+	const uint64_t sx, const uint64_t sy,
+	const int connectivity = 8
+) {
+
+	const int plus_x = (x < (static_cast<int>(sx) - 1)); // +x
+	const int minus_x = -1 * (x > 0); // -x
+	const int plus_y = static_cast<int>(sx) * (y < static_cast<int>(sy) - 1); // +y
+	const int minus_y = -static_cast<int>(sx) * (y > 0); // -y
+
+	neighborhood[0] = minus_x;
+	neighborhood[1] = minus_y;
+	neighborhood[2] = (connectivity > 4) * (minus_x + minus_y);
+	neighborhood[3] = (connectivity > 4) * (plus_x + minus_y);
+
+
+	neighborhood[4] = plus_x;
+	neighborhood[5] = plus_y;
+	neighborhood[6] = (connectivity > 4) * (minus_x + plus_y);
+	neighborhood[7] = (connectivity > 4) * (plus_x + plus_y);
+}
+
 struct pair_hash {
 	inline std::size_t operator()(const std::pair<uint64_t,uint64_t> & v) const {
 		return v.first * 31 + v.second; // arbitrary hash fn
@@ -287,7 +311,63 @@ struct pair_hash {
 
 template <typename T>
 const std::unordered_map<std::pair<T,T>, float, pair_hash> 
-extract_region_graph(
+extract_region_graph_2d(
+	T* labels, 
+	const int64_t sx, const int64_t sy,
+	const float wx=1, const float wy=1,
+	const int64_t connectivity=8,
+	const bool surface_area=true
+) {
+
+	if (connectivity != 4 && connectivity != 8) {
+		throw std::runtime_error("Only 4 and 8 connectivities are supported.");
+	}
+
+	int neighborhood[8];
+	float areas[4] = {
+		sy, sx, // edges
+		0, 0 // corners
+	};
+
+	T cur = 0;
+	T label = 0;
+
+	std::unordered_map<std::pair<T,T>, float, pair_hash> edges;
+
+	for (int64_t y = 0; y < sy; y++) {
+		for (int64_t x = 0; x < sx; x++) {
+			int64_t loc = x + sx * y;
+			cur = labels[loc];
+
+			if (cur == 0) {
+				continue;
+			}
+
+			compute_neighborhood(neighborhood, x, y, sx, sy, connectivity);
+
+			for (int i = 0; i < connectivity / 2; i++) {
+				int64_t neighboridx = loc + neighborhood[i];
+				label = labels[neighboridx];
+
+				if (label == 0) {
+					continue;
+				}
+				else if (cur > label) {
+					edges[std::pair<T,T>(label, cur)] += areas[i];
+				}
+				else if (cur < label) {
+					edges[std::pair<T,T>(cur, label)] += areas[i];
+				}
+			}
+		}
+	}
+
+	return edges;
+}
+
+template <typename T>
+const std::unordered_map<std::pair<T,T>, float, pair_hash> 
+extract_region_graph_3d(
 	T* labels, 
 	const int64_t sx, const int64_t sy, const int64_t sz,
 	const float wx=1, const float wy=1, const float wz=1,
@@ -354,6 +434,41 @@ extract_region_graph(
 	}
 
 	return edges;
+}
+
+
+template <typename T>
+const std::unordered_map<std::pair<T,T>, float, pair_hash> 
+extract_region_graph(
+	T* labels, 
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	const float wx=1, const float wy=1, const float wz=1,
+	const int64_t connectivity=26,
+	const bool surface_area=true
+) {
+	if (connectivity == 4 || connectivity == 8) {
+		if (sz != 1) {
+			throw std::runtime_error("z thickness must be 1 for 2d region graph extraction.");
+		}
+
+		return extract_region_graph_2d<T>(
+			labels, 
+			sx, sy,
+			wx, wy,
+			connectivity, surface_area
+		);
+	}
+	else if (connectivity == 6 || connectivity == 18 || connectivity == 26) {
+		return extract_region_graph_3d<T>(
+			labels, 
+			sx, sy, sz,
+			wx, wy, wz,
+			connectivity, surface_area
+		);
+	}
+	else {
+		throw std::runtime_error("Only (2d) 4, 8, or (3d) 6, 18, and 26 connectivities are supported.");
+	}
 }
 
 template <typename T>
