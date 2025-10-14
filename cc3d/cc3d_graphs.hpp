@@ -288,7 +288,6 @@ inline void compute_neighborhood(
 
 	const int64_t plus_x = (x < (static_cast<int64_t>(sx) - 1)); // +x
 	const int64_t minus_x = -1 * (x > 0); // -x
-	const int64_t plus_y = static_cast<int64_t>(sx) * (y < static_cast<int64_t>(sy) - 1); // +y
 	const int64_t minus_y = -static_cast<int64_t>(sx) * (y > 0); // -y
 
 	neighborhood[0] = minus_x;
