@@ -343,7 +343,7 @@ extract_region_graph_2d(
 				int64_t neighboridx = loc + neighborhood[i];
 				label = labels[neighboridx];
 
-				if (label == 0) {
+				if (label == 0 || label == cur) {
 					continue;
 				}
 				else if (cur > label) {
@@ -413,7 +413,7 @@ extract_region_graph_3d(
 					int64_t neighboridx = loc + neighborhood[i];
 					label = labels[neighboridx];
 
-					if (label == 0) {
+					if (label == 0 || label == cur) {
 						continue;
 					}
 					else if (cur > label) {
