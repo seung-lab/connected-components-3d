@@ -1662,4 +1662,3 @@ def test_binary_image_2d(dtype, connectivity, periodic_boundary):
   assert not np.all(known_out == binary_out_false)
 
 
-
