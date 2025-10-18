@@ -24,8 +24,11 @@
 #ifndef CC3D_BINARY_HPP
 #define CC3D_BINARY_HPP 
 
+#include <thread>
+
 #include "cc3d.hpp"
 #include "builtins.hpp"
+#include "threadpool.hpp"
 
 namespace cc3d {
 
@@ -45,24 +48,32 @@ uint8_t* create_2x2x2_minor_image(
 
   uint8_t* minor = new uint8_t[minor_voxels]();
 
-  int64_t i = 0;
+  const unsigned int num_threads = std::thread::hardware_concurrency();
+
+  ThreadPool pool(num_threads);
+
   for (int64_t z = 0; z < sz; z += 2) {
-    for (int64_t y = 0; y < sy; y += 2) {
-      for (int64_t x = 0; x < sx; x += 2, i++) {
-        int64_t loc = x + sx * y + sxy * z;
-        minor[i] = (
-          (in_labels[loc] > 0)
-          | (((x < sx - 1) && (in_labels[loc+1] > 0)) << 1)
-          | (((y < sy - 1) && (in_labels[loc+sx] > 0)) << 2)
-          | (((x < sx - 1 && y < sy - 1) && (in_labels[loc+sx+1] > 0)) << 3)
-          | (((z < sz - 1) && (in_labels[loc+sxy] > 0)) << 4)
-          | (((x < sx - 1 && z < sz - 1) && (in_labels[loc+sxy+1] > 0)) << 5)
-          | (((y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx] > 0)) << 6)
-          | (((x < sx - 1 && y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx+1] > 0)) << 7)
-        );
+    pool.enqueue([=]() {
+      for (int64_t y = 0; y < sy; y += 2) {
+        for (int64_t x = 0; x < sx; x += 2) {
+          int64_t loc = x + sx * y + sxy * z;
+          int64_t mloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
+          minor[mloc] = (
+            (in_labels[loc] > 0)
+            | (((x < sx - 1) && (in_labels[loc+1] > 0)) << 1)
+            | (((y < sy - 1) && (in_labels[loc+sx] > 0)) << 2)
+            | (((x < sx - 1 && y < sy - 1) && (in_labels[loc+sx+1] > 0)) << 3)
+            | (((z < sz - 1) && (in_labels[loc+sxy] > 0)) << 4)
+            | (((x < sx - 1 && z < sz - 1) && (in_labels[loc+sxy+1] > 0)) << 5)
+            | (((y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx] > 0)) << 6)
+            | (((x < sx - 1 && y < sy - 1 && z < sz - 1) && (in_labels[loc+sxy+sx+1] > 0)) << 7)
+          );
+        }
       }
-    }
+    });
   }
+
+  pool.join();
 
   return minor;
 }
@@ -271,7 +282,7 @@ OUT* relabel_2x2x2(
   size_t &N
 ) {
   OUT label;
-  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
+  OUT* renumber = new OUT[num_labels + 1]();
   OUT next_label = 1;
 
   for (int64_t i = 1; i <= num_labels; i++) {
@@ -290,22 +301,45 @@ OUT* relabel_2x2x2(
 
   const int64_t msx = (sx + 1) >> 1;
   const int64_t msy = (sy + 1) >> 1;
-  // const int64_t msz = (sz + 1) >> 1;
+  const int64_t msz = (sz + 1) >> 1;
   const int64_t voxels = sx * sy * sz;
 
 
-  uint64_t loc = voxels - 1;
-  uint64_t oloc = 0;
-  for (int64_t z = sz - 1; z >= 0; z--) {
+  ThreadPool pool(std::thread::hardware_concurrency());
+
+  uint64_t max_z = msx * msy * msz / (sx * sy) / 4;
+
+  printf("max_z %d\n", max_z);
+
+  for (int64_t z = sz - 1; z > max_z; z--) {
+    pool.enqueue([=](){
+      for (int64_t y = sy - 1; y >= 0; y--) {
+        for (int64_t x = sx - 1; x >= 0; x--) {
+          int64_t loc = x + sx * (y + sy * z);
+          int64_t oloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
+          if (in_labels[loc]) {
+            out_labels[loc] = static_cast<OUT>(renumber[out_labels[oloc]]);
+          }
+        }
+      }
+    });
+  }
+
+  pool.join();
+
+  for (int64_t z = max_z; z > 0; z--) {
     for (int64_t y = sy - 1; y >= 0; y--) {
-      for (int64_t x = sx - 1; x >= 0; x--, loc--) {
-        oloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
+      for (int64_t x = sx - 1; x >= 0; x--) {
+        int64_t loc = x + sx * (y + sy * z);
+        int64_t oloc = (x >> 1) + msx * ((y >> 1) + msy * (z >> 1));
         if (in_labels[loc]) {
           out_labels[loc] = static_cast<OUT>(renumber[out_labels[oloc]]);
         }
       }
     }
   }
+
+  delete[] renumber;
 
   return out_labels;
 }
@@ -454,7 +488,7 @@ OUT* connected_components3d_26_binary(
 	const int64_t voxels = sxy * sz;
 
   if (out_labels == NULL) {
-    out_labels = new OUT[voxels]();
+    out_labels = new OUT[voxels];
   }
 
   if (max_labels == 0) {
@@ -533,97 +567,6 @@ OUT* connected_components3d_26_binary(
 
         if (z > 0 && minor[loc + E] && is_26_connected(cur, minor[loc+E], 0, 0, -1)) {
           out_labels[loc] = out_labels[loc + E];
-
-          const int ct = popcount(minor[loc+E] & 0b11110000);
-
-          if (ct == 4) {
-            continue;
-          }
-          else if (ct == 3) {
-            if (minor[loc+E] & 0b11100000) {
-              if (x > 0 && y > 0 && minor[loc + A] && is_26_connected(cur, minor[loc + A], -1, -1, -1)) {
-                equivalences.unify(out_labels[loc], out_labels[loc + A]);
-              }
-            }
-            else if (minor[loc+E] & 0b11010000) {
-              if (x < msx - 1 && y > 0 && z > 0 && minor[loc + C] && is_26_connected(cur, minor[loc+C], 1, -1, -1)) {
-                equivalences.unify(out_labels[loc], out_labels[loc + C]);
-              }
-            }
-            else if (minor[loc+E] & 0b10110000) {
-              if (x > 0 && y < msy - 1 && z > 0 && minor[loc + G] && is_26_connected(cur, minor[loc+G], -1, 1, -1)) {
-                equivalences.unify(out_labels[loc], out_labels[loc + G]);
-              }
-            }
-            else {
-              if (x < msx - 1 && y < msy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
-                equivalences.unify(out_labels[loc], out_labels[loc + I]);
-              }
-            }
-          }
-          else if (ct == 2) {
-              if (minor[loc+E] & 0b00110000) { // up, GHI
-                if (y < msy - 1 && z > 0 && minor[loc + H] && is_26_connected(cur, minor[loc+H], 0, 1, -1)) {
-                  UNIFY(H)
-
-                  if (MSET(H, 0b00110000)) { 
-                    continue;
-                  }
-                  else if (x > 0 && MSET(H, 0b00100000)) {
-                    UNIFY(G)
-                  }
-                  else if (x < msx - 1 && MSET(H, 0b00010000)) {
-                    UNIFY(I)
-                  }
-                }
-              }
-              else if (minor[loc+E] & 0b01010000) { // left, LCFI
-                if (x < msx - 1 && z > 0 && minor[loc + F] && is_26_connected(cur, minor[loc+F], 1, 0, -1)) {
-                  UNIFY(F)
-
-                  if (MSET(F, 0b01010000)) {
-                    continue;
-                  }
-                  else if (y < msy - 1 && MSET(F, 0b00010000)) {
-                    UNIFY(I)
-                  }
-                  else if (y > 0 && MSET(F, 0b01000000)) {
-                    UNIFY(C)
-                  }
-                }
-                else {
-                  if (x < msx - 1 && y < msy - 1 && z > 0 && minor[loc + I] && is_26_connected(cur, minor[loc+I], 1, 1, -1)) {
-                    UNIFY(I)
-                  }
-                }
-              }
-              else if (minor[loc+E] & 0b10010000) { // diagonal \
-                
-              }
-              else if (minor[loc+E] & 0b01100000) { // diagonal /
-                
-              }
-              else if (minor[loc+E] & 0b10100000) { // right
-                
-              }
-              else { // down
-
-              }
-          }
-          else {
-            if (minor[loc+E] & 0b10000000) {
-
-            }
-            else if (minor[loc+E] & 0b01000000) {
-
-            }
-            else if (minor[loc+E] & 0b00100000) {
-
-            }
-            else {
-
-            }
-          }
         }
         else if (y > 0 && minor[loc + K] && is_26_connected(cur, minor[loc+K], 0, -1, 0)) {
           out_labels[loc] = out_labels[loc + K];
