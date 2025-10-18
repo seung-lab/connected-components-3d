@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "unordered_dense.hpp"
 #include "cc3d.hpp"
 
 namespace cc3d {
@@ -427,6 +428,107 @@ extract_region_graph_3d(
 				}
 			}
 		}
+	}
+
+	return edges;
+}
+
+template <typename T>
+std::vector<std::tuple<T, T, float>>
+extract_region_graph_3d_py(
+	T* labels, 
+	const int64_t sx, const int64_t sy, const int64_t sz,
+	const float wx=1, const float wy=1, const float wz=1,
+	const int64_t connectivity=26,
+	const bool surface_area=true
+) {
+
+	if (connectivity != 6 && connectivity != 18 && connectivity != 26) {
+		throw std::runtime_error("Only 6, 18, and 26 connectivities are supported.");
+	}
+
+	const int64_t sxy = sx * sy;
+
+	int neighborhood[13];
+	float areas[13]; // all zero except faces
+
+	if (surface_area) {
+		for (int i = 3; i < 13; i++) {
+			areas[i] = 0;
+		}
+		areas[0] = wy * wz; // x axis
+		areas[1] = wx * wz; // y axis
+		areas[2] = wx * wy; // z axis
+	}
+	else { // voxel counts
+		for (int i = 0; i < 13; i++) {
+			areas[i] = 1;
+		}
+	}
+
+	T cur = 0;
+	T label = 0;
+
+	ankerl::unordered_dense::map<uint64_t, float> small_edges;
+	ankerl::unordered_dense::map<std::pair<T,T>, float, pair_hash> big_edges;
+
+	for (int64_t z = 0; z < sz; z++) {
+		for (int64_t y = 0; y < sy; y++) {
+			for (int64_t x = 0; x < sx; x++) {
+				int64_t loc = x + sx * y + sxy * z;
+				cur = labels[loc];
+
+				if (cur == 0) {
+					continue;
+				}
+
+				compute_neighborhood(neighborhood, x, y, z, sx, sy, sz, connectivity);
+
+				for (int i = 0; i < connectivity / 2; i++) {
+					int64_t neighboridx = loc + neighborhood[i];
+					label = labels[neighboridx];
+
+					if (label == 0 || label == cur) {
+						continue;
+					}
+
+					if (
+						label < std::numeric_limits<uint32_t>::max()
+						&& cur < std::numeric_limits<uint32_t>::max()
+					) {
+						uint64_t edge;
+						if (cur > label) {
+							edge = (label << 32) | cur;
+						}
+						else {
+							edge = (cur << 32) | label;
+						}
+						small_edges[edge] = areas[i];
+					}
+					else {
+						if (cur > label) {
+							big_edges[std::pair<T,T>(label, cur)] += areas[i];
+						}
+						else {
+							big_edges[std::pair<T,T>(cur, label)] += areas[i];
+						}
+					}	
+				}
+			}
+		}
+	}
+
+	std::vector<std::tuple<T,T,float>> output;
+	output.reserve(small_edges.size() + big_edges.size());
+
+	for (auto& pair : big_edges) {
+		out_labels.emplace_back(pair.first.first, pair.first.second, pair.second);
+	}
+
+	for (auto& pair : small_edges) {
+		const uint32_t e1 = pair.first & 0xffffffff;
+		const uint32_t e2 = pair.first >> 32;
+		out_labels.emplace_back(e1, e2, pair.second);
 	}
 
 	return edges;
