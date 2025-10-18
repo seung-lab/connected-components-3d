@@ -574,9 +574,9 @@ OUT* connected_components3d_26_binary(
   const int64_t msxy = msx * msy;
 
   int64_t neighborhood[13] = {};
-  int64_t xoff[13] = { -1, 0, 0, -1, 0, 0, 0, -1, 0, -1, 0, -1, 0  };
-  int64_t yoff[13] = { 0, -1, 0, -1, -1, -1, 1, 0, 0, -1, -1, 1, 1 };
-  int64_t zoff[13] = { 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1  };
+  int64_t xoff[13] = { -1,  0,  0, -1,  0,  0,  0, -1,  0, -1,  0, -1,  0  };
+  int64_t yoff[13] = {  0, -1,  0, -1, -1, -1,  1,  0,  0, -1, -1,  1,  1  };
+  int64_t zoff[13] = {  0,  0, -1,  0,  0, -1, -1, -1, -1, -1, -1, -1, -1  };
 
   uint8_t* minor = create_2x2x2_minor_image(in_labels, sx, sy, sz);
   
