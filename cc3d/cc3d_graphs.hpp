@@ -486,13 +486,15 @@ extract_runs(T* labels, const size_t voxels) {
 	size_t loc = 1;
 	for (loc = 1; loc < voxels; loc++) {
 		if (labels[loc] != cur) {
-			runs[cur].push_back(std::pair<size_t,size_t>(start,loc));
+			if (cur != 0) {
+				runs[cur].push_back(std::pair<size_t,size_t>(start,loc));
+			}
 			cur = labels[loc];
 			start = loc;
 		}
 	}
 
-	if (loc > start) {
+	if (loc > start && cur != 0) {
 		runs[cur].push_back(std::pair<size_t,size_t>(start,voxels));
 	}
 
