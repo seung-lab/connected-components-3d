@@ -1513,9 +1513,10 @@ def test_color_connectivity_graph_8_uint32():
   ans = np.array([[1, 2],[2, 1]], dtype=np.uint32)
   assert np.all(cc_labels == ans)
 
-def test_color_connectivity_graph_6():
-  vcg = np.zeros([10,10,10], dtype=np.uint32, order="F")
-  vcg[:,:,:] = 0b11111111111111111111111111
+@pytest.mark.parametrize("dtype", [np.uint8, np.uint32])
+def test_color_connectivity_graph_6(dtype):
+  vcg = np.zeros([10,10,10], dtype=dtype, order="F")
+  vcg[:,:,:] = np.iinfo(dtype).max
 
   vcg[:,:,4] = vcg[:,:,4] & 0b101111
   vcg[:,:,5] = vcg[:,:,5] & 0b011111
