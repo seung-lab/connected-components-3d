@@ -1,0 +1,1346 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="docs/api/">
+      
+      
+      <link rel="icon" href="docs/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
+    
+    
+      
+        <title>cc3d</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="docs/docs.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cc3d-connected-components-on-multilabel-3d-images" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="cc3d" class="md-header__button md-logo" aria-label="cc3d" data-md-component="logo">
+      
+  <img src="docs/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cc3d
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 5-5 5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/seung-lab/connected-components-3d" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    connected-components-3d
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="docs/api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="benchmarks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="cc3d" class="md-nav__button md-logo" aria-label="cc3d" data-md-component="logo">
+      
+  <img src="docs/images/logo.png" alt="logo">
+
+    </a>
+    cc3d
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/seung-lab/connected-components-3d" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    connected-components-3d
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#python-pip-installaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python pip Installaction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-manual-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python Manual Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python Use
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      C++ Use
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#26-connected-ccl-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      26-Connected CCL Algorithm
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26-Connected CCL Algorithm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#first-principles-in-2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      First Principles in 2D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-to-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extending to 3D
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phantom-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phantom Labels
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-and-6-connected-ccl-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      4 and 6-Connected CCL Algorithm
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#four-pass-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Four Pass Algorithm
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Four Pass Algorithm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estimating-provisional-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estimating Provisional Labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estimating-foreground-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estimating Foreground Location
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#early-abortion-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Early Abortion Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#papers-using-cc3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Papers Using cc3d
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="docs/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benchmarks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#python-pip-installaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python pip Installaction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-manual-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python Manual Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python Use
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      C++ Use
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#26-connected-ccl-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      26-Connected CCL Algorithm
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26-Connected CCL Algorithm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#first-principles-in-2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      First Principles in 2D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-to-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extending to 3D
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phantom-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phantom Labels
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-and-6-connected-ccl-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      4 and 6-Connected CCL Algorithm
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#four-pass-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Four Pass Algorithm
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Four Pass Algorithm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estimating-provisional-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estimating Provisional Labels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estimating-foreground-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estimating Foreground Location
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#early-abortion-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Early Abortion Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#papers-using-cc3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Papers Using cc3d
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/seung-lab/connected-components-3d/edit/master/docs/README.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/seung-lab/connected-components-3d/raw/master/docs/README.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<p><a href="https://badge.fury.io/py/connected-components-3d"><img alt="PyPI version" src="https://badge.fury.io/py/connected-components-3d.svg" /></a> <a href="https://zenodo.org/badge/latestdoi/146368855"><img alt="DOI" src="https://zenodo.org/badge/146368855.svg" /></a></p>
+<h1 id="cc3d-connected-components-on-multilabel-3d-images">cc3d: Connected Components on Multilabel 3D Images</h1>
+<p style="font-style: italics;" align="center">
+<img height=348 src="docs/images/ccl_figure.png" alt="Binary and multilabel connected components. (a) A binary image (foreground white,  background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image" /><br>
+<b>Fig. 1. Binary and Multilabel Connected Components Labeling (CCL)</b> 2D images are shown for simplicity. Black is the background color (zero). (a) A binary image (foreground white, background black) (b) 4-connected CCL of binary image (c) 8-connected CCL of binary image (d) A multilabel image (e) 4-connected CCL of multilabel image (f) 8-connected CCL of multilabel image.
+</p>
+
+<p style="font-style: italics;" align="center">
+<img height=348 src="docs/images/continuous_ccl_figure.png" alt="Continuous value connected components (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones" /><br>
+<b>Fig. 2. Continuous Value Connected Components Labeling (CCL)</b> (top) A three tone grayscale image with signed additive low magnitude noise (bottom) Extracted components using continuous value CCL with a delta value greater than the noise magnitude but smaller than the difference between tones
+</p>
+
+<p>cc3d is an implementation of connected components in three dimensions using a 26, 18, or 6-connected neighborhood in 3D or 4 and 8-connected in 2D. This package uses a 3D variant of the two pass method by Rosenfeld and Pflatz augmented with Union-Find and a decision tree based on the 2D 8-connected work of Wu, Otoo, and Suzuki. This implementation is compatible with images containing many different labels, not just binary images. It also supports continuously valued images such as grayscale microscope images with an algorithm that joins together nearby values.</p>
+<p>I wrote this package because I was working on densely labeled 3D biomedical images of brain tissue (e.g. 512x512x512 voxels). Other off the shelf implementations I reviewed were limited to binary images. This rendered these other packages too slow for my use case as it required masking each label and running the connected components algorithm once each time. For reference, there are often between hundreds to thousands of labels in a given volume. The benefit of this package is that it labels all connected components in one shot, improving performance by one or more orders of magnitude.</p>
+<p>In general, binary images are much more common (usually resulting from image thresholding), but multi-label images crop up in instance segmentation and semantic labeling as a classifier may label touching clusters of adjacent pixels differently. If a gap between different labels is guaranteed, then the problem degenerates into the binary version.</p>
+<p>Check out <a href="benchmarks/">benchmarks</a> to see a comparison with SciPy on a few different tasks.</p>
+<h2 id="python-pip-installaction">Python <code>pip</code> Installaction</h2>
+<p>If compatible binaries are available for your platform, installation is particularly simple.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>connected-components-3d
+</span></code></pre></div>
+<p>If compatible binaries are not available, you can install from source as follows.</p>
+<p><em>Requires a C++ compiler.</em></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>numpy
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>install<span class="w"> </span>connected-components-3d<span class="w"> </span>--no-binary<span class="w"> </span>:all:
+</span></code></pre></div>
+<p>Occasionally, you may appear to successfully install cc3d, but on import you'll see an error that includes: <code>numpy.ufunc size changed, may indicate binary incompatibility</code>. You can either try upgrading numpy or compiling cc3d from source in this case.</p>
+<h2 id="python-manual-installation">Python Manual Installation</h2>
+<p><em>Requires a C++ compiler.</em></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>python<span class="w"> </span>setup.py<span class="w"> </span>develop
+</span></code></pre></div>
+<h2 id="python-use">Python Use</h2>
+<p>For detailed documentation, see <a href="https://seunglab.org/connected-components-3d/">the API docs</a>.</p>
+<p>The following functions are available with examples below:</p>
+<ul>
+<li>Connected Component Labeling (CCL)</li>
+<li>Calculating centroids, bounding boxes, and voxel counts</li>
+<li>Removal of small objects ("dust") (or large objects)</li>
+<li>Extraction of k largest objects</li>
+<li>Fast extraction of all objects one-by-one</li>
+<li>Calculation of contact surface area and contact network</li>
+<li>Extraction and coloring of a per voxel connectivity graph</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cc3d</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">labels_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">)</span> <span class="c1"># 26-connected</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">connectivity</span> <span class="o">=</span> <span class="mi">6</span> <span class="c1"># only 4,8 (2D) and 26, 18, and 6 (3D) are allowed</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># By default, cc3d works on multivalued labelings, but sometimes you want</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># to treat a grayscale image as a binary image directly. It is also possible</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="c1"># to process binary images more effectively. Binary image specific optimizations</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="c1"># are not implemented yet though, but may be in the future.</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">binary_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="c1"># same as above, but less efficient</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="c1"># If you need the borders to wrap around (e.g. for simulations, world maps)</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="c1"># specify periodic_boundary=True, currently only supported for</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="c1"># 4 and 8 (2d) and 6 (3d) connectivities.</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>  <span class="n">labels_in</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span> <span class="n">periodic_boundary</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="p">)</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="c1"># If you need a particular dtype you can specify np.uint16, np.uint32, or np.uint64</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="c1"># You can go bigger, not smaller, than the default which is selected</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="c1"># to be the smallest that can be safely used. This can save you the copy</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="c1"># operation needed by labels_out.astype(...).</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">out_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">)</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="c1"># If you&#39;re working with continuously valued images like microscopy</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="c1"># images you can use cc3d to perform a very rough segmentation.</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="c1"># If delta = 0, standard high speed processing. If delta &gt; 0, then</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="c1"># neighbor voxel values &lt;= delta are considered the same component.</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="c1"># The algorithm can be 2-10x slower though. Zero is considered</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="c1"># background and will not join to any other voxel.</span>
+</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-3-38"><a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>
+</span><span id="__span-3-39"><a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="c1"># If you&#39;re working with an image that&#39;s larger than memory you can</span>
+</span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a><span class="c1"># use mmapped files. The input and output files can be used independently.</span>
+</span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a><span class="c1"># In this case an array labels.bin that is 5000x5000x2000 voxels and uint32_t</span>
+</span><span id="__span-3-42"><a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a><span class="c1"># in Fortran order is computed and the results are written to out.bin in Fortran</span>
+</span><span id="__span-3-43"><a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a><span class="c1"># order. You can find the properties of the file (shape, dtype, order) by inspecting</span>
+</span><span id="__span-3-44"><a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a><span class="c1"># labels_out.</span>
+</span><span id="__span-3-45"><a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a><span class="n">labels_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="s2">&quot;labels.bin&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">))</span>
+</span><span id="__span-3-46"><a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">out_file</span><span class="o">=</span><span class="s2">&quot;out.bin&quot;</span><span class="p">)</span>
+</span><span id="__span-3-47"><a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a>
+</span><span id="__span-3-48"><a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a><span class="c1"># Here&#39;s another strategy that you can use for huge files that won&#39;t even</span>
+</span><span id="__span-3-49"><a id="__codelineno-3-49" name="__codelineno-3-49" href="#__codelineno-3-49"></a><span class="c1"># take up any disk space. Provide any iterator to this function that produces</span>
+</span><span id="__span-3-50"><a id="__codelineno-3-50" name="__codelineno-3-50" href="#__codelineno-3-50"></a><span class="c1"># thick z sections of the input array that are in sequential order.</span>
+</span><span id="__span-3-51"><a id="__codelineno-3-51" name="__codelineno-3-51" href="#__codelineno-3-51"></a><span class="c1"># The output is a highly compressed CrackleArray that is still random access.</span>
+</span><span id="__span-3-52"><a id="__codelineno-3-52" name="__codelineno-3-52" href="#__codelineno-3-52"></a><span class="c1"># See: https://github.com/seung-lab/crackle</span>
+</span><span id="__span-3-53"><a id="__codelineno-3-53" name="__codelineno-3-53" href="#__codelineno-3-53"></a><span class="c1"># You need to pip install connected-components-3d[stack] to get the extra modules.</span>
+</span><span id="__span-3-54"><a id="__codelineno-3-54" name="__codelineno-3-54" href="#__codelineno-3-54"></a><span class="k">def</span><span class="w"> </span><span class="nf">sections</span><span class="p">(</span><span class="n">labels_in</span><span class="p">):</span>
+</span><span id="__span-3-55"><a id="__codelineno-3-55" name="__codelineno-3-55" href="#__codelineno-3-55"></a><span class="w">  </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-3-56"><a id="__codelineno-3-56" name="__codelineno-3-56" href="#__codelineno-3-56"></a><span class="sd">  A generator that produces thick Z slices</span>
+</span><span id="__span-3-57"><a id="__codelineno-3-57" name="__codelineno-3-57" href="#__codelineno-3-57"></a><span class="sd">  of an image</span>
+</span><span id="__span-3-58"><a id="__codelineno-3-58" name="__codelineno-3-58" href="#__codelineno-3-58"></a><span class="sd">  &quot;&quot;&quot;</span>
+</span><span id="__span-3-59"><a id="__codelineno-3-59" name="__codelineno-3-59" href="#__codelineno-3-59"></a>  <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">labels_in</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">100</span><span class="p">):</span>
+</span><span id="__span-3-60"><a id="__codelineno-3-60" name="__codelineno-3-60" href="#__codelineno-3-60"></a>    <span class="k">yield</span> <span class="n">labels_in</span><span class="p">[:,:,</span><span class="n">z</span><span class="p">:</span><span class="n">z</span><span class="o">+</span><span class="mi">100</span><span class="p">]</span>
+</span><span id="__span-3-61"><a id="__codelineno-3-61" name="__codelineno-3-61" href="#__codelineno-3-61"></a>
+</span><span id="__span-3-62"><a id="__codelineno-3-62" name="__codelineno-3-62" href="#__codelineno-3-62"></a><span class="c1"># You can access compressed_labels_out using array notation</span>
+</span><span id="__span-3-63"><a id="__codelineno-3-63" name="__codelineno-3-63" href="#__codelineno-3-63"></a><span class="n">compressed_labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components_stack</span><span class="p">(</span><span class="n">sections</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
+</span><span id="__span-3-64"><a id="__codelineno-3-64" name="__codelineno-3-64" href="#__codelineno-3-64"></a><span class="c1"># convert to numpy array, probably a big mistake since</span>
+</span><span id="__span-3-65"><a id="__codelineno-3-65" name="__codelineno-3-65" href="#__codelineno-3-65"></a><span class="c1"># you probably expected it was going to blow up RAM</span>
+</span><span id="__span-3-66"><a id="__codelineno-3-66" name="__codelineno-3-66" href="#__codelineno-3-66"></a><span class="n">cc_labels</span> <span class="o">=</span> <span class="n">compressed_labels_out</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+</span><span id="__span-3-67"><a id="__codelineno-3-67" name="__codelineno-3-67" href="#__codelineno-3-67"></a><span class="c1"># if you don&#39;t like hanging onto this exotic format, you</span>
+</span><span id="__span-3-68"><a id="__codelineno-3-68" name="__codelineno-3-68" href="#__codelineno-3-68"></a><span class="c1"># can write it as a numpy array to disk in a memory efficient way.</span>
+</span><span id="__span-3-69"><a id="__codelineno-3-69" name="__codelineno-3-69" href="#__codelineno-3-69"></a><span class="n">compressed_labels_out</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;example.npy.gz&quot;</span><span class="p">)</span>
+</span><span id="__span-3-70"><a id="__codelineno-3-70" name="__codelineno-3-70" href="#__codelineno-3-70"></a><span class="c1"># or hang onto it</span>
+</span><span id="__span-3-71"><a id="__codelineno-3-71" name="__codelineno-3-71" href="#__codelineno-3-71"></a><span class="n">compressed_labels_out</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;example.ckl&quot;</span><span class="p">)</span>
+</span><span id="__span-3-72"><a id="__codelineno-3-72" name="__codelineno-3-72" href="#__codelineno-3-72"></a>
+</span><span id="__span-3-73"><a id="__codelineno-3-73" name="__codelineno-3-73" href="#__codelineno-3-73"></a>
+</span><span id="__span-3-74"><a id="__codelineno-3-74" name="__codelineno-3-74" href="#__codelineno-3-74"></a><span class="c1"># You can extract the number of labels (which is also the maximum</span>
+</span><span id="__span-3-75"><a id="__codelineno-3-75" name="__codelineno-3-75" href="#__codelineno-3-75"></a><span class="c1"># label value) like so:</span>
+</span><span id="__span-3-76"><a id="__codelineno-3-76" name="__codelineno-3-76" href="#__codelineno-3-76"></a><span class="n">labels_out</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">return_N</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># free</span>
+</span><span id="__span-3-77"><a id="__codelineno-3-77" name="__codelineno-3-77" href="#__codelineno-3-77"></a><span class="c1"># -- OR --</span>
+</span><span id="__span-3-78"><a id="__codelineno-3-78" name="__codelineno-3-78" href="#__codelineno-3-78"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">labels_in</span><span class="p">)</span>
+</span><span id="__span-3-79"><a id="__codelineno-3-79" name="__codelineno-3-79" href="#__codelineno-3-79"></a><span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">labels_out</span><span class="p">)</span> <span class="c1"># costs a full read</span>
+</span><span id="__span-3-80"><a id="__codelineno-3-80" name="__codelineno-3-80" href="#__codelineno-3-80"></a>
+</span><span id="__span-3-81"><a id="__codelineno-3-81" name="__codelineno-3-81" href="#__codelineno-3-81"></a><span class="c1"># You can extract individual components using numpy operators</span>
+</span><span id="__span-3-82"><a id="__codelineno-3-82" name="__codelineno-3-82" href="#__codelineno-3-82"></a><span class="c1"># This approach is slow, but makes a mutable copy.</span>
+</span><span id="__span-3-83"><a id="__codelineno-3-83" name="__codelineno-3-83" href="#__codelineno-3-83"></a><span class="k">for</span> <span class="n">segid</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+</span><span id="__span-3-84"><a id="__codelineno-3-84" name="__codelineno-3-84" href="#__codelineno-3-84"></a>  <span class="n">extracted_image</span> <span class="o">=</span> <span class="n">labels_out</span> <span class="o">*</span> <span class="p">(</span><span class="n">labels_out</span> <span class="o">==</span> <span class="n">segid</span><span class="p">)</span>
+</span><span id="__span-3-85"><a id="__codelineno-3-85" name="__codelineno-3-85" href="#__codelineno-3-85"></a>  <span class="n">process</span><span class="p">(</span><span class="n">extracted_image</span><span class="p">)</span> <span class="c1"># stand in for whatever you&#39;d like to do</span>
+</span><span id="__span-3-86"><a id="__codelineno-3-86" name="__codelineno-3-86" href="#__codelineno-3-86"></a>
+</span><span id="__span-3-87"><a id="__codelineno-3-87" name="__codelineno-3-87" href="#__codelineno-3-87"></a><span class="c1"># If a read-only image is ok, this approach is MUCH faster</span>
+</span><span id="__span-3-88"><a id="__codelineno-3-88" name="__codelineno-3-88" href="#__codelineno-3-88"></a><span class="c1"># if the image has many contiguous regions. A random image</span>
+</span><span id="__span-3-89"><a id="__codelineno-3-89" name="__codelineno-3-89" href="#__codelineno-3-89"></a><span class="c1"># can be slower. binary=True yields binary images instead</span>
+</span><span id="__span-3-90"><a id="__codelineno-3-90" name="__codelineno-3-90" href="#__codelineno-3-90"></a><span class="c1"># of numbered images.</span>
+</span><span id="__span-3-91"><a id="__codelineno-3-91" name="__codelineno-3-91" href="#__codelineno-3-91"></a><span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="n">labels_out</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span id="__span-3-92"><a id="__codelineno-3-92" name="__codelineno-3-92" href="#__codelineno-3-92"></a>  <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="c1"># stand in for whatever you&#39;d like to do</span>
+</span><span id="__span-3-93"><a id="__codelineno-3-93" name="__codelineno-3-93" href="#__codelineno-3-93"></a>
+</span><span id="__span-3-94"><a id="__codelineno-3-94" name="__codelineno-3-94" href="#__codelineno-3-94"></a><span class="c1"># Image statistics like voxel counts, bounding boxes, and centroids.</span>
+</span><span id="__span-3-95"><a id="__codelineno-3-95" name="__codelineno-3-95" href="#__codelineno-3-95"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">statistics</span><span class="p">(</span><span class="n">labels_out</span><span class="p">)</span>
+</span><span id="__span-3-96"><a id="__codelineno-3-96" name="__codelineno-3-96" href="#__codelineno-3-96"></a>
+</span><span id="__span-3-97"><a id="__codelineno-3-97" name="__codelineno-3-97" href="#__codelineno-3-97"></a><span class="c1"># Remove dust from the input image. Removes objects with</span>
+</span><span id="__span-3-98"><a id="__codelineno-3-98" name="__codelineno-3-98" href="#__codelineno-3-98"></a><span class="c1"># fewer than `threshold` voxels.</span>
+</span><span id="__span-3-99"><a id="__codelineno-3-99" name="__codelineno-3-99" href="#__codelineno-3-99"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">dust</span><span class="p">(</span>
+</span><span id="__span-3-100"><a id="__codelineno-3-100" name="__codelineno-3-100" href="#__codelineno-3-100"></a>  <span class="n">labels_in</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+</span><span id="__span-3-101"><a id="__codelineno-3-101" name="__codelineno-3-101" href="#__codelineno-3-101"></a>  <span class="n">connectivity</span><span class="o">=</span><span class="mi">26</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">False</span>
+</span><span id="__span-3-102"><a id="__codelineno-3-102" name="__codelineno-3-102" href="#__codelineno-3-102"></a><span class="p">)</span>
+</span><span id="__span-3-103"><a id="__codelineno-3-103" name="__codelineno-3-103" href="#__codelineno-3-103"></a><span class="c1"># Removes objects with &gt;= `threshold` voxels.</span>
+</span><span id="__span-3-104"><a id="__codelineno-3-104" name="__codelineno-3-104" href="#__codelineno-3-104"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">dust</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-3-105"><a id="__codelineno-3-105" name="__codelineno-3-105" href="#__codelineno-3-105"></a><span class="c1"># Removes objects with &lt; `threshold[0]` voxels and &gt;= threshold[1]</span>
+</span><span id="__span-3-106"><a id="__codelineno-3-106" name="__codelineno-3-106" href="#__codelineno-3-106"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">dust</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">100</span><span class="p">])</span>
+</span><span id="__span-3-107"><a id="__codelineno-3-107" name="__codelineno-3-107" href="#__codelineno-3-107"></a><span class="c1"># Removes objects with &gt;= `threshold[0]` voxels and &lt; threshold[1]</span>
+</span><span id="__span-3-108"><a id="__codelineno-3-108" name="__codelineno-3-108" href="#__codelineno-3-108"></a><span class="n">labels_out</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">dust</span><span class="p">(</span><span class="n">labels_in</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">100</span><span class="p">],</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-3-109"><a id="__codelineno-3-109" name="__codelineno-3-109" href="#__codelineno-3-109"></a>
+</span><span id="__span-3-110"><a id="__codelineno-3-110" name="__codelineno-3-110" href="#__codelineno-3-110"></a><span class="c1"># Get a labeling of the k largest objects in the image.</span>
+</span><span id="__span-3-111"><a id="__codelineno-3-111" name="__codelineno-3-111" href="#__codelineno-3-111"></a><span class="c1"># The output will be relabeled from 1 to N.</span>
+</span><span id="__span-3-112"><a id="__codelineno-3-112" name="__codelineno-3-112" href="#__codelineno-3-112"></a><span class="n">labels_out</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">largest_k</span><span class="p">(</span>
+</span><span id="__span-3-113"><a id="__codelineno-3-113" name="__codelineno-3-113" href="#__codelineno-3-113"></a>  <span class="n">labels_in</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-3-114"><a id="__codelineno-3-114" name="__codelineno-3-114" href="#__codelineno-3-114"></a>  <span class="n">connectivity</span><span class="o">=</span><span class="mi">26</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-3-115"><a id="__codelineno-3-115" name="__codelineno-3-115" href="#__codelineno-3-115"></a>  <span class="n">return_N</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-116"><a id="__codelineno-3-116" name="__codelineno-3-116" href="#__codelineno-3-116"></a><span class="p">)</span>
+</span><span id="__span-3-117"><a id="__codelineno-3-117" name="__codelineno-3-117" href="#__codelineno-3-117"></a><span class="n">labels_in</span> <span class="o">*=</span> <span class="p">(</span><span class="n">labels_out</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># to get original labels</span>
+</span><span id="__span-3-118"><a id="__codelineno-3-118" name="__codelineno-3-118" href="#__codelineno-3-118"></a>
+</span><span id="__span-3-119"><a id="__codelineno-3-119" name="__codelineno-3-119" href="#__codelineno-3-119"></a><span class="c1"># Compute the contact surface area between all labels.</span>
+</span><span id="__span-3-120"><a id="__codelineno-3-120" name="__codelineno-3-120" href="#__codelineno-3-120"></a><span class="c1"># Only face contacts are counted as edges and corners</span>
+</span><span id="__span-3-121"><a id="__codelineno-3-121" name="__codelineno-3-121" href="#__codelineno-3-121"></a><span class="c1"># have zero area. To get a simple count of all contacting</span>
+</span><span id="__span-3-122"><a id="__codelineno-3-122" name="__codelineno-3-122" href="#__codelineno-3-122"></a><span class="c1"># voxels, set `surface_area=False`.</span>
+</span><span id="__span-3-123"><a id="__codelineno-3-123" name="__codelineno-3-123" href="#__codelineno-3-123"></a><span class="c1"># { (1,2): 16 } aka { (label_1, label_2): contact surface area }</span>
+</span><span id="__span-3-124"><a id="__codelineno-3-124" name="__codelineno-3-124" href="#__codelineno-3-124"></a><span class="n">surface_per_contact</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">contacts</span><span class="p">(</span>
+</span><span id="__span-3-125"><a id="__codelineno-3-125" name="__codelineno-3-125" href="#__codelineno-3-125"></a>  <span class="n">labels_out</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
+</span><span id="__span-3-126"><a id="__codelineno-3-126" name="__codelineno-3-126" href="#__codelineno-3-126"></a>  <span class="n">surface_area</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">anisotropy</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">40</span><span class="p">)</span>
+</span><span id="__span-3-127"><a id="__codelineno-3-127" name="__codelineno-3-127" href="#__codelineno-3-127"></a><span class="p">)</span>
+</span><span id="__span-3-128"><a id="__codelineno-3-128" name="__codelineno-3-128" href="#__codelineno-3-128"></a><span class="c1"># same as set(surface_per_contact.keys())</span>
+</span><span id="__span-3-129"><a id="__codelineno-3-129" name="__codelineno-3-129" href="#__codelineno-3-129"></a><span class="n">edges</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">region_graph</span><span class="p">(</span><span class="n">labels_out</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">)</span>
+</span><span id="__span-3-130"><a id="__codelineno-3-130" name="__codelineno-3-130" href="#__codelineno-3-130"></a>
+</span><span id="__span-3-131"><a id="__codelineno-3-131" name="__codelineno-3-131" href="#__codelineno-3-131"></a><span class="c1"># You can also generate a voxel connectivty graph that encodes</span>
+</span><span id="__span-3-132"><a id="__codelineno-3-132" name="__codelineno-3-132" href="#__codelineno-3-132"></a><span class="c1"># which directions are passable from a given voxel as a bitfield.</span>
+</span><span id="__span-3-133"><a id="__codelineno-3-133" name="__codelineno-3-133" href="#__codelineno-3-133"></a><span class="c1"># This could also be seen as a method of eroding voxels fractionally</span>
+</span><span id="__span-3-134"><a id="__codelineno-3-134" name="__codelineno-3-134" href="#__codelineno-3-134"></a><span class="c1"># based on their label adjacencies.</span>
+</span><span id="__span-3-135"><a id="__codelineno-3-135" name="__codelineno-3-135" href="#__codelineno-3-135"></a><span class="c1"># See help(cc3d.voxel_connectivity_graph) for details.</span>
+</span><span id="__span-3-136"><a id="__codelineno-3-136" name="__codelineno-3-136" href="#__codelineno-3-136"></a><span class="n">graph</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">voxel_connectivity_graph</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">)</span>
+</span><span id="__span-3-137"><a id="__codelineno-3-137" name="__codelineno-3-137" href="#__codelineno-3-137"></a>
+</span><span id="__span-3-138"><a id="__codelineno-3-138" name="__codelineno-3-138" href="#__codelineno-3-138"></a><span class="c1"># ...and turn it back into labeled values (probably</span>
+</span><span id="__span-3-139"><a id="__codelineno-3-139" name="__codelineno-3-139" href="#__codelineno-3-139"></a><span class="c1"># not exactly the same ones). Note: this function currently</span>
+</span><span id="__span-3-140"><a id="__codelineno-3-140" name="__codelineno-3-140" href="#__codelineno-3-140"></a><span class="c1"># assumes an undirected graph, so single voxel alterations are</span>
+</span><span id="__span-3-141"><a id="__codelineno-3-141" name="__codelineno-3-141" href="#__codelineno-3-141"></a><span class="c1"># likely to go awry.</span>
+</span><span id="__span-3-142"><a id="__codelineno-3-142" name="__codelineno-3-142" href="#__codelineno-3-142"></a><span class="n">new_labels</span> <span class="o">=</span> <span class="n">cc3d</span><span class="o">.</span><span class="n">color_connectivity_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">)</span>
+</span></code></pre></div>
+<p><em>Note: C and Fortran order arrays will be processed in row major and column major order respectively, so the numbering of labels will be "transposed". The scare quotes are there because the dimensions of the array will not change.</em></p>
+<h2 id="c-use">C++ Use</h2>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;cc3d.hpp&quot;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">// 3d array represented as 1d array</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">int</span><span class="p">[</span><span class="mi">512</span><span class="o">*</span><span class="mi">512</span><span class="o">*</span><span class="mi">512</span><span class="p">]();</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="kt">uint32_t</span><span class="o">*</span><span class="w"> </span><span class="n">cc_labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cc3d</span><span class="o">::</span><span class="n">connected_components3d</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sx=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sy=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sz=*/</span><span class="mi">512</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">);</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1">// The default template parameter for output type is uint32_t</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="kt">uint64_t</span><span class="o">*</span><span class="w"> </span><span class="n">cc_labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cc3d</span><span class="o">::</span><span class="n">connected_components3d</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sx=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sy=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sz=*/</span><span class="mi">512</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="p">);</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="kt">uint16_t</span><span class="o">*</span><span class="w"> </span><span class="n">cc_labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cc3d</span><span class="o">::</span><span class="n">connected_components3d</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">  </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sx=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sy=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sz=*/</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">  </span><span class="cm">/*connectivity=*/</span><span class="mi">18</span><span class="w"> </span><span class="c1">// default is 26 connected</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="p">);</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="kt">uint16_t</span><span class="o">*</span><span class="w"> </span><span class="n">cc_labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cc3d</span><span class="o">::</span><span class="n">connected_components3d</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">  </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sx=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sy=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sz=*/</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">  </span><span class="cm">/*connectivity=*/</span><span class="mi">26</span><span class="p">,</span><span class="w"> </span><span class="cm">/*N=*/</span><span class="n">N</span><span class="w"> </span><span class="c1">// writes number of labels to N</span>
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="p">);</span>
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;cc3d_continuous.hpp&quot;</span>
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="c1">// For handling grayscale images. Note that the difference</span>
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="c1">// is the addition of the &quot;delta&quot; argument.</span>
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="kt">uint16_t</span><span class="o">*</span><span class="w"> </span><span class="n">cc_labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cc3d</span><span class="o">::</span><span class="n">connected_components3d</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">  </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sx=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sy=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sz=*/</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">  </span><span class="cm">/*delta=*/</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="cm">/*connectivity=*/</span><span class="mi">6</span><span class="w"> </span><span class="c1">// default is 26 connected</span>
+</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="p">);</span>
+</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
+</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;cc3d_graphs.hpp&quot;</span>
+</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>
+</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="c1">// edges is [ e11, e12, e21, e22, ... ]</span>
+</span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">edges</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cc3d</span><span class="o">::</span><span class="n">extract_region_graph</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="w">  </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sx=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sy=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sz=*/</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">  </span><span class="cm">/*connectivity=*/</span><span class="mi">18</span><span class="w"> </span><span class="c1">// default is 26 connected</span>
+</span><span id="__span-4-41"><a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a><span class="p">);</span>
+</span><span id="__span-4-42"><a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a>
+</span><span id="__span-4-43"><a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="c1">// graph is a series of bitfields that describe inter-voxel</span>
+</span><span id="__span-4-44"><a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="c1">// connectivity based on adjacent labels. See &quot;cc3d_graphs.hpp&quot;</span>
+</span><span id="__span-4-45"><a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="c1">// for details on the bitfield.</span>
+</span><span id="__span-4-46"><a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="kt">uint32_t</span><span class="o">*</span><span class="w"> </span><span class="n">graph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extract_voxel_connectivity_graph</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span id="__span-4-47"><a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a><span class="w">  </span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sx=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sy=*/</span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="cm">/*sz=*/</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-4-48"><a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a><span class="w">  </span><span class="cm">/*connectivity=*/</span><span class="mi">6</span><span class="w"> </span><span class="c1">// default is 26 connected</span>
+</span><span id="__span-4-49"><a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="p">);</span>
+</span></code></pre></div>
+<h2 id="26-connected-ccl-algorithm">26-Connected CCL Algorithm</h2>
+<p>The algorithm contained in this package is an elaboration into 3D images of the 2D image connected components algorithm described by Rosenfeld and Pflatz (RP) in 1968 [1] (which is well illustrated by <a href="https://www.youtube.com/watch?v=ticZclUYy88">this youtube video</a>) using an equivalency list implemented as Tarjan's Union-Find disjoint set with path compression and balancing [2] and augmented with a decision tree based on work by Wu, Otoo, and Suzuki (WOS), an approach commonly known as Scan plus Array-based Union-Find (SAUF). [3] The description below describes the 26-connected algorithm, but once you understand it, deriving 18 and 6 are simple. However, we recently made some changes that warrant further discursion on 6-connected.</p>
+<h3 id="first-principles-in-2d">First Principles in 2D</h3>
+<p>In RP's 4-connected two-pass method for binary 2D images, the algorithm raster scans and every time it first encounters a foreground pixel (the pixels to its top and left are background), it marks it with a new label. If there is a preexisting label in its neighborhood, it uses that label instead. Whenever two labels are adjacent, it records they are equivalent so that they can be relabeled consistently in the second pass. This equivalency table can be constructed in several ways, but some popular approaches are Union-Find with path compression with balancing by rank and Selkow's algorithm (which can avoid pipeline stalls). [4] However, Selkow's algorithm is designed for two trees of depth two, appropriate for binary images. We would like to process multiple labels at the same time, making Union-Find preferable.</p>
+<p>In the second pass, the pixels are relabeled using the equivalency table. Union-Find establishes one label as the root label of a tree, and the root is considered the representative label. Each pixel is then labeled with the representative label. Union-Find is therefore appropriate for representing disjoint sets. Path compression with balancing radically reduces the height of the tree, which accelerates the second pass.</p>
+<p>WOS approached the problem of accelerating 8-connected 2D connected components on binary images. 8-connected labeling is achieved by extending RP's forward pass mask to the top left and top right corner pixels. In Union-Find based connected components algorithms, the unify step in the first pass is the most expensive step. WOS showed how to optimize away a large fraction of these calls using a decision tree that takes advantage of local topology. For example, since the top-center neighbor of the current pixel is also adjacent to the other mask elements, all of which have already been processed by virtue of the raster scan direction, if it is present it is sufficient to copy its value and move on. If it is absent, pick one of the remaining foreground pixels, copy their value, and use unify for the mask element on the right as it is now known to be non-neighboring with the left hand side. WOS's algorithm continues in this fashion until a match is found or all mask elements are processed at which point a new label is created.</p>
+<p>For several years, this algorithm was the world's fastest, though it has been superceded by a newer work that exchanges the static decision tree for a dynamic one or precalculated generated one amongst other improvements. However, WOS's work is significant for both its simplicity and speed and thus serves as the inspiration for this library. For 2D 8-connected images, we provide a specialization using Wu et al's original decision tree for a slight performance boost.</p>
+<p>We're interested in exploring the block based approaches of Grana, Borghesani, and Cucchiara ([5],[7]), however their approach appears to critically rely on binary images. We'll continue to think about ways to incorporate it. We also considered the approach of He et al [8] which is also supposed to modestly faster than than WOS. However, it substitutes the Union-Find data structure (one array) with three arrays, which imposes a memory requirement that is at odds with our goal of processing large images.</p>
+<h3 id="extending-to-3d">Extending to 3D</h3>
+<p>The approach presented below is very similar to that of Sutheebanjard [6]. To move to a 3D 26-connected neighborhood, the mask must be extended into three dimensions in order to connect neighboring planes. Observe that the 8-connected mask covers the trailing half of the neighborhood (the part that will have been already processed) such that the current pixel can rely on those labels. Thus the mask for the 26-connected neighborhood covers only two out of three potential planes: the entire lower plane (nine voxels), and a mask identical to WOS's (four voxels) on the current plane. While some further optimizations are possible, to begin, the problem can be conceptually decomposed into two parts: establishing a 9-connected link to the bottom plane and then an 8-connected link to the current plane. This works because the current pixel functions as a hub that transmits the connection information from the 9-connected step to the 8-connected step.</p>
+<p>Fig. 1: Mask for an 8-connected plane. If J,K,L, and M are all eliminated, only N remains and a new label is assigned.</p>
+<table>
+<thead>
+<tr>
+<th>j</th>
+<th>k</th>
+<th>l</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m</td>
+<td>n</td>
+<td>.</td>
+</tr>
+<tr>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+</tbody>
+</table>
+<p>The very first Z plane (Z=0) the algorithm runs against is special: the edge effect omits the bottom plane of the mask. Therefore, as the remaining mask is only comprosed of the 8-connected 2D mask, after this pass, the bottom of the image is 8-connected. At Z=1, the 9-connected part of the mask kicks in, forming connections to Z=0, making the current plane now (8 + 9) 17-connected. At Z=2, the 9-connected bottom mask now forms connections from Z=1 to Z=2 on the top, making Z=1 (17 + 9) 26-connected. By induction, when this process proceeds to completion it results in a 26-connected labeling of the volume.</p>
+<p>Following inspiration from WOS, we construct a decision tree on the densely labeled bottom plane that minimizes the number of unifications we need to perform.</p>
+<p>Fig 2. The mask for the lower plane in 3D.</p>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>d</td>
+<td>e</td>
+<td>f</td>
+</tr>
+<tr>
+<td>g</td>
+<td>h</td>
+<td>i</td>
+</tr>
+</tbody>
+</table>
+<p>As <code>e</code> is connected to all other voxels, if present, it can simply be copied. If <code>e</code> is absent, <code>b</code> and <code>h</code> fully cover the mask. If <code>b</code> is absent, <code>h</code>, <code>a</code>, <code>c</code> comprise a covering. If <code>h</code> is absent, <code>b</code>, <code>g</code>, <code>i</code> are one. Below is a list of coverings such that each proceeding entry in the list assumes the first letters in the entries above are background.</p>
+<ol>
+<li><code>e</code></li>
+<li><code>k</code>, (<code>h</code> | <code>g</code>, <code>i</code>)</li>
+<li><code>b</code>, (<code>h</code> | <code>g</code>, <code>i</code>)</li>
+<li><code>h</code>, <code>a</code>, <code>c</code></li>
+<li><code>m</code>, (<code>f</code> | <code>c</code>, <code>i</code>)</li>
+<li><code>d</code>, (<code>f</code> | <code>c</code>, <code>i</code>)</li>
+<li><code>f</code>, <code>g</code>, <code>a</code></li>
+<li><code>a</code>, <code>c</code>, <code>g</code>, <code>i</code></li>
+<li><code>c</code>, <code>g</code>, <code>i</code></li>
+<li><code>g</code>, <code>i</code></li>
+<li><code>i</code></li>
+</ol>
+<p>The decision tree is then constructed such that each of these coverings will be evaluated using the fewest unifications possible. It's possible to further optimize this by noting that <code>e</code> and <code>b</code> are both fully connected to the upper 2D mask. Therefore, if either of them are present, we can skip the 8-connected unification step. It's also possible to try the DF covering first if B is background, which would save one unification versus HAC given even statistics, but it seems to be slightly slower on the dataset I attempted. To move from binary data to multilabel data, I simply replaced tests for foreground and background with tests for matching labels.</p>
+<p>In order to make a reasonably fast implementation, I implemented union-find with path compression. I conservatively used an IDs array qual to the size of the image for the union-find data structure instead of a sparse map. The union-find data structure plus the output labels means the memory consumption will be input + output + rank + equivalences. If your input labels are 32-bit, the memory usage will be 4x the input size. This becomes more problematic when 64-bit labels are used, but if you know something about your data, you can decrease the size of the union-find data structure. I previously used union-by-size but for some reason it merely reduced performance and increased memory usage so it was removed.</p>
+<p>For more information on the history of connected components algorithms, and an even faster approach for 2D 8-connected components, consult Grana et al's paper on Block Based Decision Trees. [5,7]</p>
+<h2 id="phantom-labels">Phantom Labels</h2>
+<p>In the course of thinking of improvements to several algorithms, we developed a technique we term "Phantom Labeling" for improving the SAUF method directly.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Definition: Phantom Labels are elements of a CCL mask that
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>transmit connectivity information between other elements of the
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>mask but cannot directly pass their value to the current pixel
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>during the first pass of a SAUF derived algorithm.
+</span></code></pre></div>
+<p>Reproducing Fig. 1 again, but with new letters for the more limited problem, the standard SAUF mask appears like so:</p>
+<p>Fig. 3: Mask for an 8-connected plane.</p>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>d</td>
+<td>x</td>
+<td>.</td>
+</tr>
+<tr>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+</tbody>
+</table>
+<p>This results in a decision tree like so assuming x is a foreground pixel.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>if b:
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    x := b
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>elif a:
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    x := a
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    if c:
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        unify(a,c)
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>elif d:
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    x := d
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    if c:
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        unify(c,d)
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>elif c:
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    x := c
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>else:
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    x := new label
+</span></code></pre></div>
+<p>There is an opportunity here for eliminating up to half of the unify calls, one of the more expensive operations in modern CCL by slightly modifying the mask:</p>
+<p>Fig. 4: 8-connected mask modified to include phantom label P.</p>
+<table>
+<thead>
+<tr>
+<th>.</th>
+<th>P</th>
+<th>.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>b</td>
+<td>c</td>
+</tr>
+<tr>
+<td>d</td>
+<td>x</td>
+<td>.</td>
+</tr>
+<tr>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+</tbody>
+</table>
+<p>This results in a modified decision tree.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>if b:
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    x := b
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>elif a:
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    x := a
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    if c and not P: &lt;--- change here
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        unify(a,c)
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>elif d:
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    x := d
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    if c:
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        unify(c,d)
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>elif c:
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    x := c
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>else:
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    x := new label
+</span></code></pre></div>
+<p>The novelty of this technique is unclear, but it is very simple to apply and results in substantial speed ups for the 4 and 6 connected problems, a minor improvement for 8-connected, and is readily compatible with the multi-label approach unlike block based approaches.</p>
+<h2 id="4-and-6-connected-ccl-algorithm">4 and 6-Connected CCL Algorithm</h2>
+<p>Here is where the phantom label technique shines. It's a bit harder to find 4 and 6 connected algorithms in the literature, I assume because many of the techniques invented for the 8-way problem, such as the Union-Find data structure for the equivalency table and run-based approaches, are applicable to the simpler problem. However, the SAUF decision tree approach was lacking as every pixel required a unify call in the 4-way problem and two in the 6-way problem.</p>
+<p>Fig. 5: 4-connected mask modified to include phantom label P.</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>b</th>
+<th>.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>x</td>
+<td>.</td>
+</tr>
+</tbody>
+</table>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>if a:
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    x := a
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    if b and not P:
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        unify(a,b)
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>elif b:
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    x := b
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>else:
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    x := new label
+</span></code></pre></div>
+<p>This gives a decent improvement on the order of 10-20%. If you're lucky, you might not incur even a single label merge operation. In the 6-way problem, there are three phantom labels that can be exploited and the improvement is closer to 50% on our data, a fairly substantial amount. Again, with luck you might avoid any unify operations at all.</p>
+<p>Fig. 6: Mask for the 6-way problem with phantom labels P, Q, and R added.</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>x</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>.</th>
+<th>Q</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R</td>
+<td>c</td>
+</tr>
+</tbody>
+</table>
+<p>You can even use multiple routes to propagate information if a label is missing. For example, if path (a,P,b) is unavailable due to a missing P, you could potentially transmit information using path (a,R,c,Q,b).</p>
+<h2 id="four-pass-algorithm">Four Pass Algorithm</h2>
+<p>We introduce two additional passes over the image label prior to running the two-pass SAUF algorithm. These additional passes are used to collect statistcs for optimizing the SAUF passes.</p>
+<h3 id="estimating-provisional-labels">Estimating Provisional Labels</h3>
+<p>The first additional pass is used to over-estimate the number of provisional labels generated by the first SAUF pass. A better estimation allows a smaller allocation for the Union-Find datastructure. For some operating systems, the reduced size of the allocation and improved caching recovers more time than is spent collecting statistics.</p>
+<p>This can be computed by counting the number of transitions between labels along each row of the image. This scan is easily written such that the instructions can be vectorized to minimize the cost of the scan. The number of transitions is guaranteed to be larger than or equal to the number of provisional labels as all provisional labels are generated in this fashion and then reduced by stealing a label from a neighboring voxel.</p>
+<p>A hierarchy of estimators can be written as:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>0 &lt;= provisional labels &lt;= X transitions &lt;= static estimate &lt;= voxels
+</span></code></pre></div>
+<p>Binary images can also be estimated statically as <code>voxels / 2</code> for 4 and 6-way, <code>voxels / 4</code> for 8 and 18 way, and <code>voxels / 8</code> for 26 connected. For multi-label images, the best static estimate is <code>voxels</code> as no assumptions can be made about how labels connect to each other (in the worst case all eight voxels in a cube have different labels).</p>
+<p>It is also possible to check XY and XYZ transitions to get a tighter bound, but in experiments, the amount of time spent checking those directions exceeded the benefit obtained by checking the X pass. Often the X pass alone results in factors as high as <code>voxels / 100</code>.</p>
+<p>Estimation of the number of labels also allows aborting processing before the first SAUF pass in the case of an all background cube.</p>
+<h3 id="estimating-foreground-location">Estimating Foreground Location</h3>
+<p>The second additional pass is estimating the location of the foreground. In the literature, this strategy is sometimes referred to as a "one-and-a-half pass" where the foreground location is computed during the first SAUF pass and then used to skip processing of background voxels during the relabeling pass.</p>
+<p>Here we perform this check up front so that it can be performed minimally. Instead of integrating the calculation into the first pass which could force some computation on every voxel, we scan each row from the left to find the first foreground voxel and then scan from the right to the find the foreground voxel at the end. The results are tabulated in a uint32 table of starts and ends to each row of size <code>2 * sy * sz</code>. This ensures that the volume is scanned at most once, and most likely much less if the shapes fill the space reasonably well. Then, both passes of the SAUF method scan only the part of each row indicated by this table.</p>
+<p>Certain shapes and distributions defeat the efficiency of scanning only the starts and ends of the row (such as random images or an image with foreground on the start and end of each row and nowhere else). However, for a great many shapes, this provides substantial efficiencies and minimal downside for a dense multi-label image as only two YZ slices of the images are scanned before the table is completed.</p>
+<h3 id="early-abortion-points">Early Abortion Points</h3>
+<p>There are three locations in the algorithm at which further processing can be aborted early without changing the result.</p>
+<ol>
+<li>After estimating provisional labels if zero transitions are detected (an all zeros volume). A black image is returned.</li>
+<li>After the first SAUF pass if the number of provisional labels is zero or one. In this case, the provisional labels are guaranteed to be identical to final labels.</li>
+<li>After assigning final labels to each provisional label in a translation array. If the number of final labels equals the number of provisional labels, the provisional labels were accurately assigned and the relabeling scan can be skipped.</li>
+</ol>
+<h2 id="papers-using-cc3d">Papers Using cc3d</h2>
+<p>A number of papers are using cc3d now. Many of them seem to be deep learning applications as instance segmentation is liable to generate touching non-binary labels. Some are in geoscience, neuroscience, and medical fields. If cc3d is helpful to you, please feel free to <a href="https://github.com/william-silversmith/">email us</a> and let us know. We might be able to offer some tips if its performance critical (though we can't guarantee timeliness of response). There are so many variations of the CCL problem, you might be surprised at what you can do.</p>
+<p><a href="https://scholar.google.com/scholar?as_ylo=2019&amp;q=connected-components-3d&amp;hl=en&amp;as_sdt=0,31">https://scholar.google.com/scholar?as_ylo=2019&amp;q=connected-components-3d&amp;hl=en&amp;as_sdt=0,31</a></p>
+<h2 id="references">References</h2>
+<ol>
+<li>A. Rosenfeld and J. Pfaltz. "Sequential Operations in Digital Picture Processing". Journal of the ACM. Vol. 13, Issue 4, Oct. 1966, Pg. 471-494. doi: 10.1145/321356.321357 (<a href="https://dl.acm.org/citation.cfm?id=321357">link</a>)</li>
+<li>R. E. Tarjan. "Efficiency of a good but not linear set union algorithm". Journal of the ACM, 22:215-225, 1975. (<a href="https://dl.acm.org/citation.cfm?id=321884">link</a>)</li>
+<li>K. Wu, E. Otoo, K. Suzuki. "Two Strategies to Speed up Connected Component Labeling Algorithms". Lawrence Berkeley National Laboratory. LBNL-29102, 2005. (<a href="https://www.osti.gov/servlets/purl/929013">link</a>)</li>
+<li>S. Selkow. "The Tree-to-Tree Editing Problem". Information Processing Letters. Vol. 6, No. 6. June 1977. doi: 10.1016/0020-0190(77)90064-3 (<a href="http://www.grantjenks.com/wiki/_media/ideas:tree-to-tree_editing_problem.pdf">link</a>)</li>
+<li>C. Grana, D. Borghesani, R. Cucchiara. "Optimized Block-based Connected Components Labeling with Decision Trees". IEEE Transactions on Image Processing. Vol. 19, Iss. 6. June 2010. doi: 10.1109/TIP.2010.2044963 (<a href="http://imagelab.ing.unimore.it/imagelab/pubblicazioni/2009TIPlabeling.pdf">link</a>)</li>
+<li>P. Sutheebanjard. "Decision Tree for 3-D Connected Components Labeling". Proc. 2012 International Symposium on Information Technology in Medicine and Education. doi: 10.1109/ITiME.2012.6291402 (<a href="https://ieeexplore.ieee.org/abstract/document/6291402/authors#authors">link</a>)</li>
+<li>C. Grana, D. Borghesani, R. Cucchiara. "Fast Block Based Connected Components Labeling". Proc. 16th IEEE Intl. Conf. on Image Processing. 2009. doi: 10.1109/ICIP.2009.5413731 (<a href="https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=5413731&amp;casa_token=grvS_69THEYAAAAA:DKpVSoo6nUnI6liLel54kiGdK_ee1qMyPaFYXe_9OGKX0iBDtf9p6ks6mf9twZdK0YPM_SQb&amp;tag=1">link</a>)</li>
+<li>L. He, Y. Chao and K. Suzuki, "A Linear-Time Two-Scan Labeling Algorithm", IEEE International Conference on Image Processing, vol. 5, pp. 241-244, 2007.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.top", "content.action.view", "content.action.edit", "content.code.copy"], "search": "assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
