@@ -262,7 +262,7 @@ def largest_k(
   try:
     import fastremap  # type: ignore[import-not-found]
     cc_out = fastremap.mask_except(cc_labels, preserve_list, in_place=True)
-    cc_out = fastremap.renumber(cc_out, in_place=True)
+    cc_out, _ = fastremap.renumber(cc_out, in_place=True)
   except ImportError:
     shape, dtype = cc_labels.shape, cc_labels.dtype
     rns = fastcc3d.runs(cc_labels)
