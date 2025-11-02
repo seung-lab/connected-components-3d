@@ -740,19 +740,9 @@ OUT* color_connectivity_graph_26(
 	return simplified_relabel<OUT>(out_labels, voxels, new_label, equivalences, N);
 }
 
-template <typename OUT>
+template <typename VCG_t, typename OUT>
 OUT* color_connectivity_graph_6(
-	const uint8_t* vcg, // voxel connectivity graph
-	const int64_t sx, const int64_t sy, const int64_t sz,
-	OUT* out_labels = NULL,
-	size_t &N = _dummy_N
-) {
-	throw new std::runtime_error("6-connectivity requires a 32-bit voxel graph for color_connectivity_graph_6.");
-}
-
-template <typename OUT>
-OUT* color_connectivity_graph_6(
-	const uint32_t* vcg, // voxel connectivity graph
+	const VCG_t* vcg, // voxel connectivity graph
 	const int64_t sx, const int64_t sy, const int64_t sz,
 	OUT* out_labels = NULL,
 	size_t &N = _dummy_N
@@ -1106,7 +1096,7 @@ OUT* color_connectivity_graph_N(
 		}
 	}
 	else if (connectivity == 6) {
-		return color_connectivity_graph_6<OUT>(vcg, sx, sy, sz, out_labels, N);
+		return color_connectivity_graph_6<VCG_t, OUT>(vcg, sx, sy, sz, out_labels, N);
 	}
 	else {
 		return color_connectivity_graph_26<OUT>(vcg, sx, sy, sz, out_labels, N);
