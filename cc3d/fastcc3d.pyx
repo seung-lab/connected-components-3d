@@ -1,3 +1,4 @@
+# cython: freethreading_compatible = True
 # cython: language_level=3
 """
 Cython binding for connected components applied to 3D images
