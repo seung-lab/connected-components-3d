@@ -6,7 +6,7 @@ with 26-connectivity and handling for multiple labels.
 
 Author: William Silversmith
 Affiliation: Seung Lab, Princeton Neuroscience Institute
-Date: August 2018 - June 2023
+Date: August 2018 - Februrary 2026
 
 ---
 This program is free software: you can redistribute it and/or modify
