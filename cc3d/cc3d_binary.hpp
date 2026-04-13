@@ -888,11 +888,6 @@ OUT* connected_components2d_8_binary(
 
   int64_t num_labels = next_label;
 
-  if (num_labels <= 1) {
-    N = num_labels;
-    return out_labels;
-  }
-
   OUT label;
   std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
   next_label = 1;
