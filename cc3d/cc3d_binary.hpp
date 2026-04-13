@@ -742,7 +742,8 @@ OUT* connected_components2d_8_binary(
     const int64_t xstart = std::min(runs[y << 1], runs[ymax << 1]) & 0xfffffffffffffffe; // round down to multiple of 2
     const int64_t xend = std::max(runs[(y << 1) + 1], runs[(ymax << 1) + 1]);
 
-    oloc = (xstart >> 1) + (sx >> 1) * (y >> 1);
+    oloc = (xstart >> 1) + ((sx+1) >> 1) * (y >> 1);
+
     for (int64_t x = xstart; x < xend; x += 2, oloc++) {
 
       loc = x + sx * y;
@@ -914,7 +915,7 @@ OUT* connected_components2d_8_binary(
 
     loc = (xend - 1) + sx * y;
     for (int64_t x = xend - 1; x >= xstart; x--, loc--) {
-      oloc = (x >> 1) + (sx >> 1) * (y >> 1);
+      oloc = (x >> 1) + ((sx+1) >> 1) * (y >> 1);
       out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
     }
   }
