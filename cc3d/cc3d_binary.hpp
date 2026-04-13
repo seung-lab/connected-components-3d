@@ -908,10 +908,24 @@ OUT* connected_components2d_8_binary(
   // Raster Scan 2: Write final labels based on equivalences
   N = next_label - 1;
   loc = voxels - 1;
+
+  int64_t xstart = 0, xend = 0;
+  int64_t overwrite_target = voxels >> 2;
+
   for (int64_t y = sy - 1; y >= 0; y--) {
     const int64_t ymax = (y < sy - 1) ? y+1 : y;
-    const int64_t xstart = std::min(runs[y << 1], runs[ymax << 1]) & 0xfffffffffffffffe; // round down to multiple of 2
-    const int64_t xend = std::max(runs[(y << 1) + 1], runs[(ymax << 1) + 1]);
+    
+    // because we are reusing the first part of the 
+    // output labels, must overwrite all pixels in that
+    // region
+    if (y * sx < overwrite_target) {
+      xstart = 0;
+      xend = sx;
+    }
+    else {
+      xstart = std::min(runs[y << 1], runs[ymax << 1]) & 0xfffffffffffffffe; // round down to multiple of 2
+      xend = std::max(runs[(y << 1) + 1], runs[(ymax << 1) + 1]);
+    }
 
     loc = (xend - 1) + sx * y;
     for (int64_t x = xend - 1; x >= xstart; x--, loc--) {
