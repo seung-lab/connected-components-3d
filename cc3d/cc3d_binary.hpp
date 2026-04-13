@@ -787,7 +787,7 @@ OUT* connected_components2d_8_binary(
             equivalences.unify(out_labels[oloc], out_labels[oloc + oF]);
           }            
         }
-        else if (x > 0 && y < sx - 1 && in_labels[loc + A]) {
+        else if (x > 0 && y < sy - 1 && in_labels[loc + A]) {
           out_labels[oloc] = out_labels[oloc + oA];
           if (x < sx - 2 && y > 0 && in_labels[loc + Z] && in_labels[loc + F]) {
             equivalences.unify(out_labels[oloc], out_labels[oloc + oF]);
