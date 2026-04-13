@@ -689,7 +689,6 @@ OUT* connected_components2d_8_binary(
   const int64_t voxels = sx * sy;
 
   max_labels++; // corrects Cython estimation
-  // max_labels = voxels / 3 + 2;
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels) + 1), static_cast<size_t>(1L)); // can't allocate 0 arrays
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
