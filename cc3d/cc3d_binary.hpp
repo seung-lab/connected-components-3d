@@ -884,6 +884,42 @@ OUT* connected_components2d_8_binary(
     }
   }
 
+  if (periodic_boundary) {
+    int64_t yoff = ((sx+1) >> 1) * ((sy - 1) >> 1);
+    for (int64_t x = 0; x < sx; x++) {
+      if (in_labels[x] == 0) {
+        continue;
+      }
+
+      int64_t ox = (x >> 1);
+
+      if (x > 0 && in_labels[x] && in_labels[x - 1 + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[ox], out_labels[((x - 1) >> 1) + yoff]);
+      }
+      if (in_labels[x] && in_labels[x + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[ox], out_labels[ox + yoff]);
+      }
+      if (x < sx - 1 && in_labels[x] && in_labels[x + 1 + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[ox], out_labels[((x + 1) >> 1) + yoff]);
+      }
+    }
+
+    if (in_labels[0] && in_labels[voxels - 1]) {
+      equivalences.unify(out_labels[0], out_labels[((sx - 1) >> 1) + yoff]);
+    }
+    if (in_labels[sx - 1] && in_labels[sx * (sy - 1)]) {
+      equivalences.unify(out_labels[(sx - 1) >> 1], out_labels[yoff]);
+    }
+
+    for (int64_t y = 0; y < sy; y++) {
+      loc = sx * y;
+      yoff = ((sx+1) >> 1) * (y >> 1);
+      if (in_labels[loc] && in_labels[loc + (sx - 1)]) {
+        equivalences.unify(out_labels[yoff], out_labels[((sx-1) >> 1) + yoff]);
+      }
+    }
+  }
+
   // Reuse of out_labels and 4x use of each value
   // requires different relabeling logic.
 
