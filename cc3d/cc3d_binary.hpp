@@ -912,10 +912,23 @@ OUT* connected_components2d_8_binary(
     }
 
     for (int64_t y = 0; y < sy; y++) {
-      loc = sx * y;
-      yoff = ((sx+1) >> 1) * (y >> 1);
-      if (in_labels[loc] && in_labels[loc + (sx - 1)]) {
-        equivalences.unify(out_labels[yoff], out_labels[((sx-1) >> 1) + yoff]);
+      if (in_labels[sx * y] == 0) {
+        continue;
+      }
+
+      int64_t yoff_left  = sx_stride * (y >> 1);
+      int64_t ox_right   = (sx - 1) >> 1;
+
+      if (in_labels[sx * y + (sx - 1)]) {
+        equivalences.unify(out_labels[yoff_left], out_labels[ox_right + yoff_left]);
+      }
+      if (y > 0 && in_labels[sx * (y - 1) + (sx - 1)]) {
+        int64_t yoff_up = sx_stride * ((y - 1) >> 1);
+        equivalences.unify(out_labels[yoff_left], out_labels[ox_right + yoff_up]);
+      }
+      if (y < sy - 1 && in_labels[sx * (y + 1) + (sx - 1)]) {
+        int64_t yoff_down = sx_stride * ((y + 1) >> 1);
+        equivalences.unify(out_labels[yoff_left], out_labels[ox_right + yoff_down]);
       }
     }
   }
