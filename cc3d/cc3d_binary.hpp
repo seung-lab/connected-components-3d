@@ -687,6 +687,7 @@ OUT* connected_components2d_8_binary(
     bool periodic_boundary = false
   ) {
   const int64_t voxels = sx * sy;
+  const int64_t osx = (sx + 1) >> 1;
 
   max_labels++; // corrects Cython estimation
   max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels) + 1), static_cast<size_t>(1L)); // can't allocate 0 arrays
@@ -742,7 +743,7 @@ OUT* connected_components2d_8_binary(
     const int64_t xstart = std::min(runs[y << 1], runs[ymax << 1]) & 0xfffffffffffffffe; // round down to multiple of 2
     const int64_t xend = std::max(runs[(y << 1) + 1], runs[(ymax << 1) + 1]);
 
-    oloc = (xstart >> 1) + ((sx+1) >> 1) * (y >> 1);
+    oloc = (xstart >> 1) + osx * (y >> 1);
 
     for (int64_t x = xstart; x < xend; x += 2, oloc++) {
 
@@ -911,8 +912,6 @@ OUT* connected_components2d_8_binary(
       equivalences.unify(out_labels[(sx - 1) >> 1], out_labels[yoff]);
     }
 
-
-    int64_t osx = (sx - 1) >> 1;
     for (int64_t y = 0; y < sy; y++) {
       if (in_labels[sx * y] == 0) {
         continue;
