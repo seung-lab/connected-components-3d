@@ -280,6 +280,8 @@ For several years, this algorithm was the world's fastest, though it has been su
 
 We're interested in exploring the block based approaches of Grana, Borghesani, and Cucchiara ([5],[7]), however their approach appears to critically rely on binary images. We'll continue to think about ways to incorporate it. We also considered the approach of He et al [8] which is also supposed to modestly faster than than WOS. However, it substitutes the Union-Find data structure (one array) with three arrays, which imposes a memory requirement that is at odds with our goal of processing large images.
 
+In April 2026, we've added the 2009 algorithm for 8-connected binary images by Grana et al. [9] This gives a slight speed boost. The Spaghetti Labeling work by Bolelli et al. is more powerful but the decision trees are so large they can only be written by a machine. [10]
+
 ### Extending to 3D
 
 The approach presented below is very similar to that of Sutheebanjard [6]. To move to a 3D 26-connected neighborhood, the mask must be extended into three dimensions in order to connect neighboring planes. Observe that the 8-connected mask covers the trailing half of the neighborhood (the part that will have been already processed) such that the current pixel can rely on those labels. Thus the mask for the 26-connected neighborhood covers only two out of three potential planes: the entire lower plane (nine voxels), and a mask identical to WOS's (four voxels) on the current plane. While some further optimizations are possible, to begin, the problem can be conceptually decomposed into two parts: establishing a 9-connected link to the bottom plane and then an 8-connected link to the current plane. This works because the current pixel functions as a hub that transmits the connection information from the 9-connected step to the 8-connected step.
@@ -320,7 +322,7 @@ The decision tree is then constructed such that each of these coverings will be 
 
 In order to make a reasonably fast implementation, I implemented union-find with path compression. I conservatively used an IDs array qual to the size of the image for the union-find data structure instead of a sparse map. The union-find data structure plus the output labels means the memory consumption will be input + output + rank + equivalences. If your input labels are 32-bit, the memory usage will be 4x the input size. This becomes more problematic when 64-bit labels are used, but if you know something about your data, you can decrease the size of the union-find data structure. I previously used union-by-size but for some reason it merely reduced performance and increased memory usage so it was removed.
 
-For more information on the history of connected components algorithms, and an even faster approach for 2D 8-connected components, consult Grana et al's paper on Block Based Decision Trees. [5,7]
+For more information on the history of connected components algorithms, and an even faster approach for 2D 8-connected components on binary images, consult Grana et al's paper on Block Based Decision Trees. [5,7,9]
 
 ## Phantom Labels
 
@@ -481,3 +483,5 @@ https://scholar.google.com/scholar?as_ylo=2019&q=connected-components-3d&hl=en&a
 6. P. Sutheebanjard. "Decision Tree for 3-D Connected Components Labeling". Proc. 2012 International Symposium on Information Technology in Medicine and Education. doi: 10.1109/ITiME.2012.6291402 ([link](https://ieeexplore.ieee.org/abstract/document/6291402/authors#authors))
 7. C. Grana, D. Borghesani, R. Cucchiara. "Fast Block Based Connected Components Labeling". Proc. 16th IEEE Intl. Conf. on Image Processing. 2009. doi: 10.1109/ICIP.2009.5413731 ([link](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=5413731&casa_token=grvS_69THEYAAAAA:DKpVSoo6nUnI6liLel54kiGdK_ee1qMyPaFYXe_9OGKX0iBDtf9p6ks6mf9twZdK0YPM_SQb&tag=1))
 8. L. He, Y. Chao and K. Suzuki, "A Linear-Time Two-Scan Labeling Algorithm", IEEE International Conference on Image Processing, vol. 5, pp. 241-244, 2007.
+9. C. Grana, D. Borghesani, and R. Cucchiara, “Fast block based connected components labeling,” in 2009 16th IEEE International Conference on Image Processing (ICIP), Nov. 2009, pp. 4061–4064. doi: 10.1109/ICIP.2009.5413731.
+10. F. Bolelli, S. Allegretti, L. Baraldi, and C. Grana, “Spaghetti Labeling: Directed Acyclic Graphs for Block-Based Connected Components Labeling,” IEEE Transactions on Image Processing, vol. 29, pp. 1999–2012, 2020, doi: 10.1109/TIP.2019.2946979.
