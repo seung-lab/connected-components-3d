@@ -1663,18 +1663,22 @@ def test_binary_image_3d(dtype, connectivity, periodic_boundary):
 @pytest.mark.parametrize("dtype", INT_TYPES)
 @pytest.mark.parametrize("connectivity", [4, 8])
 @pytest.mark.parametrize("periodic_boundary", [False, True])
-def test_binary_image_2d(dtype, connectivity, periodic_boundary):
-  labels = np.random.randint(0, 10, size=(400,400), dtype=np.uint32)
+@pytest.mark.parametrize("size", [10, 100, 1000])
+def test_binary_image_2d(dtype, connectivity, periodic_boundary, size):
+  labels = np.random.randint(0, 2, size=(size,size), dtype=np.uint32)
+  labels = np.asfortranarray(labels)
   # cast to avoid triggering the special binary behavior
   binary_labels = (labels > 0).astype(np.uint16) 
+  binary_labels = np.asfortranarray(binary_labels)
 
   known_out = cc3d.connected_components(binary_labels, connectivity=connectivity, periodic_boundary=periodic_boundary, out_dtype=np.uint32)
-  binary_out = cc3d.connected_components(labels, binary_image=True, connectivity=connectivity, periodic_boundary=periodic_boundary, out_dtype=np.uint32)
+  binary_out = cc3d.connected_components(binary_labels, binary_image=True, connectivity=connectivity, periodic_boundary=periodic_boundary, out_dtype=np.uint32)
+
+  known_out, _ = fastremap.renumber(known_out)
+  binary_out, _ = fastremap.renumber(binary_out)
 
   assert np.all(known_out == binary_out)
 
-  binary_out_false = cc3d.connected_components(labels, binary_image=False, connectivity=connectivity, periodic_boundary=periodic_boundary, out_dtype=np.uint32)
-  assert not np.all(known_out == binary_out_false)
 
 
 

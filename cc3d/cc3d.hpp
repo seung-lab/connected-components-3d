@@ -1112,8 +1112,19 @@ OUT* connected_components2d_8(
 
     for (int64_t y = 0; y < sy; y++) {
       loc = sx * y;
-      if (in_labels[loc] != 0 && in_labels[loc] == in_labels[loc + (sx - 1)]) {
+
+      if (in_labels[loc] == 0) {
+        continue;
+      }
+
+      if (in_labels[loc] == in_labels[loc + (sx - 1)]) {
         equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
+      }
+      if (y > 0 && in_labels[loc] == in_labels[loc + (sx - 1) - sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1) - sx]);
+      }
+      if (y < sy - 1 && in_labels[loc] == in_labels[loc + (sx - 1) + sx]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1) + sx]);
       }
     }
   }
