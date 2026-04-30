@@ -727,10 +727,10 @@ OUT* connected_components2d_8_binary(
   // output offsets
   const int64_t oA = -1;
   const int64_t oB = -1;
-  const int64_t oC = -1 - ((sx+1) >> 1);
-  const int64_t oD = -((sx+1) >> 1);
-  const int64_t oE = -((sx+1) >> 1);
-  const int64_t oF = +1 - ((sx+1) >> 1);
+  const int64_t oC = -1 - osx;
+  const int64_t oD = -osx;
+  const int64_t oE = -osx;
+  const int64_t oF = +1 - osx;
 
   int64_t loc = 0;
   int64_t oloc = 0;
@@ -886,7 +886,7 @@ OUT* connected_components2d_8_binary(
   }
 
   if (periodic_boundary) {
-    int64_t yoff = ((sx+1) >> 1) * ((sy - 1) >> 1);
+    int64_t yoff = osx * ((sy - 1) >> 1);
     for (int64_t x = 0; x < sx; x++) {
       if (in_labels[x] == 0) {
         continue;
