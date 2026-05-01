@@ -661,6 +661,9 @@ OUT* connected_components2d_4_binary(
         else if (y > 0 && in_labels[loc + B]) {
           out_labels[oloc] = out_labels[oloc+oB];
         }
+        else if (y > 0 && x < sx - 1 && in_labels[loc+Y] && in_labels[loc+C]) {
+          out_labels[oloc] = out_labels[oloc+oB];
+        }
         else {
           next_label++;
           out_labels[oloc] = next_label;
