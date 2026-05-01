@@ -603,7 +603,7 @@ OUT* connected_components2d_4_binary(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels >> 1) + 1); // + 1L for an array with no zeros
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<OUT> equivalences(max_labels);
