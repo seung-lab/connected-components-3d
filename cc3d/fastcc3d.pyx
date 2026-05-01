@@ -62,7 +62,7 @@ cdef extern from "cc3d.hpp" namespace "cc3d":
     T* in_labels, int64_t sx, int64_t voxels,
     int64_t &first_foreground_row, 
     int64_t &last_foreground_row
-  )
+  ) nogil
 
 cdef extern from "cc3d_continuous.hpp" namespace "cc3d":
   cdef uint32_t* connected_components3d[T,U](
@@ -71,14 +71,14 @@ cdef extern from "cc3d_continuous.hpp" namespace "cc3d":
     int64_t max_labels, int64_t connectivity, T delta,
     U* out_labels, size_t &N, 
     native_bool periodic_boundary, native_bool binary_image
-  ) except +
+  ) nogil except +
 
 cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
   cdef OUT* extract_voxel_connectivity_graph[T,OUT](
     T* in_labels, 
     int64_t sx, int64_t sy, int64_t sz,
     int64_t connectivity, OUT *graph
-  ) except +
+  ) nogil except +
   cdef struct pair_hash:
     size_t __call__(cpp_pair[uint64_t,uint64_t] v)
   cdef unordered_map[cpp_pair[T,T], float, pair_hash] extract_region_graph[T](
@@ -86,22 +86,22 @@ cdef extern from "cc3d_graphs.hpp" namespace "cc3d":
     int64_t sx, int64_t sy, int64_t sz,
     float wx, float wy, float wz,
     int64_t connectivity, native_bool surface_area
-  ) except +
+  ) nogil except +
   cdef mapcpp[T, vector[cpp_pair[size_t,size_t]]] extract_runs[T](
     T* labels, size_t sx, size_t sy, size_t sz
-  )
+  ) nogil
   void set_run_voxels[T](
     T key,
     vector[cpp_pair[size_t, size_t]] all_runs,
     T* labels, size_t voxels
-  ) except +
+  ) nogil except +
   cdef OUT* color_connectivity_graph_N[T,OUT](
     T* vcg,
     int64_t sx, int64_t sy, int64_t sz,
     int connectivity,
     OUT* out_labels,
     uint64_t& N
-  ) except +
+  ) nogil except +
 
 ctypedef fused UINT:
   uint8_t
