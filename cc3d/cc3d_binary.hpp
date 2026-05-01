@@ -625,7 +625,7 @@ OUT* connected_components2d_4_binary(
   const int64_t P = -1-sx;
   const int64_t A = -1;
   const int64_t B = -sx;
-  const int64_t C = -1-sx;
+  const int64_t C = +1-sx;
 
   const int64_t oA = -1;
   const int64_t oB = -osx;
@@ -644,7 +644,7 @@ OUT* connected_components2d_4_binary(
 
     for (int64_t x = xstart; x < xend; x += 2) {
       loc = x + sx * y;
-      oloc = (x >> 1) + sx * y;
+      oloc = (x >> 1) + osx * y;
 
       if (in_labels[loc]) {
         if (x > 0 && in_labels[loc + A]) {
