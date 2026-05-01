@@ -700,13 +700,13 @@ OUT* connected_components2d_4_binary(
   // Reuse of out_labels and 4x use of each value
   // requires different relabeling logic.
 
-  int64_t num_labels = next_label;
+  int64_t num_provisional_labels = next_label;
 
   OUT label;
-  std::unique_ptr<OUT[]> renumber(new OUT[num_labels + 1]());
+  std::unique_ptr<OUT[]> renumber(new OUT[num_provisional_labels + 1]());
   next_label = 1;
 
-  for (int64_t i = 1; i <= num_labels; i++) {
+  for (int64_t i = 1; i <= num_provisional_labels; i++) {
     label = equivalences.root(i);
     if (renumber[label] == 0) {
       renumber[label] = next_label;
@@ -723,7 +723,7 @@ OUT* connected_components2d_4_binary(
   loc = voxels - 1;
 
   int64_t xstart = 0, xend = 0;
-  int64_t overwrite_target = voxels >> 1;
+  int64_t overwrite_target = (num_provisional_labels / sx)+1;
 
   for (int64_t y = sy - 1; y >= 0; y--) {
     const int64_t ymax = (y < sy - 1) ? y+1 : y;
