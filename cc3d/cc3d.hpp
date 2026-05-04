@@ -895,7 +895,8 @@ OUT* connected_components3d_6(
 // uses an approach inspired by 2x2 block based decision trees
 // by Grana et al that was intended for 8-connected. Here we 
 // skip a unify on every other voxel in the horizontal and
-// vertical directions.
+// vertical directions. We also use the PRED technique to
+// use a simpler decision tree where possible.
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4(
     T* in_labels, 
@@ -938,40 +939,131 @@ OUT* connected_components2d_4(
   const int64_t D = -1-sx;
 
   int64_t loc = 0;
-  int64_t row = 0;
   OUT next_label = 0;
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
 
-  T cur = 0;
-  for (int64_t y = 0; y < sy; y++, row++) {
-    const int64_t xstart = runs[row << 1];
-    const int64_t xend = runs[(row << 1) + 1];
+  int64_t xstart = runs[0];
+  int64_t xend = runs[1];
+  loc = xstart;
 
-    for (int64_t x = xstart; x < xend; x++) {
-      loc = x + sx * y;
-      cur = in_labels[loc];
+  for (int64_t x = xstart; x < xend; x++, loc++) {
+    if (in_labels[loc] == 0) {
+      continue;
+    }
+    else if (x > 0 && in_labels[loc] == in_labels[loc + B]) {
+      out_labels[loc] = out_labels[loc + B];
+    }
+    else {
+      next_label++;
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
+    }
+  }
 
-      if (cur == 0) {
+  for (int64_t y = 1; y < sy; y++) {
+    xstart = runs[y << 1];
+    xend = runs[(y << 1) + 1];
+    loc = xstart + sx * y;
+    int64_t x = xstart;
+
+    if (in_labels[loc] == 0) {
+      goto BLACK;
+    }
+    else if (x > 0 && in_labels[loc] == in_labels[loc + B]) {
+      out_labels[loc] = out_labels[loc + B];
+      if (in_labels[loc] == in_labels[loc + C] && in_labels[loc] != in_labels[loc + D]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        goto SIMPLE;
+      }
+      goto COMPLEX;
+    }
+    else if (in_labels[loc] == in_labels[loc + C]) {
+      out_labels[loc] = out_labels[loc + C];
+      goto SIMPLE;
+    }
+    else {
+      next_label++;
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
+      goto COMPLEX;
+    }
+
+    COMPLEX:
+      x++;
+      loc++;
+      if (x >= xend) {
         continue;
       }
 
-      if (x > 0 && cur == in_labels[loc + B]) {
-        out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && cur != in_labels[loc + D] && cur == in_labels[loc + C]) {
-          equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
-        }
+      if (in_labels[loc] == 0) {
+        goto BLACK;
       }
-      else if (y > 0 && cur == in_labels[loc + C]) {
-        out_labels[loc + A] = out_labels[loc + C];
+      else if (in_labels[loc] == in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+        if (in_labels[loc] == in_labels[loc + C] && in_labels[loc] != in_labels[loc + D]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+          goto SIMPLE;
+        }
+        goto COMPLEX;
+      }
+      else if (in_labels[loc] == in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
       }
       else {
         next_label++;
-        out_labels[loc + A] = next_label;
-        equivalences.add(out_labels[loc + A]);
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto COMPLEX;
       }
-    }
+
+    SIMPLE:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (in_labels[loc] == in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
+      }
+      else if (in_labels[loc] == in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+        goto COMPLEX;
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto COMPLEX;
+      }
+
+    BLACK:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (in_labels[loc] == in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto COMPLEX;
+      }
   }
 
   if (periodic_boundary) {
