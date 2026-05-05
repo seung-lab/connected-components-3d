@@ -725,27 +725,24 @@ OUT* connected_components2d_4_binary(
   loc = voxels - 1;
 
   int64_t xstart = 0, xend = 0;
-  int64_t overwrite_target = osx * sy;
+
+  OUT first = renumber[out_labels[0]];
 
   for (int64_t y = sy - 1; y >= 0; y--) {
-    // because we are reusing the first part of the 
-    // output labels, must overwrite all pixels in that
-    // region
-    if (y * sx < overwrite_target) {
-      xstart = 0;
-      xend = sx;
-    }
-    else {
-      xstart = runs[y << 1];
-      xend = runs[(y << 1) + 1];
-    }
+    xstart = runs[y << 1];
+    xend = runs[(y << 1) + 1];
 
     loc = (xend - 1) + sx * y;
     for (int64_t x = xend - 1; x >= xstart; x--, loc--) {
       oloc = (x >> 1) + osx * y;
       out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
+      if ((x & 1) == 0 || x == xstart) {
+        out_labels[oloc] = 0;
+      }
     }
   }
+
+  out_labels[0] = (static_cast<OUT>(in_labels[0] == 0) - 1) & first;
   
   return out_labels;
 }
