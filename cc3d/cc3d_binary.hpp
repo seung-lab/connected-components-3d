@@ -593,6 +593,7 @@ OUT* connected_components2d_4_binary(
   ) {
 
   const int64_t voxels = sx * sy;
+  const int64_t osx = (sx+1)>>1;
 
   if (out_labels == NULL) {
     out_labels = new OUT[voxels]();
@@ -615,67 +616,135 @@ OUT* connected_components2d_4_binary(
   /*
     Layout of forward pass mask. 
     A is the current location.
-    D C 
-    B A 
+    P B C 
+    A X Y
   */
 
-  const int64_t A = 0;
-  const int64_t B = -1;
-  const int64_t C = -sx;
-  const int64_t D = -1-sx;
+  const int64_t X = 0;
+  const int64_t Y = +1;
+  const int64_t P = -1-sx;
+  const int64_t A = -1;
+  const int64_t B = -sx;
+  const int64_t C = +1-sx;
+
+  const int64_t oA = -1;
+  const int64_t oB = -osx;
 
   int64_t loc = 0;
+  int64_t oloc = 0;
   int64_t row = 0;
   OUT next_label = 0;
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
 
-  T cur = 0;
   for (int64_t y = 0; y < sy; y++, row++) {
-    const int64_t xstart = runs[row << 1];
+    const int64_t xstart = runs[row << 1] & 0xfffffffffffffffe;
     const int64_t xend = runs[(row << 1) + 1];
 
-    for (int64_t x = xstart; x < xend; x++) {
+    for (int64_t x = xstart; x < xend; x += 2) {
       loc = x + sx * y;
-      cur = in_labels[loc];
+      oloc = (x >> 1) + osx * y;
 
-      if (cur == 0) {
-        continue;
-      }
-
-      if (x > 0 && in_labels[loc + B]) {
-        out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && cur != in_labels[loc + D] && in_labels[loc + C]) {
-          equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
+      if (in_labels[loc]) {
+        if (x > 0 && in_labels[loc + A]) {
+          out_labels[oloc] = out_labels[oloc+oA];
+          if (y > 0 && in_labels[loc + B]) {
+            if (!in_labels[loc + P]) {
+              equivalences.unify(out_labels[oloc], out_labels[oloc+oB]);
+            }
+          }
+          else if (y > 0 && x < sx - 1 && in_labels[loc+Y] && in_labels[loc+C]) {
+            equivalences.unify(out_labels[oloc], out_labels[oloc+oB]);
+          }
+        }
+        else if (y > 0 && in_labels[loc + B]) {
+          out_labels[oloc] = out_labels[oloc+oB];
+        }
+        else if (y > 0 && x < sx - 1 && in_labels[loc+Y] && in_labels[loc+C]) {
+          out_labels[oloc] = out_labels[oloc+oB];
+        }
+        else {
+          next_label++;
+          out_labels[oloc] = next_label;
+          equivalences.add(next_label);
         }
       }
-      else if (y > 0 && in_labels[loc + C]) {
-        out_labels[loc + A] = out_labels[loc + C];
-      }
-      else {
-        next_label++;
-        out_labels[loc + A] = next_label;
-        equivalences.add(out_labels[loc + A]);
+      else if (x < sx - 1 && in_labels[loc+Y]) {
+        if (y > 0 && in_labels[loc + C]) {
+          out_labels[oloc] = out_labels[oloc+oB];
+        }
+        else {
+          next_label++;
+          out_labels[oloc] = next_label;
+          equivalences.add(next_label);          
+        }
       }
     }
   }
 
   if (periodic_boundary) {
     for (int64_t x = 0; x < sx; x++) {
+      oloc = (x >> 1);
       if (in_labels[x] && in_labels[x + sx * (sy - 1)]) {
-        equivalences.unify(out_labels[x], out_labels[x + sx * (sy - 1)]);
+        equivalences.unify(out_labels[oloc], out_labels[oloc + osx * (sy - 1)]);
       }
     }
     for (int64_t y = 0; y < sy; y++) {
       loc = sx * y;
+      oloc = osx * y;
       if (in_labels[loc] && in_labels[loc + (sx - 1)]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
+        equivalences.unify(out_labels[oloc], out_labels[oloc + ((sx - 1) >> 1)]);
       }
     }
   }
 
-  return relabel<OUT>(out_labels, sx, sy, /*sz=*/1, next_label, equivalences, N, runs.get());
+  // Reuse of out_labels and 4x use of each value
+  // requires different relabeling logic.
+
+  int64_t num_provisional_labels = next_label;
+
+  OUT label;
+  std::unique_ptr<OUT[]> renumber(new OUT[num_provisional_labels + 1]());
+  next_label = 1;
+
+  for (int64_t i = 1; i <= num_provisional_labels; i++) {
+    label = equivalences.root(i);
+    if (renumber[label] == 0) {
+      renumber[label] = next_label;
+      renumber[i] = next_label;
+      next_label++;
+    }
+    else {
+      renumber[i] = renumber[label];
+    }
+  }
+
+  // Raster Scan 2: Write final labels based on equivalences
+  N = next_label - 1;
+  loc = voxels - 1;
+
+  int64_t xstart = 0, xend = 0;
+
+  OUT first = renumber[out_labels[0]];
+
+  for (int64_t y = sy - 1; y >= 0; y--) {
+    xstart = runs[y << 1];
+    xend = runs[(y << 1) + 1];
+
+    loc = (xend - 1) + sx * y;
+    for (int64_t x = xend - 1; x >= xstart; x--, loc--) {
+      oloc = (x >> 1) + osx * y;
+      out_labels[loc] = (static_cast<OUT>(in_labels[loc] == 0) - 1) & renumber[out_labels[oloc]];
+      if ((x & 1) == 0 || x == xstart) {
+        out_labels[oloc] = 0;
+      }
+    }
+  }
+
+  out_labels[0] = (static_cast<OUT>(in_labels[0] == 0) - 1) & first;
+  
+  return out_labels;
 }
 
 template <typename T, typename OUT = uint32_t>
