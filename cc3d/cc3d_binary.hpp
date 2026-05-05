@@ -683,19 +683,21 @@ OUT* connected_components2d_4_binary(
     }
   }
 
-  // if (periodic_boundary) {
-  //   for (int64_t x = 0; x < sx; x++) {
-  //     if (in_labels[x] && in_labels[x + sx * (sy - 1)]) {
-  //       equivalences.unify(out_labels[x], out_labels[x + sx * (sy - 1)]);
-  //     }
-  //   }
-  //   for (int64_t y = 0; y < sy; y++) {
-  //     loc = sx * y;
-  //     if (in_labels[loc] && in_labels[loc + (sx - 1)]) {
-  //       equivalences.unify(out_labels[loc], out_labels[loc + (sx - 1)]);
-  //     }
-  //   }
-  // }
+  if (periodic_boundary) {
+    for (int64_t x = 0; x < sx; x++) {
+      oloc = (x >> 1);
+      if (in_labels[x] && in_labels[x + sx * (sy - 1)]) {
+        equivalences.unify(out_labels[oloc], out_labels[oloc + osx * (sy - 1)]);
+      }
+    }
+    for (int64_t y = 0; y < sy; y++) {
+      loc = sx * y;
+      oloc = osx * y;
+      if (in_labels[loc] && in_labels[loc + (sx - 1)]) {
+        equivalences.unify(out_labels[oloc], out_labels[oloc + ((sx - 1) >> 1)]);
+      }
+    }
+  }
 
   // Reuse of out_labels and 4x use of each value
   // requires different relabeling logic.
@@ -723,11 +725,9 @@ OUT* connected_components2d_4_binary(
   loc = voxels - 1;
 
   int64_t xstart = 0, xend = 0;
-  int64_t overwrite_target = (num_provisional_labels / sx)+1;
+  int64_t overwrite_target = osx * sy;
 
   for (int64_t y = sy - 1; y >= 0; y--) {
-    const int64_t ymax = (y < sy - 1) ? y+1 : y;
-    
     // because we are reusing the first part of the 
     // output labels, must overwrite all pixels in that
     // region
@@ -736,8 +736,8 @@ OUT* connected_components2d_4_binary(
       xend = sx;
     }
     else {
-      xstart = std::min(runs[y << 1], runs[ymax << 1]) & 0xfffffffffffffffe; // round down to multiple of 2
-      xend = std::max(runs[(y << 1) + 1], runs[(ymax << 1) + 1]);
+      xstart = runs[y << 1];
+      xend = runs[(y << 1) + 1];
     }
 
     loc = (xend - 1) + sx * y;
