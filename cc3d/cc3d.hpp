@@ -870,6 +870,7 @@ OUT* connected_components3d_6(
             equivalences.unify(out_labels[loc], out_labels[loc + E]);
             goto SIMPLE_E;
           }
+          goto STANDARD;
         }
         else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
@@ -888,8 +889,8 @@ OUT* connected_components3d_6(
           next_label++;
           out_labels[loc] = next_label;
           equivalences.add(out_labels[loc]);
+          goto STANDARD;
         }
-        goto STANDARD;
 
       SIMPLE:
         loc++;
@@ -908,9 +909,10 @@ OUT* connected_components3d_6(
             }
             goto SIMPLE_K;
           }
-          if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
+          else if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
             goto SIMPLE_E;
           }
+          goto STANDARD;
         }
         else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
@@ -930,8 +932,8 @@ OUT* connected_components3d_6(
           next_label++;
           out_labels[loc] = next_label;
           equivalences.add(out_labels[loc]);
+          goto STANDARD;
         }
-        goto STANDARD;
 
       SIMPLE_E:
         loc++;
@@ -1001,13 +1003,14 @@ OUT* connected_components3d_6(
         }
         else if (in_labels[loc] == in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
+          goto STANDARD;
         }
         else {
           next_label++;
           out_labels[loc] = next_label;
           equivalences.add(out_labels[loc]);
+          goto STANDARD;
         }
-        goto STANDARD;
 
       BLACK:
         loc++;
@@ -1037,8 +1040,8 @@ OUT* connected_components3d_6(
           next_label++;
           out_labels[loc] = next_label;
           equivalences.add(out_labels[loc]);
+          goto STANDARD;
         }
-        goto STANDARD;
     }
   }
 
