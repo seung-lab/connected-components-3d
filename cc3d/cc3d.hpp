@@ -820,11 +820,11 @@ OUT* connected_components3d_6(
 
       int64_t x = xstart - 1;
       loc = x + sx * (y + sy * z);
+      const int64_t loc_end = loc + (xend - xstart) + 1;
 
       STANDARD:
-        x++;
         loc++;
-        if (x >= xend) {
+        if (loc >= loc_end) {
           continue;
         }
 
@@ -870,9 +870,8 @@ OUT* connected_components3d_6(
         goto STANDARD;
 
       SIMPLE:
-        x++;
         loc++;
-        if (x >= xend) {
+        if (loc >= loc_end) {
           continue;
         }
 
@@ -901,9 +900,8 @@ OUT* connected_components3d_6(
         goto STANDARD;
 
       SIMPLE_E:
-        x++;
         loc++;
-        if (x >= xend) {
+        if (loc >= loc_end) {
           continue;
         }
 
@@ -939,9 +937,8 @@ OUT* connected_components3d_6(
         goto STANDARD;
 
       SIMPLE_K:
-        x++;
         loc++;
-        if (x >= xend) {
+        if (loc >= loc_end) {
           continue;
         }
 
@@ -978,9 +975,8 @@ OUT* connected_components3d_6(
         goto STANDARD;
 
       BLACK:
-        x++;
         loc++;
-        if (x >= xend) {
+        if (loc >= loc_end) {
           continue;
         }
 
