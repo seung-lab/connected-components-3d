@@ -949,6 +949,7 @@ OUT* connected_components3d_6(
             equivalences.unify(out_labels[loc], out_labels[loc + K]); 
             goto SIMPLE_K;
           }
+          goto STANDARD;
         }
         else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
@@ -967,8 +968,8 @@ OUT* connected_components3d_6(
           next_label++;
           out_labels[loc] = next_label;
           equivalences.add(out_labels[loc]);
+          goto STANDARD;
         }
-        goto STANDARD;
 
       SIMPLE_K:
         loc++;
