@@ -818,46 +818,149 @@ OUT* connected_components3d_6(
       const int64_t xstart = runs[row << 1];
       const int64_t xend = runs[(row << 1) + 1];
 
-      for (int64_t x = xstart; x < xend; x++) {
-        loc = x + sx * (y + sy * z);
+      // for (int64_t x = xstart; x < xend; x++) {
+      int64_t x = xstart - 1;
+      loc = x + sx * (y + sy * z);
 
-        const T cur = in_labels[loc];
 
-        if (cur == 0) {
+      STANDARD:
+        x++;
+        loc++;
+        if (x >= sx) {
           continue;
         }
 
-        if (x > 0 && cur == in_labels[loc + M]) {
-          out_labels[loc] = out_labels[loc + M];
-
-          if (y > 0 && cur == in_labels[loc + K] && cur != in_labels[loc + J]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + K]); 
-            if (z > 0 && cur == in_labels[loc + E]) {
-              if (cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
-                equivalences.unify(out_labels[loc], out_labels[loc + E]);
-              }
-            }
-          }
-          else if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + D]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]); 
-          }
+        if (in_labels[loc] == 0) {
+          goto STANDARD;
         }
-        else if (y > 0 && cur == in_labels[loc + K]) {
+        else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
 
-          if (z > 0 && cur == in_labels[loc + E] && cur != in_labels[loc + B]) {
+          if (z > 0 && in_labels[loc] == in_labels[loc + E] && in_labels[loc] != in_labels[loc + B]) {
             equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+
+            if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + M]);
+            }
+          }
+          else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + M]);
           }
         }
-        else if (z > 0 && cur == in_labels[loc + E]) {
+        else if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
           out_labels[loc] = out_labels[loc + E];
+
+          if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+            equivalences.unify(out_labels[loc], out_labels[loc + M]);
+          }
+        }
+        else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+          out_labels[loc] = out_labels[loc + M];
         }
         else {
           next_label++;
           out_labels[loc] = next_label;
           equivalences.add(out_labels[loc]);
         }
-      }
+        goto STANDARD;
+
+      // SIMPLE_K:
+      //   x++;
+      //   loc++;
+      //   if (x >= sx) {
+      //     continue;
+      //   }
+
+      //   if (in_labels[loc] == 0) {
+      //     goto BLACK;
+      //   }
+      //   else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
+      //     out_labels[loc] = out_labels[loc + K];
+
+      //     if (z > 0 && in_labels[loc] == in_labels[loc + E] && in_labels[loc] != in_labels[loc + B]) {
+      //       equivalences.unify(out_labels[loc], out_labels[loc + E]);
+      //       goto SIMPLE;
+      //     }
+      //     goto SIMPLE_K;
+      //   }
+      //   else if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
+      //     out_labels[loc] = out_labels[loc + E];
+
+      //     if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+      //       equivalences.unify(out_labels[loc], out_labels[loc + M]);
+      //     }
+      //   }
+      //   else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+      //     out_labels[loc] = out_labels[loc + M];
+      //   }
+      //   else {
+      //     next_label++;
+      //     out_labels[loc] = next_label;
+      //     equivalences.add(out_labels[loc]);
+      //   }
+      //   goto STANDARD;
+
+
+      // SIMPLE:
+      //   x++;
+      //   loc++;
+      //   if (x >= sx) {
+      //     continue;
+      //   }
+
+      //   if (in_labels[loc] == 0) {
+      //     goto BLACK;
+      //   }
+      //   else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
+      //     out_labels[loc] = out_labels[loc + K];
+
+      //     if (z > 0 && in_labels[loc] == in_labels[loc + E] && in_labels[loc] != in_labels[loc + B]) {
+      //       equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+      //       goto SIMPLE;
+      //     }
+      //     goto SIMPLE_K;
+      //   }
+      //   else if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
+      //     out_labels[loc] = out_labels[loc + E];
+      //   }
+      //   else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+      //     out_labels[loc] = out_labels[loc + M];
+      //   }
+      //   else {
+      //     next_label++;
+      //     out_labels[loc] = next_label;
+      //     equivalences.add(out_labels[loc]);
+      //   }
+      //   goto STANDARD;
+
+      // BLACK:
+      //   x++;
+      //   loc++;
+      //   if (x >= sx) {
+      //     continue;
+      //   }
+
+      //   if (in_labels[loc] == 0) {
+      //     goto BLACK;
+      //   }
+      //   else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
+      //     out_labels[loc] = out_labels[loc + K];
+
+      //     if (z > 0 && in_labels[loc] == in_labels[loc + E] && in_labels[loc] != in_labels[loc + B]) {
+      //       equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+      //       goto SIMPLE;
+      //     }
+      //     goto SIMPLE_K;
+      //   }
+      //   else if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
+      //     out_labels[loc] = out_labels[loc + E];
+      //   }
+      //   else {
+      //     next_label++;
+      //     out_labels[loc] = next_label;
+      //     equivalences.add(out_labels[loc]);
+      //   }
+      //   goto STANDARD;
     }
   }
 
