@@ -818,9 +818,31 @@ OUT* connected_components3d_6(
       const int64_t xstart = runs[row << 1];
       const int64_t xend = runs[(row << 1) + 1];
 
-      int64_t x = xstart - 1;
-      loc = x + sx * (y + sy * z);
-      const int64_t loc_end = loc + (xend - xstart) + 1;
+      loc = xstart + sx * (y + sy * z);
+      const int64_t loc_end = loc + (xend - xstart);
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (y > 0 && in_labels[loc] == in_labels[loc + K]) {
+        out_labels[loc] = out_labels[loc + K];
+
+        if (z > 0 && in_labels[loc] == in_labels[loc + E] && in_labels[loc] != in_labels[loc + B]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]);
+          goto SIMPLE;
+        }
+        goto SIMPLE_K;
+      }
+      else if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
+        out_labels[loc] = out_labels[loc + E];
+        goto SIMPLE_E;
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto STANDARD;
+      }
 
       STANDARD:
         loc++;
@@ -831,7 +853,7 @@ OUT* connected_components3d_6(
         if (in_labels[loc] == 0) {
           goto BLACK;
         }
-        else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+        else if (in_labels[loc] == in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
 
           if (y > 0 && in_labels[loc] == in_labels[loc + K] && in_labels[loc] != in_labels[loc + J]) {
@@ -889,7 +911,7 @@ OUT* connected_components3d_6(
           out_labels[loc] = out_labels[loc + E];
           goto SIMPLE_E;
         }
-        else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+        else if (in_labels[loc] == in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
         }
         else {
@@ -908,7 +930,7 @@ OUT* connected_components3d_6(
         if (in_labels[loc] == 0) {
           goto BLACK;
         }
-        else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+        else if (in_labels[loc] == in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
 
           if (y > 0 && in_labels[loc] == in_labels[loc + K] && in_labels[loc] != in_labels[loc + J]) {
@@ -959,12 +981,12 @@ OUT* connected_components3d_6(
         else if (z > 0 && in_labels[loc] == in_labels[loc + E]) {
           out_labels[loc] = out_labels[loc + E];
 
-          if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+          if (in_labels[loc] == in_labels[loc + M]) {
             equivalences.unify(out_labels[loc], out_labels[loc + M]);
           }
           goto SIMPLE_E;
         }
-        else if (x > 0 && in_labels[loc] == in_labels[loc + M]) {
+        else if (in_labels[loc] == in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
         }
         else {
