@@ -508,31 +508,28 @@ OUT* connected_components3d_6_binary(
       for (int64_t x = xstart; x < xend; x++) {
         loc = x + sx * (y + sy * z);
 
-        const T cur = in_labels[loc];
-
-        if (cur == 0) {
+        if (in_labels[loc] == 0) {
           continue;
         }
-
-        if (x > 0 && in_labels[loc + M]) {
+        else if (x > 0 && in_labels[loc + M]) {
           out_labels[loc] = out_labels[loc + M];
 
-          if (y > 0 && in_labels[loc + K] && cur != in_labels[loc + J]) {
+          if (y > 0 && in_labels[loc + K] && !in_labels[loc + J]) {
             equivalences.unify(out_labels[loc], out_labels[loc + K]); 
             if (z > 0 && in_labels[loc + E]) {
-              if (cur != in_labels[loc + D] && cur != in_labels[loc + B]) {
+              if (!in_labels[loc + D] && !in_labels[loc + B]) {
                 equivalences.unify(out_labels[loc], out_labels[loc + E]);
               }
             }
           }
-          else if (z > 0 && in_labels[loc + E] && cur != in_labels[loc + D]) {
+          else if (z > 0 && in_labels[loc + E] && !in_labels[loc + D]) {
             equivalences.unify(out_labels[loc], out_labels[loc + E]); 
           }
         }
         else if (y > 0 && in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
 
-          if (z > 0 && in_labels[loc + E] && cur != in_labels[loc + B]) {
+          if (z > 0 && in_labels[loc + E] && !in_labels[loc + B]) {
             equivalences.unify(out_labels[loc], out_labels[loc + E]); 
           }
         }
@@ -631,22 +628,19 @@ OUT* connected_components2d_4_binary(
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
 
-  T cur = 0;
   for (int64_t y = 0; y < sy; y++, row++) {
     const int64_t xstart = runs[row << 1];
     const int64_t xend = runs[(row << 1) + 1];
 
     for (int64_t x = xstart; x < xend; x++) {
       loc = x + sx * y;
-      cur = in_labels[loc];
 
-      if (cur == 0) {
+      if (in_labels[loc] == 0) {
         continue;
       }
-
-      if (x > 0 && in_labels[loc + B]) {
+      else if (x > 0 && in_labels[loc + B]) {
         out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && cur != in_labels[loc + D] && in_labels[loc + C]) {
+        if (y > 0 && !in_labels[loc + D] && in_labels[loc + C]) {
           equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
         }
       }
