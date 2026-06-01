@@ -627,34 +627,127 @@ OUT* connected_components2d_4_binary(
 
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
+  int64_t xstart = runs[0];
+  int64_t xend = runs[1];
+  loc = xstart;
 
-  for (int64_t y = 0; y < sy; y++, row++) {
-    const int64_t xstart = runs[row << 1];
-    const int64_t xend = runs[(row << 1) + 1];
-
-    for (int64_t x = xstart; x < xend; x++) {
-      loc = x + sx * y;
-
-      if (in_labels[loc] == 0) {
-        continue;
-      }
-      else if (x > 0 && in_labels[loc + B]) {
-        out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && !in_labels[loc + D] && in_labels[loc + C]) {
-          equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
-        }
-      }
-      else if (y > 0 && in_labels[loc + C]) {
-        out_labels[loc + A] = out_labels[loc + C];
-      }
-      else {
-        next_label++;
-        out_labels[loc + A] = next_label;
-        equivalences.add(out_labels[loc + A]);
-      }
+  for (int64_t x = xstart; x < xend; x++, loc++) {
+    if (in_labels[loc] == 0) {
+      continue;
+    }
+    else if (x > 0 && in_labels[loc + B]) {
+      out_labels[loc] = out_labels[loc + B];
+    }
+    else {
+      next_label++;
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
     }
   }
 
+  for (int64_t y = 1; y < sy; y++) {
+    xstart = runs[y << 1];
+    xend = runs[(y << 1) + 1];
+    loc = xstart + sx * y;
+    int64_t x = xstart;
+
+    if (in_labels[loc] == 0) {
+      goto BLACK;
+    }
+    else if (x > 0 && in_labels[loc + B]) {
+      out_labels[loc] = out_labels[loc + B];
+      if (in_labels[loc + C] && !in_labels[loc + D]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        goto SIMPLE;
+      }
+      goto COMPLEX;
+    }
+    else if (in_labels[loc + C]) {
+      out_labels[loc] = out_labels[loc + C];
+      goto SIMPLE;
+    }
+    else {
+      next_label++;
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
+      goto COMPLEX;
+    }
+
+    COMPLEX:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+        if (in_labels[loc + C] && !in_labels[loc + D]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+          goto SIMPLE;
+        }
+        goto COMPLEX;
+      }
+      else if (in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto COMPLEX;
+      }
+
+    SIMPLE:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
+      }
+      else if (in_labels[loc + B]) {
+        out_labels[loc] = out_labels[loc + B];
+        goto COMPLEX;
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto COMPLEX;
+      }
+
+    BLACK:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto COMPLEX;
+      }
+  }
   if (periodic_boundary) {
     for (int64_t x = 0; x < sx; x++) {
       if (in_labels[x] && in_labels[x + sx * (sy - 1)]) {
