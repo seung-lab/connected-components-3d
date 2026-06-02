@@ -3,6 +3,7 @@ from tqdm import tqdm
 import numpy as np
 import crackle
 import time
+import gzip
 
 def prettyprint(tm, voxels):
   print("{:.2f} sec. {:.2f} MVx/sec".format(tm, voxels / tm / (1000*1000)))
@@ -131,8 +132,9 @@ cc3d_mutlilabel_extraction(labels)
 # ndimage_mutlilabel_extraction(labels)
 # test_multilabel_speed(labels)
 
-# labels = np.load("Misc_pollen.npy").astype(np.float32)
-# test_continuous_speed(labels)
+with gzip.GzipFile('Misc_pollen.npy.gz', "r") as f:
+  labels = np.load(f).astype(np.float32)
+test_continuous_speed(labels)
 
 
 
