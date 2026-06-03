@@ -576,10 +576,24 @@ OUT* connected_components3d_6_binary(
 }
 
 
-// uses an approach inspired by 2x2 block based decision trees
-// by Grana et al that was intended for 8-connected. Here we 
-// skip a unify on every other voxel in the horizontal and
-// vertical directions.
+// Uses the "Spaghetti labeling" algorithm for 4-connected.
+// As of June 2026, this is currently the most cutting edge single-threaded
+// CPU algorithm available. Only 4 and 6 are really tractable to write by hand.
+// One difference in this implementation from Bolelli's implementation in opencv
+// is the use of the BLACK tree (COMPLEX and SIMPLE correspond to his tree_0 and tree_1).
+// It's not clear if this is better or even.
+// I wrote this based on the spaghetti idea then looked at OpenCV. It's remarkable
+// how the structure is nearly identical after optimization. Bollelli is the champ.
+
+// One possible direction for further improvement: 
+// The spaghetti decision tree maximally avoids unify calls, but a significant amount
+// of time is spent writing labels in the first pass. If that could be avoided without
+// wasting time elsewhere, that could speed things up.
+
+// F. Bolelli, S. Allegretti, L. Baraldi, and C. Grana, 
+// "Spaghetti Labeling: Directed Acyclic Graphs for Block-Based Connected Components Labeling," 
+// IEEE Transactions on Image Processing, vol. 29, pp. 1999–2012, 2020, 
+// doi: 10.1109/TIP.2019.2946979.
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4_binary(
     T* in_labels, 
