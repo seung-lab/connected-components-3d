@@ -33,6 +33,8 @@
 
 namespace {
 
+// PERFORMANCE NOTE: If an edge kernel is written, this only needs to be 
+// computed once instead of millions of times.
 inline void compute_neighborhood(
   int *neighborhood, 
   const int x, const int y, const int z,
