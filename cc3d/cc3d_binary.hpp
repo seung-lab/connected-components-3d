@@ -579,12 +579,6 @@ OUT* connected_components3d_6_binary(
 // Uses the "Spaghetti labeling" algorithm for 4-connected.
 // As of June 2026, this is currently the most cutting edge single-threaded
 // CPU algorithm available. Only 4 and 6 are really tractable to write by hand.
-// One difference in this implementation from Bolelli's implementation in opencv
-// is the use of the BLACK tree (COMPLEX and SIMPLE correspond to his cl_tree_1 and cl_tree_0).
-// It's not clear if this is better or even. Another difference is the explict check of D
-// to avoid the union find.
-// I wrote this based on the spaghetti idea then looked at OpenCV. It's remarkable
-// how the structure is nearly identical after optimization. Bollelli is the champ.
 
 // One possible direction for further improvement: 
 // The spaghetti decision tree maximally avoids unify calls, but a significant amount
@@ -690,6 +684,11 @@ OUT* connected_components2d_4_binary(
       equivalences.add(out_labels[loc]);
       goto COMPLEX;
     }
+
+    // After the first pixel, you are either
+    // coming from a foreground or a background pixel.
+    // Only the pixel following a background pixel can
+    // possibly create a new label.
 
     COMPLEX:
       x++;
