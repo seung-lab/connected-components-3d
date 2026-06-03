@@ -580,8 +580,9 @@ OUT* connected_components3d_6_binary(
 // As of June 2026, this is currently the most cutting edge single-threaded
 // CPU algorithm available. Only 4 and 6 are really tractable to write by hand.
 // One difference in this implementation from Bolelli's implementation in opencv
-// is the use of the BLACK tree (COMPLEX and SIMPLE correspond to his tree_0 and tree_1).
-// It's not clear if this is better or even.
+// is the use of the BLACK tree (COMPLEX and SIMPLE correspond to his cl_tree_1 and cl_tree_0).
+// It's not clear if this is better or even. Another difference is the explict check of D
+// to avoid the union find.
 // I wrote this based on the spaghetti idea then looked at OpenCV. It's remarkable
 // how the structure is nearly identical after optimization. Bollelli is the champ.
 
@@ -671,8 +672,10 @@ OUT* connected_components2d_4_binary(
     }
     else if (x > 0 && in_labels[loc + B]) {
       out_labels[loc] = out_labels[loc + B];
-      if (in_labels[loc + C] && !in_labels[loc + D]) {
-        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+      if (in_labels[loc + C]) {
+        if (!in_labels[loc + D]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
         goto SIMPLE;
       }
       goto COMPLEX;
@@ -698,24 +701,14 @@ OUT* connected_components2d_4_binary(
       if (in_labels[loc] == 0) {
         goto BLACK;
       }
-      else if (in_labels[loc + B]) {
-        out_labels[loc] = out_labels[loc + B];
-        if (in_labels[loc + C] && !in_labels[loc + D]) {
-          equivalences.unify(out_labels[loc], out_labels[loc + C]);
-          goto SIMPLE;
-        }
-        goto COMPLEX;
-      }
-      else if (in_labels[loc + C]) {
-        out_labels[loc] = out_labels[loc + C];
+      
+      out_labels[loc] = out_labels[loc + B];
+
+      if (in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
         goto SIMPLE;
       }
-      else {
-        next_label++;
-        out_labels[loc] = next_label;
-        equivalences.add(out_labels[loc]);
-        goto COMPLEX;
-      }
+      goto COMPLEX;
 
     SIMPLE:
       x++;
@@ -731,14 +724,8 @@ OUT* connected_components2d_4_binary(
         out_labels[loc] = out_labels[loc + C];
         goto SIMPLE;
       }
-      else if (in_labels[loc + B]) {
-        out_labels[loc] = out_labels[loc + B];
-        goto COMPLEX;
-      }
       else {
-        next_label++;
-        out_labels[loc] = next_label;
-        equivalences.add(out_labels[loc]);
+        out_labels[loc] = out_labels[loc + B];
         goto COMPLEX;
       }
 
