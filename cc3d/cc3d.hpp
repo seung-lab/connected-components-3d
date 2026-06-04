@@ -1079,7 +1079,7 @@ OUT* connected_components3d_6(
 // As of June 2026, this is currently the most cutting edge single-threaded
 // CPU algorithm available. Only 4 and 6 are really tractable to write by hand.
 // One difference in this implementation from Bolelli's implementation in opencv
-// is the use of the BLACK tree (COMPLEX and SIMPLE correspond to his tree_0 and tree_1).
+// is the use of the BLACK tree (COMPLEX and SIMPLE correspond to his cl_tree_1 and cl_tree_0).
 // It's not clear if this is better or even.
 // I wrote this based on the spaghetti idea then looked at OpenCV. It's remarkable
 // how the structure is nearly identical after optimization. Bollelli is the champ.

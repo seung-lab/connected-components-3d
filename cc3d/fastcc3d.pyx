@@ -364,14 +364,24 @@ def connected_components(
   cdef cnp.ndarray[uint32_t, ndim=1] out_labels32 = np.array([], dtype=np.uint32)
   cdef cnp.ndarray[uint64_t, ndim=1] out_labels64 = np.array([], dtype=np.uint64)
 
-  epl, first_foreground_row, last_foreground_row = estimate_provisional_labels(data)
+  dtype = data.dtype
+  binary_image = binary_image or (dtype == bool)
+
+  # EPL saves time for multilabel because it helps us reduce the size of 
+  # the union-find allocation. However, for 2D binary images, we can use
+  # a static calculation to save 1/2 to 1/8 of the allocation. We unfortunately
+  # lose hyperfast calculation of extremely sparse images (e.g. 1 pixel or line of pixels)
+  # but reducing passes on the image improves times significantly for typical images.
+  if binary_image and connectivity in (4,8):
+    epl = voxels
+    first_foreground_row = 0
+    last_foreground_row = sy
+  else:
+    epl, first_foreground_row, last_foreground_row = estimate_provisional_labels(data)
 
   if max_labels <= 0:
     max_labels = voxels
   max_labels = min(max_labels, epl, voxels)
-
-  dtype = data.dtype
-  binary_image = binary_image or (dtype == bool)
 
   if np.issubdtype(dtype, np.floating):
     delta = float(delta)

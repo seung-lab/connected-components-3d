@@ -576,10 +576,18 @@ OUT* connected_components3d_6_binary(
 }
 
 
-// uses an approach inspired by 2x2 block based decision trees
-// by Grana et al that was intended for 8-connected. Here we 
-// skip a unify on every other voxel in the horizontal and
-// vertical directions.
+// Uses a "Spaghetti labeling" inspired algorithm for 4-connected.
+// Only 4 and 6 connected are really tractable to write by hand.
+
+// One possible direction for further improvement: 
+// The spaghetti decision tree maximally avoids unify calls, but a significant amount
+// of time is spent writing labels in the first pass. If that could be avoided without
+// wasting time elsewhere, that could speed things up.
+
+// F. Bolelli, S. Allegretti, L. Baraldi, and C. Grana, 
+// "Spaghetti Labeling: Directed Acyclic Graphs for Block-Based Connected Components Labeling," 
+// IEEE Transactions on Image Processing, vol. 29, pp. 1999–2012, 2020, 
+// doi: 10.1109/TIP.2019.2946979.
 template <typename T, typename OUT = uint32_t>
 OUT* connected_components2d_4_binary(
     T* in_labels, 
@@ -628,31 +636,117 @@ OUT* connected_components2d_4_binary(
   // Raster Scan 1: Set temporary labels and 
   // record equivalences in a disjoint set.
 
-  for (int64_t y = 0; y < sy; y++, row++) {
-    const int64_t xstart = runs[row << 1];
-    const int64_t xend = runs[(row << 1) + 1];
+  int64_t xstart = runs[0];
+  int64_t xend = runs[1];
+  loc = xstart;
 
-    for (int64_t x = xstart; x < xend; x++) {
-      loc = x + sx * y;
+  for (int64_t x = xstart; x < xend; x++, loc++) {
+    if (in_labels[loc] == 0) {
+      continue;
+    }
+    else if (x > 0 && in_labels[loc] == in_labels[loc + B]) {
+      out_labels[loc] = out_labels[loc + B];
+    }
+    else {
+      next_label++;
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
+    }
+  }
 
-      if (in_labels[loc] == 0) {
+  for (int64_t y = 1; y < sy; y++) {
+    xstart = runs[y << 1];
+    xend = runs[(y << 1) + 1];
+    loc = xstart + sx * y;
+    int64_t x = xstart;
+
+    if (in_labels[loc] == 0) {
+      goto BLACK;
+    }
+    else if (x > 0 && in_labels[loc + B]) {
+      out_labels[loc] = out_labels[loc + B];
+      if (in_labels[loc + C]) {
+        if (!in_labels[loc + D]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        }
+        goto SIMPLE;
+      }
+      goto COMPLEX;
+    }
+    else if (in_labels[loc + C]) {
+      out_labels[loc] = out_labels[loc + C];
+      goto SIMPLE;
+    }
+    else {
+      next_label++;
+      out_labels[loc] = next_label;
+      equivalences.add(out_labels[loc]);
+      goto COMPLEX;
+    }
+
+    // After the first pixel, you are either
+    // coming from a foreground or a background pixel.
+    // Only the pixel following a background pixel can
+    // possibly create a new label.
+
+    COMPLEX:
+      x++;
+      loc++;
+      if (x >= xend) {
         continue;
       }
-      else if (x > 0 && in_labels[loc + B]) {
-        out_labels[loc + A] = out_labels[loc + B];
-        if (y > 0 && !in_labels[loc + D] && in_labels[loc + C]) {
-          equivalences.unify(out_labels[loc + A], out_labels[loc + C]);
-        }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
       }
-      else if (y > 0 && in_labels[loc + C]) {
-        out_labels[loc + A] = out_labels[loc + C];
+      
+      out_labels[loc] = out_labels[loc + B];
+
+      if (in_labels[loc + C]) {
+        equivalences.unify(out_labels[loc], out_labels[loc + C]);
+        goto SIMPLE;
+      }
+      goto COMPLEX;
+
+    SIMPLE:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
+      }
+      else {
+        out_labels[loc] = out_labels[loc + B];
+        goto COMPLEX;
+      }
+
+    BLACK:
+      x++;
+      loc++;
+      if (x >= xend) {
+        continue;
+      }
+
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (in_labels[loc + C]) {
+        out_labels[loc] = out_labels[loc + C];
+        goto SIMPLE;
       }
       else {
         next_label++;
-        out_labels[loc + A] = next_label;
-        equivalences.add(out_labels[loc + A]);
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto COMPLEX;
       }
-    }
   }
 
   if (periodic_boundary) {
