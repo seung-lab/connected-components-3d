@@ -576,9 +576,8 @@ OUT* connected_components3d_6_binary(
 }
 
 
-// Uses the "Spaghetti labeling" algorithm for 4-connected.
-// As of June 2026, this is currently the most cutting edge single-threaded
-// CPU algorithm available. Only 4 and 6 are really tractable to write by hand.
+// Uses a "Spaghetti labeling" inspired algorithm for 4-connected.
+// Only 4 and 6 connected are really tractable to write by hand.
 
 // One possible direction for further improvement: 
 // The spaghetti decision tree maximally avoids unify calls, but a significant amount
