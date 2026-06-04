@@ -574,43 +574,159 @@ OUT* connected_components3d_6_binary(
       const int64_t xstart = runs[row << 1];
       const int64_t xend = runs[(row << 1) + 1];
 
-      for (int64_t x = xstart; x < xend; x++) {
-        loc = x + sx * (y + sy * z);
+      loc = xstart + sx * (y + sy * z);
+      const int64_t loc_end = loc + (xend - xstart);
 
-        if (in_labels[loc] == 0) {
+      if (in_labels[loc] == 0) {
+        goto BLACK;
+      }
+      else if (y > 0 && in_labels[loc + K]) {
+        out_labels[loc] = out_labels[loc + K];
+
+        if (z > 0 && in_labels[loc + E] && !in_labels[loc + B]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]);
+          goto SIMPLE;
+        }
+        goto SIMPLE_K;
+      }
+      else if (z > 0 && in_labels[loc + E]) {
+        out_labels[loc] = out_labels[loc + E];
+        goto SIMPLE_E;
+      }
+      else {
+        next_label++;
+        out_labels[loc] = next_label;
+        equivalences.add(out_labels[loc]);
+        goto STANDARD;
+      }
+
+      STANDARD:
+        loc++;
+        if (loc >= loc_end) {
           continue;
         }
-        else if (x > 0 && in_labels[loc + M]) {
-          out_labels[loc] = out_labels[loc + M];
 
-          if (y > 0 && in_labels[loc + K] && !in_labels[loc + J]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + K]); 
-            if (z > 0 && in_labels[loc + E]) {
-              if (!in_labels[loc + D] && !in_labels[loc + B]) {
-                equivalences.unify(out_labels[loc], out_labels[loc + E]);
-              }
+        if (in_labels[loc] == 0) {
+          goto BLACK;
+        }
+
+        out_labels[loc] = out_labels[loc + M];
+
+        if (y > 0 && in_labels[loc + K] && !in_labels[loc + J]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+          if (z > 0 && in_labels[loc + E]) {
+            if (!in_labels[loc + D] && !in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + E]);
             }
+            goto SIMPLE;
           }
-          else if (z > 0 && in_labels[loc + E] && !in_labels[loc + D]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+          goto SIMPLE_K;
+        }
+        else if (z > 0 && in_labels[loc + E] && !in_labels[loc + D]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]);
+          goto SIMPLE_E;
+        }
+
+        goto STANDARD;
+
+      SIMPLE:
+        loc++;
+        if (loc >= loc_end) {
+          continue;
+        }
+
+        if (in_labels[loc] == 0) {
+          goto BLACK;
+        }
+
+        out_labels[loc] = out_labels[loc + M];
+        
+        if (y > 0 && in_labels[loc + K]) {
+          if (z > 0 && in_labels[loc + E]) {
+            goto SIMPLE;
           }
+          goto SIMPLE_K;
+        }
+        else if (z > 0 && in_labels[loc + E]) {
+          goto SIMPLE_E;
+        }
+        goto STANDARD;
+
+      SIMPLE_E:
+        loc++;
+        if (loc >= loc_end) {
+          continue;
+        }
+
+        if (in_labels[loc] == 0) {
+          goto BLACK;
+        }
+
+        out_labels[loc] = out_labels[loc + M];
+
+        if (y > 0 && in_labels[loc + K] && !in_labels[loc + J]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + K]); 
+          goto SIMPLE_K;
+        }
+        goto STANDARD;
+
+      SIMPLE_K:
+        loc++;
+        if (loc >= loc_end) {
+          continue;
+        }
+
+        if (in_labels[loc] == 0) {
+          goto BLACK;
+        }
+
+        out_labels[loc] = out_labels[loc + M];
+
+        if (y > 0 && in_labels[loc + K]) {
+          if (z > 0 && in_labels[loc + E]) { 
+            if (!in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + E]);
+            }
+            goto SIMPLE;
+          }
+          goto SIMPLE_K;
+        }
+        else if (z > 0 && in_labels[loc + E]) {
+          equivalences.unify(out_labels[loc], out_labels[loc + E]);
+          goto SIMPLE_E;
+        }
+        goto STANDARD;
+
+      BLACK:
+        loc++;
+        if (loc >= loc_end) {
+          continue;
+        }
+
+        if (in_labels[loc] == 0) {
+          goto BLACK;
         }
         else if (y > 0 && in_labels[loc + K]) {
           out_labels[loc] = out_labels[loc + K];
 
-          if (z > 0 && in_labels[loc + E] && !in_labels[loc + B]) {
-            equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+          if (z > 0 && in_labels[loc + E]) {
+            if (!in_labels[loc + B]) {
+              equivalences.unify(out_labels[loc], out_labels[loc + E]); 
+            }
+            goto SIMPLE;
           }
+          goto SIMPLE_K;
         }
         else if (z > 0 && in_labels[loc + E]) {
           out_labels[loc] = out_labels[loc + E];
+          goto SIMPLE_E;
         }
         else {
           next_label++;
           out_labels[loc] = next_label;
           equivalences.add(out_labels[loc]);
+          goto STANDARD;
         }
-      }
     }
   }
 
