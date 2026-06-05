@@ -254,18 +254,21 @@ def connected_components(
   binary_image:bool = False,
 ) -> np.ndarray:
   """
-  Connected components applied to 3D images with 
-  handling for multiple labels.
-
+  Connected components applied to 2D or 3D images.
+  Images may be binary, multivalued, or continuously valued.
+  
   Required:
-    data: Input weights in a 2D or 3D numpy array. 
+    data: Input weights in a 2D or 3D numpy or pytorch array. 
   Optional:
-    max_labels (int): save memory by predicting the maximum
-      number of possible labels that might be output.
-      Defaults to number of voxels.
+    max_labels (deprecated): This parameter formerly saved memory 
+      by predicting the maximum number of possible labels that 
+      might be output, but created a risk of a segfault if you picked
+      too low. More reliable methods have been available for 
+      some time so this parameter is now disconnected from 
+      doing anything.
     connectivity (int): 
       For 3D images, 6 (voxel faces), 18 (+edges), or 26 (+corners)
-      If the input image is 2D, you may specify 4 (pixel faces) or
+      If the input image is 2D, you may specify 4 (pixel edges) or
         8 (+corners).
     return_N (bool): if True, also return the number of connected components
       as the second argument of a return tuple.
@@ -280,10 +283,13 @@ def connected_components(
     out_file: If specified, the output array will be an mmapped
       file. Can be a file-name or a file-like object.
     periodic_boundary: the boundary edges wrap around
+      Only supported for 4,8, and 6 connected images.
     binary_image: if True, regardless of the input type,
       treat as a binary image (foreground > 0, background == 0).
       Certain inputs will always be treated as a binary 
       image (e.g. bool dtype, delta == max int or max float etc.).
+      Certain optimizations are available for binary images that
+      are not possible for multivalued images.
 
   let OUT = 1D, 2D or 3D numpy array remapped to reflect
     the connected components sequentially numbered from 1 to N. 
