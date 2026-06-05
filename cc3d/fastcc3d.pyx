@@ -379,9 +379,7 @@ def connected_components(
   else:
     epl, first_foreground_row, last_foreground_row = estimate_provisional_labels(data)
 
-  if max_labels <= 0:
-    max_labels = voxels
-  max_labels = min(max_labels, epl, voxels)
+  max_labels = min(epl, voxels)
 
   if np.issubdtype(dtype, np.floating):
     delta = float(delta)
