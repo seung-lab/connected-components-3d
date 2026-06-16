@@ -47,9 +47,10 @@ OUT* connected_components3d_26_binary(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels >> 2) + 1); // + 1L for an array with no zeros
+  max_labels++; // if voxels is odd, then you need an extra one
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
-  
+
   DisjointSet<OUT> equivalences(max_labels);
 
   const std::unique_ptr<uint32_t[]> runs(
@@ -462,7 +463,8 @@ OUT* connected_components3d_6_binary(
   }
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::min(max_labels, static_cast<size_t>(voxels) + 1); // + 1L for an array with no zeros
+  max_labels = std::min(max_labels, static_cast<size_t>(voxels >> 1) + 1); // + 1L for an array with no zeros
+  max_labels++; // if voxels is odd, then you need an extra one
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<OUT> equivalences(max_labels);
@@ -609,6 +611,7 @@ OUT* connected_components2d_4_binary(
 
   max_labels++; // corrects Cython estimation
   max_labels = std::min(max_labels, static_cast<size_t>(voxels >> 1) + 1); // + 1L for an array with no zeros
+  max_labels++; // if voxels is odd, then you need an extra one
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<OUT> equivalences(max_labels);
@@ -778,7 +781,8 @@ OUT* connected_components2d_8_binary(
   const int64_t osx = (sx + 1) >> 1;
 
   max_labels++; // corrects Cython estimation
-  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels) + 1), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels = std::max(std::min(max_labels, static_cast<size_t>(voxels >> 1) + 1), static_cast<size_t>(1L)); // can't allocate 0 arrays
+  max_labels++; // if voxels is odd, then you need an extra one
   max_labels = std::min(max_labels, static_cast<size_t>(std::numeric_limits<OUT>::max()));
 
   DisjointSet<uint32_t> equivalences(max_labels);
