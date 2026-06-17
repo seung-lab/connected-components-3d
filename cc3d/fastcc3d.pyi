@@ -240,12 +240,12 @@ def region_graph(
 def statistics(
     out_labels: NDArray[Any],
     no_slice_conversion: Literal[False] = False,
-) -> StatisticsDict: ...
+) -> StatisticsSlicesDict: ...
 @overload
 def statistics(
     out_labels: NDArray[Any],
     no_slice_conversion: Literal[True],
-) -> StatisticsSlicesDict: ...
+) -> StatisticsDict: ...
 def statistics(  # type: ignore[misc]
     out_labels: NDArray[Any],
     no_slice_conversion: bool = False,
