@@ -53,7 +53,7 @@ def cc3d_binary_image(labels, connectivity=26):
 # binary tests
 s = time.time()
 labels = [ 
-  np.random.randint(0,2, size=(384, 384, 384), dtype=np.bool) 
+  np.random.randint(0,2, size=(384, 384, 384), dtype=bool) 
   for _ in range(10)
 ]
 print(time.time() - s)
