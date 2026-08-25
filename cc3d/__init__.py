@@ -433,14 +433,25 @@ def connected_components_stack(
       equivalences.makeset(u)
 
     if connectivity == 6:
-      for y in range(image.shape[1]):
-        for x in range(image.shape[0]):
-          if bottom_cc_labels[x,y] == 0 or top_cc_labels[x,y] == 0:
-            continue
-          if ((not binary_image and bottom_cc_img[x,y] == image[x,y,0]) 
-            or (binary_image and bottom_cc_img[x,y] and image[x,y,0])):
+      mask = (
+        (bottom_cc_labels != 0)
+        & (top_cc_labels != 0)
+      )
+      if not binary_image:
+        mask &= (bottom_cc_img == image[:, :, 0])
 
-            equivalences.union(bottom_cc_labels[x,y], top_cc_labels[x,y])
+      bottom_labels = np.asarray(bottom_cc_labels)[mask]
+      top_labels = np.asarray(top_cc_labels)[mask]
+      del mask
+      edges = np.column_stack((bottom_labels, top_labels))
+      del bottom_labels
+      del top_labels
+
+      edges = fastremap.unique(edges, sorted=False, axis=0)
+
+      for b, t in edges:
+        equivalences.union(b, t)
+      del edges
     else:
       for y in range(image.shape[1]):
         for x in range(image.shape[0]):
