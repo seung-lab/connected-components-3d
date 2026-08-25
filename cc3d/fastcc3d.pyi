@@ -359,3 +359,10 @@ def draw(
 ) -> NDArray[UnsignedIntegerT]:
     """Draws label onto the provided image according to runs."""
     ...
+
+def foreground_offset(
+  labels:NDArray[np.uint64],
+  offset:int,
+):
+    ...
+
