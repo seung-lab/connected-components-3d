@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import typing
-from typing import Literal, Union, overload, TYPE_CHECKING
+from typing import Literal, Union, overload, TYPE_CHECKING, cast
 
 from . import fastcc3d
 from .fastcc3d import (
@@ -411,7 +411,10 @@ def connected_components_stack(
       binary_image=bool(binary_image),
     )
     # np.add(cc_labels, offset, out=cc_labels, where=(cc_labels != 0))
-    fastcc3d.offset_foreground(cc_labels, offset)
+    fastcc3d.offset_foreground(
+      cast(NDArray[np.uint64], cc_labels),
+      offset
+    )
     offset += N
     binary = crackle.compress(cc_labels)
 
