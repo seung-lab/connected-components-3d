@@ -360,7 +360,7 @@ def draw(
     """Draws label onto the provided image according to runs."""
     ...
 
-def foreground_offset(
+def offset_foreground(
   labels:NDArray[np.uint64],
   offset:int,
 ):
