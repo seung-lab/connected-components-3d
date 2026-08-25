@@ -443,8 +443,13 @@ def connected_components_stack(
       else:
         mask &= (bottom_cc_img == image[:, :, 0])
 
-      bottom_labels = np.asarray(bottom_cc_labels)[mask]
-      top_labels = np.asarray(top_cc_labels)[mask]
+      mask = mask.reshape([mask.size], order="F")
+      bottom_labels = bottom_cc_labels.reshape([bottom_cc_labels.size], order="F")
+      top_labels = top_cc_labels.reshape([top_cc_labels.size], order="F")
+
+      bottom_labels = bottom_labels[mask]
+      top_labels = top_labels[mask]
+
       del mask
       edges = np.column_stack((bottom_labels, top_labels))
       del bottom_labels
