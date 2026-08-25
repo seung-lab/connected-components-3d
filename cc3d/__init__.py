@@ -410,7 +410,8 @@ def connected_components_stack(
       return_N=True, out_dtype=np.uint64,
       binary_image=bool(binary_image),
     )
-    np.add(cc_labels, offset, out=cc_labels, where=(cc_labels != 0))
+    # np.add(cc_labels, offset, out=cc_labels, where=(cc_labels != 0))
+    fastcc3d.offset_foreground(cc_labels, offset)
     offset += N
     binary = crackle.compress(cc_labels)
 

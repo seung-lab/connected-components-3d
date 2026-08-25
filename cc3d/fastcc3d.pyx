@@ -1370,3 +1370,20 @@ def each(
   if in_place:
     return InPlaceImageIterator()
   return ImageIterator()
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def offset_foreground(
+  cnp.ndarray[cnp.uint64_t, ndim=3] labels,
+  cnp.uint64_t offset,
+):
+  cdef:
+    Py_ssize_t i
+    Py_ssize_t n = labels.size
+    cnp.uint64_t* data = <cnp.uint64_t*>labels.data
+
+  with nogil:
+    for i in range(n):
+      if data[i] != 0:
+        data[i] += offset
+
