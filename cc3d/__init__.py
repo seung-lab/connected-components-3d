@@ -437,7 +437,10 @@ def connected_components_stack(
         (bottom_cc_labels != 0)
         & (top_cc_labels != 0)
       )
-      if not binary_image:
+      if binary_image:
+        mask &= bottom_cc_img  > 0
+        mask &= image[:, :, 0] > 0
+      else:
         mask &= (bottom_cc_img == image[:, :, 0])
 
       bottom_labels = np.asarray(bottom_cc_labels)[mask]
