@@ -1165,28 +1165,28 @@ OUT* connected_components2d_4(
     int64_t x = xstart;
 
     if (in_labels[loc] == 0) {
-      goto BLACK;
+      goto BACKGROUND;
     }
     else if (x > 0 && in_labels[loc] == in_labels[loc + B]) {
       out_labels[loc] = out_labels[loc + B];
       if (in_labels[loc] == in_labels[loc + C] && in_labels[loc] != in_labels[loc + D]) {
         equivalences.unify(out_labels[loc], out_labels[loc + C]);
-        goto SIMPLE;
+        goto PHANTOM_PRESENT;
       }
-      goto COMPLEX;
+      goto PHANTOM_ABSENT;
     }
     else if (in_labels[loc] == in_labels[loc + C]) {
       out_labels[loc] = out_labels[loc + C];
-      goto SIMPLE;
+      goto PHANTOM_PRESENT;
     }
     else {
       next_label++;
       out_labels[loc] = next_label;
       equivalences.add(out_labels[loc]);
-      goto COMPLEX;
+      goto PHANTOM_ABSENT;
     }
 
-    COMPLEX:
+    PHANTOM_ABSENT:
       x++;
       loc++;
       if (x >= xend) {
@@ -1194,28 +1194,28 @@ OUT* connected_components2d_4(
       }
 
       if (in_labels[loc] == 0) {
-        goto BLACK;
+        goto BACKGROUND;
       }
       else if (in_labels[loc] == in_labels[loc + B]) {
         out_labels[loc] = out_labels[loc + B];
         if (in_labels[loc] == in_labels[loc + C] && in_labels[loc] != in_labels[loc + D]) {
           equivalences.unify(out_labels[loc], out_labels[loc + C]);
-          goto SIMPLE;
+          goto PHANTOM_PRESENT;
         }
-        goto COMPLEX;
+        goto PHANTOM_ABSENT;
       }
       else if (in_labels[loc] == in_labels[loc + C]) {
         out_labels[loc] = out_labels[loc + C];
-        goto SIMPLE;
+        goto PHANTOM_PRESENT;
       }
       else {
         next_label++;
         out_labels[loc] = next_label;
         equivalences.add(out_labels[loc]);
-        goto COMPLEX;
+        goto PHANTOM_ABSENT;
       }
 
-    SIMPLE:
+    PHANTOM_PRESENT:
       x++;
       loc++;
       if (x >= xend) {
@@ -1223,24 +1223,24 @@ OUT* connected_components2d_4(
       }
 
       if (in_labels[loc] == 0) {
-        goto BLACK;
+        goto BACKGROUND;
       }
       else if (in_labels[loc] == in_labels[loc + C]) {
         out_labels[loc] = out_labels[loc + C];
-        goto SIMPLE;
+        goto PHANTOM_PRESENT;
       }
       else if (in_labels[loc] == in_labels[loc + B]) {
         out_labels[loc] = out_labels[loc + B];
-        goto COMPLEX;
+        goto PHANTOM_ABSENT;
       }
       else {
         next_label++;
         out_labels[loc] = next_label;
         equivalences.add(out_labels[loc]);
-        goto COMPLEX;
+        goto PHANTOM_ABSENT;
       }
 
-    BLACK:
+    BACKGROUND:
       x++;
       loc++;
       if (x >= xend) {
@@ -1248,17 +1248,17 @@ OUT* connected_components2d_4(
       }
 
       if (in_labels[loc] == 0) {
-        goto BLACK;
+        goto BACKGROUND;
       }
       else if (in_labels[loc] == in_labels[loc + C]) {
         out_labels[loc] = out_labels[loc + C];
-        goto SIMPLE;
+        goto PHANTOM_PRESENT;
       }
       else {
         next_label++;
         out_labels[loc] = next_label;
         equivalences.add(out_labels[loc]);
-        goto COMPLEX;
+        goto PHANTOM_ABSENT;
       }
   }
 
