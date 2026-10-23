@@ -327,7 +327,7 @@ def connected_components(
     dtype = data.dtype
     if out_dtype is not None:
       dtype = out_dtype
-    out_labels = np.zeros(shape=(0,), dtype=dtype)
+    out_labels = np.zeros(shape=data.shape, dtype=dtype)
     if return_N:
       return (out_labels, 0)
     return out_labels
@@ -1079,7 +1079,7 @@ def voxel_connectivity_graph(
     out_dtype = np.uint8
 
   if data.size == 0:
-    return np.zeros(shape=(0,), dtype=out_dtype)
+    return np.zeros(shape=data.shape, dtype=out_dtype)
 
   data = np.asfortranarray(data)
 
