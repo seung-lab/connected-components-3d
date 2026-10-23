@@ -162,7 +162,7 @@ def _reshape(
 
 cdef int64_t even_ceil(int64_t N):
   if N & 0x1:
-    return N << 1
+    return N + 1
   return N
 
 @cython.binding(True)
@@ -409,7 +409,7 @@ def connected_components(
   if binary_image:
     if connectivity in (4,6):
       max_labels = min(max_labels, (union_find_voxels // 2) + 1)
-    elif connectivity == (8,18):
+    elif connectivity in (8,18):
       max_labels = min(max_labels, (union_find_voxels // 4) + 1)
     else: # 26
       max_labels = min(max_labels, (union_find_voxels // 8) + 1)
