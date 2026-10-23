@@ -22,24 +22,30 @@ def gt_c2f(gt):
   f_gt[ f_gt == mx ] = 3
   return f_gt
 
-def test_empty():
-  labels = np.zeros((0,0), dtype=np.uint32)
-  out = cc3d.connected_components(labels)
+@pytest.mark.parametrize("shape", [(0,), (0, 0), (0, 3), (2, 0), (0, 0, 0), (2, 0, 3)])
+@pytest.mark.parametrize("return_N", [False, True])
+@pytest.mark.parametrize("out_dtype", [None, np.uint16])
+def test_empty(shape, return_N, out_dtype):
+  labels = np.zeros(shape, dtype=np.uint32)
+  result = cc3d.connected_components(labels, return_N=return_N, out_dtype=out_dtype)
+  if return_N:
+    out, N = result
+    assert N == 0
+  else:
+    out = result
   assert out.size == 0
+  assert out.shape == shape
+  assert out.dtype == (labels.dtype if out_dtype is None else out_dtype)
 
-  labels = np.zeros((0,0,0), dtype=np.uint32)
-  out = cc3d.connected_components(labels)
-  assert out.size == 0
 
-  labels = np.zeros((0,0), dtype=np.uint32)
-  out, N = cc3d.connected_components(labels, return_N=True)
-  assert N == 0
-  assert out.size == 0
-
-  labels = np.zeros((0,0,0), dtype=np.uint32)
-  out, N = cc3d.connected_components(labels, return_N=True)
-  assert N == 0
-  assert out.size == 0
+@pytest.mark.parametrize("shape", [(0,), (0, 0), (0, 3), (2, 0), (0, 0, 0), (2, 0, 3)])
+@pytest.mark.parametrize("connectivity", [6, 18, 26])
+def test_empty_voxel_connectivity_graph(shape, connectivity):
+  labels = np.zeros(shape, dtype=np.uint32)
+  graph = cc3d.voxel_connectivity_graph(labels, connectivity=connectivity)
+  assert graph.size == 0
+  assert graph.shape == shape
+  assert graph.dtype == (np.uint8 if connectivity == 6 else np.uint32)
 
 
 def test_1d_array():
