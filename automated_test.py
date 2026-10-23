@@ -1647,6 +1647,37 @@ def test_connected_components_stack(binary_image, connectivity):
   assert np.all(res[:] == ans[:,:,:11])
 
 
+@pytest.mark.parametrize("shape", [(4, 4, 4), (5, 5, 5)])
+@pytest.mark.parametrize("dtype,binary_image", [(bool, False), (np.uint8, True)])
+@pytest.mark.parametrize("order", ["C", "F"])
+def test_binary_image_18_capacity(shape, dtype, binary_image, order):
+  labels = np.zeros(shape, dtype=dtype, order=order)
+  labels[::2, ::2, ::2] = 1
+  labels[1::2, 1::2, 1::2] = 1
+
+  out, N = cc3d.connected_components(
+    labels, connectivity=18, binary_image=binary_image, return_N=True,
+  )
+
+  assert N == np.count_nonzero(labels)
+  assert np.unique(out[labels != 0]).size == N
+  assert np.all(out[labels == 0] == 0)
+
+
+@pytest.mark.parametrize("out_dtype", [None, np.uint16])
+@pytest.mark.parametrize("order", ["C", "F"])
+def test_binary_image_odd_capacity(out_dtype, order):
+  labels = np.ones((41, 41, 41), dtype=bool, order=order)
+
+  out, N = cc3d.connected_components(
+    labels, connectivity=26, out_dtype=out_dtype, return_N=True,
+  )
+
+  assert out.dtype == np.uint16
+  assert N == 1
+  assert np.all(out == 1)
+
+
 @pytest.mark.parametrize("dtype", INT_TYPES)
 @pytest.mark.parametrize("connectivity", [6, 18, 26])
 @pytest.mark.parametrize("periodic_boundary", [False, True])
