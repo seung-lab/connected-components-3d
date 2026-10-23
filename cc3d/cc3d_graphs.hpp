@@ -109,9 +109,7 @@ OUT* extract_voxel_connectivity_graph_3d(
 	if (graph == NULL) {
 		graph = new OUT[voxels];
 	}
-	for (int64_t i = 0; i < voxels; i++) {
-		graph[i] = ALL;
-	}
+	std::fill(graph, graph + voxels, ALL);
 
 	T cur = 0;
 
